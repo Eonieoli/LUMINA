@@ -54,3 +54,10 @@ jwt:
 
 server:
   port: 8080
+
+# Health, Prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
