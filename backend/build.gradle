@@ -34,8 +34,22 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// health, prometheus
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+bootJar {
+    archiveBaseName.set("app")  // bootJar의 이름을 'app'으로 설정
+    archiveVersion.set("")      // 버전 정보 제거
+}
+
+// 기존 jar 태스크는 비활성화
+jar {
+    enabled = false
 }
