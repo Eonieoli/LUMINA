@@ -73,7 +73,7 @@ pipeline {
                                     sh "scp -o StrictHostKeyChecking=no .env ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/.env"
                                     // sh "scp -o StrictHostKeyChecking=no .env.front ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/.env.front"
 
-                                    sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${EGCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/docker-compose.yml"
+                                    sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/docker-compose.yml"
                                     // sh "scp -o StrictHostKeyChecking=no ./nginx.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/nginx.conf"
 
                                     sh """
