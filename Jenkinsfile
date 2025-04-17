@@ -74,7 +74,7 @@ pipeline {
                                     // sh "scp -o StrictHostKeyChecking=no .env.front ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/.env.front"
 
                                     sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/docker-compose.yml"
-                                    // sh "scp -o StrictHostKeyChecking=no ./nginx.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/nginx.conf"
+                                    sh "scp -o StrictHostKeyChecking=no ./nginx.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/nginx.conf"
 
                                     sh """
                                     ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
@@ -83,6 +83,27 @@ pipeline {
                                         docker compose pull &&
                                         docker compose up -d &&
                                         docker system prune -af
+                                    '
+                                    """
+                                }
+                            }
+                        }
+                        stage('Update Nginx and Restart') {
+                            steps {
+                                sshagent(credentials: ['gcp-ssh-key']) {
+                                    sh """
+                                    ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
+                                        # 변경된 설정으로 proxy 컨테이너 재시작
+                                        docker restart proxy &&
+
+                                        # proxy 컨테이너 상태 확인
+                                        sleep 2 &&
+                                        if [ "\$(docker inspect -f {{.State.Running}} proxy)" = "true" ]; then
+                                            echo "Nginx proxy 컨테이너가 성공적으로 재시작되었습니다."
+                                        else
+                                            echo "Nginx proxy 컨테이너 재시작 실패!"
+                                            exit 1
+                                        fi
                                     '
                                     """
                                 }
