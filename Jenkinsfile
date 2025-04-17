@@ -1,0 +1,142 @@
+pipeline {
+    agent any
+
+    environment {
+        FRONTEND_IMAGE = "rublin322/lumina-frontend:develop"
+        BACKEND_IMAGE = "rublin322/lumina-backend:develop"
+        GCP_DEPLOY_HOST = "rublin322@picscore.net"
+        GCP_DEPLOY_PATH = "/home/rublin322/lumina"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                script {
+                    echo "현재 브랜치: ${env.BRANCH_NAME}"
+                    echo "현재 워크스페이스: ${env.WORKSPACE}"
+                }
+            }
+        }
+
+        stage('Prepare Environment') {
+            steps {
+                withCredentials([file(credentialsId: 'env-content', variable: 'ENV_PATH')]) {
+                    script {
+                        def envContent = readFile(ENV_PATH)
+                        writeFile file: '.env', text: envContent
+                    }
+                }
+                withCredentials([file(credentialsId: 'env-front-content', variable: 'ENV_FRONT_PATH')]) {
+                    script {
+                        def envFrontContent = readFile(ENV_FRONT_PATH)
+                        writeFile file: '.env.front', text: envFrontContent
+                    }
+                }
+            }
+        }
+
+        stage('Build and Deploy') {
+            parallel {
+                stage('Develop Branch') {
+                    when {
+                        anyOf {
+                            branch 'develop'
+                            branch 'frontend'
+                            branch 'backend'
+                            branch 'feat/S12P31S306-30-jenkins-ci-cd/infra'
+                        }
+                    }
+                    stages {
+                        stage('Build Docker Images - Dev') {
+                            steps {
+                                // dir('frontend') {
+                                //     sh "cp ../.env.front .env.front"
+                                //     sh "docker build -t ${FRONTEND_IMAGE} ."
+                                // }
+                                dir('backend') {
+                                    sh "docker build -t ${BACKEND_IMAGE} ."
+                                }
+                            }
+                        }
+                        stage('Push to DockerHub') {
+                            steps {
+                                withDockerRegistry([credentialsId: 'dockerhub-token', url: '']) {
+                                    // sh "docker push ${FRONTEND_IMAGE}"
+                                    sh "docker push ${BACKEND_IMAGE}"
+                                }
+                            }
+                        }
+                        stage('Deploy to GCP') {
+                            steps {
+                                sshagent(credentials: ['gcp-ssh-key']) {
+                                    sh "scp -o StrictHostKeyChecking=no .env ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/.env"
+                                    // sh "scp -o StrictHostKeyChecking=no .env.front ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/.env.front"
+
+                                    sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/docker-compose.yml"
+                                    sh "scp -o StrictHostKeyChecking=no ./nginx.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/nginx.conf"
+
+                                    sh """
+                                    ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
+                                        cd ${GCP_DEPLOY_PATH} &&
+                                        docker compose down --remove-orphans &&
+                                        docker compose pull &&
+                                        docker compose up -d &&
+                                        docker system prune -af
+                                    '
+                                    """
+                                }
+                            }
+                        }
+                        stage('Update Nginx and Restart') {
+                            steps {
+                                sshagent(credentials: ['gcp-ssh-key']) {
+                                    sh """
+                                    ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
+                                        # 변경된 설정으로 proxy 컨테이너 재시작
+                                        docker restart proxy &&
+
+                                        # proxy 컨테이너 상태 확인
+                                        sleep 2 &&
+                                        if [ "\$(docker inspect -f {{.State.Running}} proxy)" = "true" ]; then
+                                            echo "Nginx proxy 컨테이너가 성공적으로 재시작되었습니다."
+                                        else
+                                            echo "Nginx proxy 컨테이너 재시작 실패!"
+                                            exit 1
+                                        fi
+                                    '
+                                    """
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            script {
+                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'feat/S12P31S306-30-jenkins-ci-cd/infra') {
+                    echo '개발 환경 배포 성공'
+                } else if (env.BRANCH_NAME == 'master') {
+                    echo '운영 환경 배포 성공'
+                }
+            }
+        }
+        failure {
+            script {
+                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'feat/S12P31S306-30-jenkins-ci-cd/infra') {
+                    echo '개발 환경 배포 실패'
+                } else if (env.BRANCH_NAME == 'master') {
+                    echo '운영 환경 배포 실패'
+                }
+            }
+        }
+        always {
+            echo '배포 파이프라인 종료'
+            cleanWs()
+        }
+    }
+}
