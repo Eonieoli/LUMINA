@@ -1,0 +1,83 @@
+services:
+  # frontend:
+  #   container_name: frontend
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   image: rublin322/lumina-frontend:develop
+  #   env_file:
+  #     - .env.front
+  #   ports:
+  #     - "5173:80"
+  #   networks:
+  #     - lumina-network
+
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: rublin322/lumina-backend:develop
+    env_file:
+      - .env
+    ports:
+      - "8082:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lumina-network
+
+  mysql:
+    container_name: mysql
+    image: mysql:8.4
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - lumina-network
+
+  redis:
+    container_name: redis
+    image: redis:7.4-alpine
+    restart: always
+    command: redis-server /usr/local/etc/redis/redis.conf
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - redis-data:/data 
+    networks:
+      - lumina-network
+
+volumes:
+  mysql-data:
+    name: mysql-data
+  redis-data:
+    name: redis-data
+
+networks:
+  lumina-network:
+    name: lumina-network
+    driver: bridge
