@@ -85,7 +85,7 @@ pipeline {
                                     sh "scp -o StrictHostKeyChecking=no -r ./infra/proxy/* ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/proxy/"
                                     
                                     // 모니터링 파일 배포
-                                    sh "scp -o StrictHostKeyChecking=no -r ./infra/monitoring/* ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/monitoring/"      
+                                    sh "scp -o StrictHostKeyChecking=no -r ./infra/monitoring/* ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/monitoring/"      
 
 
                                     sh """
