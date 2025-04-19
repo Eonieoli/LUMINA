@@ -55,7 +55,7 @@ services:
     container_name: redis
     image: redis:7.4-alpine
     restart: always
-    command: redis-server /usr/local/etc/redis/redis.conf
+    # command: redis-server /usr/local/etc/redis/redis.conf
     env_file:
       - .env
     healthcheck:
