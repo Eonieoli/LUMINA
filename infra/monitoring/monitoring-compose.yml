@@ -33,7 +33,6 @@ services:
       - GF_SERVER_ROOT_URL=https://picscore.net/grafana
       - GF_SERVER_DOMAIN=picscore.net
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
-      - GF_AUTH_ANONYMOUS_ENABLED=false
     
   node-exporter:
     image: prom/node-exporter:latest

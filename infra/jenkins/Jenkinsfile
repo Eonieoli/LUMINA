@@ -82,10 +82,11 @@ pipeline {
                                     sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/docker-compose.yml"
 
                                     // 프록시 설정 배포
+                                    sh "scp -o StrictHostKeyChecking=no .htpasswd ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/proxy/.htpasswd"
                                     sh "scp -o StrictHostKeyChecking=no -r ./infra/proxy/* ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/proxy/"
                                     
                                     // 모니터링 파일 배포
-                                    sh "scp -o StrictHostKeyChecking=no -r ./infra/monitoring/* ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/monitoring/"      
+                                    sh "scp -o StrictHostKeyChecking=no -r ./infra/monitoring/* ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/monitoring/"
 
 
                                     sh """
