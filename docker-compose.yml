@@ -64,7 +64,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      # - ./redis.conf:/usr/local/etc/redis/redis.conf
       - redis-data:/data 
     networks:
       - lumina-network
