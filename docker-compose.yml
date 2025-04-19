@@ -7,8 +7,6 @@ services:
   #   image: rublin322/lumina-frontend:develop
   #   env_file:
   #     - .env.front
-  #   ports:
-  #     - "5173:80"
   #   networks:
   #     - lumina-network
 
@@ -57,7 +55,7 @@ services:
     container_name: redis
     image: redis:7.4-alpine
     restart: always
-    command: redis-server /usr/local/etc/redis/redis.conf
+    # command: redis-server /usr/local/etc/redis/redis.conf
     env_file:
       - .env
     healthcheck:
@@ -66,7 +64,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      # - ./redis.conf:/usr/local/etc/redis/redis.conf
       - redis-data:/data 
     networks:
       - lumina-network
@@ -80,4 +78,4 @@ volumes:
 networks:
   lumina-network:
     name: lumina-network
-    driver: bridge
+    external: true
