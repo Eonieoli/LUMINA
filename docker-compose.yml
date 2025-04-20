@@ -5,10 +5,11 @@ services:
   #     context: ./frontend
   #     dockerfile: Dockerfile
   #   image: rublin322/lumina-frontend:develop
-  #   env_file:
-  #     - .env.front
   #   networks:
   #     - lumina-network
+  #   labels:
+  #     - "com.docker.compose.service=frontend"
+  #     - "com.docker.compose.project=lumina"
 
   backend:
     container_name: backend
@@ -32,6 +33,9 @@ services:
       retries: 5
     networks:
       - lumina-network
+    labels:
+      - "com.docker.compose.service=backend"
+      - "com.docker.compose.project=lumina"
 
   mysql:
     container_name: mysql
@@ -50,6 +54,9 @@ services:
       - mysql-data:/var/lib/mysql
     networks:
       - lumina-network
+    labels:
+      - "com.docker.compose.service=mysql"
+      - "com.docker.compose.project=lumina"
 
   redis:
     container_name: redis
@@ -68,6 +75,9 @@ services:
       - redis-data:/data 
     networks:
       - lumina-network
+    labels:
+      - "com.docker.compose.service=redis"
+      - "com.docker.compose.project=lumina"
 
 volumes:
   mysql-data:

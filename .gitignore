@@ -67,3 +67,4 @@ out/
 # etc
 HELP.md
 .idea
+.htpasswd
