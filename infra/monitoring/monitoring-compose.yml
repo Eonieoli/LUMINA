@@ -7,14 +7,14 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.external-url=https://picscore.net/prometheus'
-      - '--web.route-prefix=/prometheus'
+      - '--web.route-prefix=/'
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
     networks:
       - lumina-network
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:9090/prometheus/-/healthy"]
+      test: ["CMD", "wget", "--spider", "http://localhost:9090/-/healthy"]
       interval: 10s
       timeout: 5s
       retries: 3
