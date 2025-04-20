@@ -14,7 +14,7 @@ services:
     networks:
       - lumina-network
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:9090/-/healthy"]
+      test: ["CMD", "wget", "--spider", "http://localhost:9090/prometheus/-/healthy"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -35,7 +35,7 @@ services:
       - lumina-network
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
-      - GF_SERVER_ROOT_URL=https://picscore.net/grafana
+      - GF_SERVER_ROOT_URL=https://picscore.net/grafana/
       - GF_SERVER_DOMAIN=picscore.net
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
     
