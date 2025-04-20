@@ -9,15 +9,17 @@ services:
       - '--web.external-url=https://picscore.net/prometheus'
       - '--web.route-prefix=/prometheus'
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
-    networks:
-      - lumina-network
     healthcheck:
       test: ["CMD", "wget", "--spider", "http://localhost:9090/prometheus/-/healthy"]
       interval: 10s
       timeout: 5s
       retries: 3
+    networks:
+      - lumina-network
+    labels:
+      org.label-schema.group: "monitoring"
 
   grafana:
     image: grafana/grafana:11.5.1
@@ -26,18 +28,18 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
-    ports:
-      - "3000:3000"
-    depends_on:
-      prometheus:
-        condition: service_healthy
-    networks:
-      - lumina-network
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_SERVER_ROOT_URL=https://picscore.net/grafana
       - GF_SERVER_DOMAIN=picscore.net
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    networks:
+      - lumina-network
+    labels:
+      org.label-schema.group: "monitoring"
     
   node-exporter:
     image: prom/node-exporter:latest
@@ -53,6 +55,8 @@ services:
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
     networks:
       - lumina-network
+    labels:
+      org.label-schema.group: "monitoring"
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.2
@@ -67,6 +71,10 @@ services:
       - /dev/kmsg:/dev/kmsg:ro
     networks:
       - lumina-network
+    labels:
+      org.label-schema.group: "monitoring"
+    depends_on:
+      - node-exporter
 
 volumes:
   prometheus-data:
