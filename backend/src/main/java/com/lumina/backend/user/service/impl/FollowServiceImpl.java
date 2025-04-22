@@ -86,7 +86,7 @@ public class FollowServiceImpl implements FollowService {
      */
     @Override
     public Map<String, Object> getFollowers(
-            Long targetUserId, boolean isMe, int pageNum) {
+            Long myId, Long targetUserId, boolean isMe, int pageNum) {
 
         if (pageNum < 1) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
@@ -104,7 +104,7 @@ public class FollowServiceImpl implements FollowService {
                 .map(follow -> {
                     User follower = follow.getFollower();
                     boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(
-                            targetUserId, follower.getId());
+                            myId, follower.getId());
                     return new GetFollowsResponse(
                             follower.getId(),
                             follower.getProfileImage(),
@@ -118,6 +118,54 @@ public class FollowServiceImpl implements FollowService {
         responseData.put("totalPages", followPage.getTotalPages());
         responseData.put("currentPage", pageNum);
         responseData.put("followers", followerResponses);
+
+        return responseData;
+    }
+
+
+    /**
+     * 현재 사용자의 팔로잉 목록을 조회하는 메서드
+     *
+     * @param targetUserId 유저의 ID
+     * @return Map<String, Object> 팔로잉 목록을 포함한 응답
+     */
+    @Override
+    public Map<String, Object> getFollowings(
+            Long myId, Long targetUserId, boolean isMe, int pageNum) {
+
+        if (pageNum < 1) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
+        }
+
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 20);
+        Page<Follow> followPage = followRepository.findByFollowerId(targetUserId, pageRequest);
+
+        // 페이지 데이터 존재 여부 확인
+        if (pageNum > followPage.getTotalPages() || followPage.getContent().isEmpty()) {
+            throw new CustomException(HttpStatus.NOT_FOUND, "해당 페이지에 팔로잉 정보가 없습니다.");
+        }
+
+        List<GetFollowsResponse> followingResponses = followPage.getContent().stream()
+                .map(follow -> {
+                    User following = follow.getFollowing();
+                    boolean isFollowing = true;
+                    if (!isMe) {
+                        isFollowing = followRepository.existsByFollowerIdAndFollowingId(
+                                myId, following.getId());
+                    }
+                    return new GetFollowsResponse(
+                            following.getId(),
+                            following.getProfileImage(),
+                            following.getNickname(),
+                            isFollowing
+                    );
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("totalPages", followPage.getTotalPages());
+        responseData.put("currentPage", pageNum);
+        responseData.put("followings", followingResponses);
 
         return responseData;
     }

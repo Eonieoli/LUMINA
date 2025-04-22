@@ -51,7 +51,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     /**
      * 특정 사용자를 팔로우하는 팔로우 관계 목록을 페이징하여 조회합니다.
      *
-     * @param followingId 팔로우 대상 사용자 ID
+     * @param followingId 팔로잉 대상 사용자 ID
      * @param pageable 페이징 정보
      * @return 해당 사용자를 팔로우하는 Follow 엔티티의 페이지 객체
      */
@@ -59,4 +59,14 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
             countQuery = "SELECT COUNT(f) FROM Follow f WHERE f.following.id = :followingId")
     Page<Follow> findByFollowingId(@Param("followingId") Long followingId, Pageable pageable);
 
+    /**
+     * 특정 사용자가 팔로우하는 팔로우 관계 목록을 페이징하여 조회합니다.
+     *
+     * @param followerId 팔로워 대상 사용자 ID
+     * @param pageable 페이징 정보
+     * @return 해당 사용자가 팔로우하는 Follow 엔티티의 페이지 객체
+     */
+    @Query(value = "SELECT f FROM Follow f WHERE f.follower.id = :followerId",
+            countQuery = "SELECT COUNT(f) FROM Follow f WHERE f.follower.id = :followerId")
+    Page<Follow> findByFollowerId(@Param("followerId") Long followerId, Pageable pageable);
 }

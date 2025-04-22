@@ -59,9 +59,31 @@ public class FollowController {
         Long targetUserId = (userId != null) ? userId : myId;
         boolean isMe = (userId == null || userId.equals(myId));
 
-        Map<String, Object> reponse = followService.getFollowers(targetUserId, isMe, pageNum);
+        Map<String, Object> reponse = followService.getFollowers(myId, targetUserId, isMe, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", reponse));
+    }
+
+
+    /**
+     * 현재 사용자의 팔로워 목록을 조회하는 엔드포인트
+     *
+     * @param request HTTP 요청 객체
+     * @return ResponseEntity<BaseResponse<Map<String, Object>>> 팔로워 목록 정보
+     */
+    @GetMapping("/following")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getFollowings(
+            HttpServletRequest request,
+            @RequestParam(required = false) Long userId,
+            @RequestParam int pageNum) {
+
+        Long myId = oAuthService.findIdByToken(request);
+        Long targetUserId = (userId != null) ? userId : myId;
+        boolean isMe = (userId == null || userId.equals(myId));
+
+        Map<String, Object> reponse = followService.getFollowings(myId, targetUserId, isMe, pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", reponse));
     }
 
 }
