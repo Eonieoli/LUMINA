@@ -7,10 +7,9 @@ import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -41,6 +40,28 @@ public class FollowController {
                 BaseResponse.withMessage("팔로잉 취소 완료");
 
         return ResponseEntity.ok(baseResponse);
+    }
+
+
+    /**
+     * 현재 사용자의 팔로워 목록을 조회하는 엔드포인트
+     *
+     * @param request HTTP 요청 객체
+     * @return ResponseEntity<BaseResponse<Map<String, Object>>> 팔로워 목록 정보
+     */
+    @GetMapping("/follower")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getFollowers(
+            HttpServletRequest request,
+            @RequestParam(required = false) Long userId,
+            @RequestParam int pageNum) {
+
+        Long myId = oAuthService.findIdByToken(request);
+        Long targetUserId = (userId != null) ? userId : myId;
+        boolean isMe = (userId == null || userId.equals(myId));
+
+        Map<String, Object> reponse = followService.getFollowers(targetUserId, isMe, pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", reponse));
     }
 
 }

@@ -1,7 +1,11 @@
 package com.lumina.backend.user.repository;
 
 import com.lumina.backend.user.model.entity.Follow;
+import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
@@ -43,4 +47,16 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
      * @return 해당 팔로우 관계가 존재하면 Optional로 반환, 없으면 Optional.empty()
      */
     Optional<Follow> findByFollowerIdAndFollowingId(Long followerId, Long followingId);
+
+    /**
+     * 특정 사용자를 팔로우하는 팔로우 관계 목록을 페이징하여 조회합니다.
+     *
+     * @param followingId 팔로우 대상 사용자 ID
+     * @param pageable 페이징 정보
+     * @return 해당 사용자를 팔로우하는 Follow 엔티티의 페이지 객체
+     */
+    @Query(value = "SELECT f FROM Follow f WHERE f.following.id = :followingId",
+            countQuery = "SELECT COUNT(f) FROM Follow f WHERE f.following.id = :followingId")
+    Page<Follow> findByFollowingId(@Param("followingId") Long followingId, Pageable pageable);
+
 }
