@@ -5,7 +5,6 @@ import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.user.model.dto.CustomOAuth2User;
 import com.lumina.backend.user.repository.UserRepository;
 import com.lumina.backend.user.service.OAuthService;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -48,13 +47,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      * @param response HTTP 응답 객체
      * @param authentication 인증 객체 (OAuth2User 정보 포함)
      * @throws IOException 입출력 예외 발생 시
-     * @throws ServletException 서블릿 예외 발생 시
      */
     @Override
     public void onAuthenticationSuccess(
             HttpServletRequest request,
             HttpServletResponse response,
-            Authentication authentication) throws IOException, ServletException {
+            Authentication authentication) throws IOException {
 
         // OAuth2User 정보 가져오기
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();

@@ -36,7 +36,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         // 부모 클래스의 loadUser 메서드를 호출하여 기본 사용자 정보를 가져옵니다.
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        // 클라이언트 등록 ID 확인 (예: google, naver 등)
+        // 클라이언트 등록 ID 확인 (예: google, kakao 등)
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuth2Response oAuth2Response = null;
 
@@ -70,7 +70,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     0,
                     0,
                     "ROLE_USER",
-                    false
+                    true
             );
 
             userRepository.save(user);
