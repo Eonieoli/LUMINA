@@ -76,7 +76,7 @@ public class OAuthServiceImpl implements OAuthService {
         String nickname = jwtUtil.getNickname(refresh);
         String userAgent = request.getHeader("User-Agent").toLowerCase();
         String deviceType = getDeviceType(userAgent); // 기기 유형 판별
-        String userKey = "refresh:" + userRepository.findIdByNickname(nickname) + ":" + deviceType; // Redis 키 생성;
+        String userKey = "refresh:" + userRepository.findUserIdByNickname(nickname) + ":" + deviceType; // Redis 키 생성;
 
         // Redis에 저장된 리프레시 토큰 존재 여부 확인
         Boolean isExist = redisUtil.exists(userKey);
@@ -113,7 +113,7 @@ public class OAuthServiceImpl implements OAuthService {
      * @return Long 사용자 ID
      */
     @Override
-    public Long findIdByNickname(
+    public Long findIdByToken(
             HttpServletRequest request) {
 
         // 쿠키에서 AccessToken 추출
@@ -131,18 +131,17 @@ public class OAuthServiceImpl implements OAuthService {
         // JWT에서 닉네임 추출
         String nickname = jwtUtil.getNickname(access);
         // 닉네임으로 사용자 ID 조회
-        Long userId = userRepository.findIdByNickname(nickname);
+        Long userId = userRepository.findUserIdByNickname(nickname);
 
         return userId;
     }
 
 
     /**
-     * 사용자 계정을 삭제하는 메서드
+     * 사용자 계정을 탈퇴하는 메서드
      *
-     * @param userId 삭제할 사용자의 ID
+     * @param userId 탈퇴할 사용자의 ID
      * @param response HTTP 응답 객체 (쿠키 삭제에 사용)
-     * @return ResponseEntity<BaseResponse<Void>> 삭제 결과를 포함한 응답
      */
     @Override
     public void deleteUser(
@@ -151,7 +150,8 @@ public class OAuthServiceImpl implements OAuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
 
-        userRepository.delete(user);
+        user.deleteUser();
+        userRepository.save(user);
 
         // Redis에서 Refresh Token 삭제
         String userAgent = request.getHeader("User-Agent").toLowerCase();
