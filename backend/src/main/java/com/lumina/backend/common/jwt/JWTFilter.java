@@ -1,0 +1,147 @@
+package com.lumina.backend.common.jwt;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lumina.backend.common.exception.CustomException;
+import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.common.service.CustomHttpServletRequestWrapper;
+import com.lumina.backend.user.model.dto.CustomOAuth2User;
+import com.lumina.backend.user.model.dto.UserDto;
+import com.lumina.backend.user.service.OAuthService;
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+/**
+ * JWT 인증 필터
+ * - OncePerRequestFilter를 상속하여 요청마다 한 번만 필터 실행
+ * - 특정 URL 및 메서드에 대해선 필터 제외 처리
+ */
+@RequiredArgsConstructor
+public class JWTFilter extends OncePerRequestFilter {
+
+    private final JWTUtil jwtUtil;
+    private final OAuthService oAuthService;
+    private final ObjectMapper objectMapper;
+
+
+    /**
+     * 필터를 적용하지 않을 요청을 정의하는 메서드
+     *
+     * @param request HttpServletRequest
+     * @return true이면 필터를 건너뜀, false이면 필터 적용
+     */
+    @Override
+    protected boolean shouldNotFilter(
+            HttpServletRequest request) throws ServletException {
+
+        String path = request.getRequestURI();
+        String method = request.getMethod();
+        String type = request.getParameter("type");
+
+        return path.equals("/")
+                || path.startsWith("/actuator/")
+                || (path.equals("/api/v1/user")
+                && "GET".equalsIgnoreCase(method)
+                && ("google".equalsIgnoreCase(type) || "kakao".equalsIgnoreCase(type)));
+    }
+
+
+    /**
+     * JWT 토큰을 검증하고 인증 처리를 수행하는 필터 메서드입니다.
+     *
+     * @param request HTTP 요청
+     * @param response HTTP 응답
+     * @param filterChain 필터 체인
+     * @throws ServletException 서블릿 예외
+     * @throws IOException 입출력 예외
+     */
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        HttpServletRequest requestToUse = request;
+        try {
+            // 쿠키에서 액세스 토큰 추출
+            String accessToken = null;
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if (cookie.getName().equals("access")) {
+                        accessToken = cookie.getValue();
+                        break;
+                    }
+                }
+            }
+
+            // 액세스 토큰이 없으면 다음 필터로 진행
+            if (accessToken == null) {
+                throw new CustomException(HttpStatus.UNAUTHORIZED, "인증 토큰 없음");
+            }
+
+            try {
+                // 토큰 만료 검증
+                jwtUtil.isExpired(accessToken);
+            } catch (ExpiredJwtException e) {
+                try {
+                    // 토큰 만료 시 재발급 처리
+                    String newAccessToken = oAuthService.reissue(request, response);
+
+                    CustomHttpServletRequestWrapper updatedRequest = new CustomHttpServletRequestWrapper(request);
+                    updatedRequest.addHeader("Authorization", "Bearer " + newAccessToken); // 헤더 추가
+                    updatedRequest.updateCookie("access", newAccessToken); // 쿠키 업데이트
+                    accessToken = newAccessToken;
+                    requestToUse = updatedRequest; // 재발급된 경우 updatedRequest를 사용
+                } catch (CustomException ce) {
+                    // CustomException 처리
+                    response.setStatus(ce.getStatus().value());
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write(objectMapper.writeValueAsString(BaseResponse.error(ce.getMessage())));
+                    return; // 필터 체인 종료
+                }
+            }
+
+            // 토큰 카테고리 검증
+            String category = jwtUtil.getCategory(accessToken);
+            if (!category.equals("access")) {
+                throw new CustomException(HttpStatus.UNAUTHORIZED, "유효하지 않은 액세스 토큰");
+            }
+
+            // 토큰에서 사용자 정보 추출
+            String socialId = jwtUtil.getSocialId(accessToken);
+            String nickname = jwtUtil.getNickname(accessToken);
+            String role = jwtUtil.getRole(accessToken);
+
+            // UserDto 생성 및 설정
+            UserDto userDto = new UserDto(
+                    socialId,
+                    nickname,
+                    role
+            );
+
+            // CustomOAuth2User 객체 생성
+            CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDto);
+
+            // 인증 객체 생성 및 SecurityContext에 설정
+            Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        } catch (CustomException ex) {
+            response.setStatus(ex.getStatus().value());
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(objectMapper.writeValueAsString(BaseResponse.error(ex.getMessage())));
+            return;
+        }
+
+        filterChain.doFilter(requestToUse, response);
+    }
+}
