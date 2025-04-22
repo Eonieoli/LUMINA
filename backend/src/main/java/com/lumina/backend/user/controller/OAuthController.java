@@ -58,7 +58,7 @@ public class OAuthController {
      * 회원 탈퇴를 처리합니다.
      * 회원탈퇴 완료 메시지를 반환합니다.
      */
-    @GetMapping("/delete")
+    @DeleteMapping("/delete")
     public ResponseEntity<BaseResponse<Void>> deleteUser(
             HttpServletRequest request, HttpServletResponse response) {
 

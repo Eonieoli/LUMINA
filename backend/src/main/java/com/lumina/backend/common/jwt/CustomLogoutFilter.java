@@ -100,7 +100,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         String nickName = jwtUtil.getNickname(refresh); // 토큰에서 닉네임 추출
         String userAgent = request.getHeader("User-Agent").toLowerCase(); // 기기 정보 추출
         String deviceType = oAuthService.getDeviceType(userAgent); // PC 또는 모바일 여부 판별
-        String userKey = "refresh:" + userRepository.findUserIdByNickname(nickName) + ":" + deviceType; // Redis 키 조합
+        String userKey = "refresh:" + userRepository.findIdByNickname(nickName) + ":" + deviceType; // Redis 키 조합
 
         Boolean isExist = redisUtil.exists(userKey); // Redis에 존재하는지 확인
         if (!isExist) {
