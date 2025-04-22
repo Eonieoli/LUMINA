@@ -69,7 +69,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String refresh = jwtUtil.createJwt("refresh", nickname, Long.parseLong(jwtRefreshExp)); // 1일 유효
 
         // Redis에 Refresh Token 저장
-        String userKey = "refresh:" + userRepository.findUserIdByNickname(nickname) + ":" + deviceType;
+        String userKey = "refresh:" + userRepository.findIdByNickname(nickname) + ":" + deviceType;
         redisUtil.setex(userKey, refresh, Long.parseLong(jwtRedisExp)); // 1일 TTL
 
         // 클라이언트에 Access Token 및 Refresh Token 쿠키로 설정

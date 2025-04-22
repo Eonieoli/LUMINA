@@ -71,12 +71,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     0,
                     0,
                     0,
+                    0,
                     "ROLE_USER",
                     true
             );
 
             User savedUser = userRepository.save(user);
-            String nickname = formattedName + savedUser.getUserId();
+            String nickname = formattedName + savedUser.getId();
             savedUser.createNickname(nickname);
             userRepository.save(savedUser);
         }

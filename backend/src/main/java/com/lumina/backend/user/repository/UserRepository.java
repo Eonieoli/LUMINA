@@ -23,8 +23,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @param nickname 닉네임
      * @return 사용자 ID
      */
-    @Query("SELECT u.userId FROM User u WHERE u.nickname = :nickname")
-    Long findUserIdByNickname(@Param("nickname") String nickname);
+    @Query("SELECT u.Id FROM User u WHERE u.nickname = :nickname")
+    Long findIdByNickname(@Param("nickname") String nickname);
 
     /**
      * 소셜 ID로 닉네임을 조회합니다.

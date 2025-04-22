@@ -76,7 +76,7 @@ public class OAuthServiceImpl implements OAuthService {
         String nickname = jwtUtil.getNickname(refresh);
         String userAgent = request.getHeader("User-Agent").toLowerCase();
         String deviceType = getDeviceType(userAgent); // 기기 유형 판별
-        String userKey = "refresh:" + userRepository.findUserIdByNickname(nickname) + ":" + deviceType; // Redis 키 생성;
+        String userKey = "refresh:" + userRepository.findIdByNickname(nickname) + ":" + deviceType; // Redis 키 생성;
 
         // Redis에 저장된 리프레시 토큰 존재 여부 확인
         Boolean isExist = redisUtil.exists(userKey);
@@ -131,7 +131,7 @@ public class OAuthServiceImpl implements OAuthService {
         // JWT에서 닉네임 추출
         String nickname = jwtUtil.getNickname(access);
         // 닉네임으로 사용자 ID 조회
-        Long userId = userRepository.findUserIdByNickname(nickname);
+        Long userId = userRepository.findIdByNickname(nickname);
 
         return userId;
     }
