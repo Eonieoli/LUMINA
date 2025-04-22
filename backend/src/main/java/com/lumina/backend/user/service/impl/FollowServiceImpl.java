@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -170,4 +171,26 @@ public class FollowServiceImpl implements FollowService {
         return responseData;
     }
 
+
+    /**
+     * 현재 사용자의 팔로워를 삭제하는 메서드
+     *
+     * @param myId 현재 로그인한 사용자의 ID
+     * @param userId 삭제할 팔로워의 ID
+     */
+    @Override
+    public void deleteMyFollower(
+            Long myId, Long userId) {
+
+        if (userId == null || userId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다.");
+        }
+
+        // 팔로워 관계 조회
+        Follow follow = followRepository.findByFollowerIdAndFollowingId(userId, myId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "팔로워 관계를 찾을 수 없음"));
+
+        // 팔로워 관계가 존재하면 삭제
+        followRepository.delete(follow);
+    }
 }

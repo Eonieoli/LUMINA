@@ -86,4 +86,22 @@ public class FollowController {
         return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", reponse));
     }
 
+
+    /**
+     * 현재 사용자의 팔로워를 삭제하는 엔드포인트
+     *
+     * @param request HTTP 요청 객체 (현재 사용자 인증 정보 포함)
+     * @param userId  삭제할 팔로워의 ID
+     * @return ResponseEntity<BaseResponse < Void>> 삭제 결과 응답
+     */
+    @DeleteMapping("/follower/{userId}")
+    public ResponseEntity<BaseResponse<Void>> deleteMyFollower(
+            HttpServletRequest request,
+            @PathVariable Long userId) {
+
+        Long myId = oAuthService.findIdByToken(request);
+        followService.deleteMyFollower(myId, userId);
+
+        return ResponseEntity.ok(BaseResponse.withMessage("팔로워 삭제 완료"));
+    }
 }
