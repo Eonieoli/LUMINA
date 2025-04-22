@@ -1,9 +1,11 @@
 package com.lumina.backend.user.controller;
 
 import com.lumina.backend.common.exception.CustomException;
+import com.lumina.backend.common.model.response.BaseResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -35,5 +37,17 @@ public class OAuthController {
             throw new CustomException(HttpStatus.BAD_REQUEST, "지원하지 않는 로그인 타입입니다: " + type);
         }
     }
+
+
+    /**
+     * 사용자 로그아웃을 처리합니다.
+     * 로그아웃 완료 메시지를 반환합니다.
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<BaseResponse<Void>> redirectToGoogleLogout() {
+        BaseResponse<Void> baseResponse = BaseResponse.withMessage("로그아웃 완료");
+        return ResponseEntity.ok(baseResponse);
+    }
+
 }
 
