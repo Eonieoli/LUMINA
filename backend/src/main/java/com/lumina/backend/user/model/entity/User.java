@@ -24,7 +24,7 @@ public class User extends BaseEntity {
     @Column(name = "social_type", nullable = false)
     private String socialType;
 
-    @Column(name = "nickname", nullable = true, length = 10)
+    @Column(name = "nickname", nullable = true, length = 20)
     private String nickname;
 
     @Column(name = "profile_image", nullable = true, length = 300)

@@ -34,4 +34,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     @Query("SELECT u.nickname FROM User u WHERE u.socialId = :socialId")
     String findNicknameBySocialId(@Param("socialId") String socialId);
+
+    /**
+     * 닉네임으로 사용자 엔티티를 조회합니다.
+     *
+     * @param nickname 닉네임
+     * @return User 엔티티
+     */
+    Optional<User> findByNickname(String nickname);
+
+    /**
+     * 사용자 ID로 프로필 이미지를 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 프로필 이미지 URL
+     */
+    @Query("SELECT u.profileImage FROM User u WHERE u.id = :userId")
+    String findProfileImageByUserId(@Param("userId") Long userId);
 }

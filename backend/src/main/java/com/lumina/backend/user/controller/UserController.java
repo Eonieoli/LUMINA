@@ -1,17 +1,18 @@
 package com.lumina.backend.user.controller;
 
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
 import com.lumina.backend.user.model.response.GetUserProfileResponse;
 import com.lumina.backend.user.service.OAuthService;
 import com.lumina.backend.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 /**
  * 사용자 관련 API를 처리하는 컨트롤러
@@ -59,5 +60,26 @@ public class UserController {
         GetUserProfileResponse getUserProfileResponse = userService.getUserProfile(myId, userId);
 
         return ResponseEntity.ok(BaseResponse.success("유저 프로필 조회 성공", getUserProfileResponse));
+    }
+
+
+    /**
+     * 현재 사용자의 프로필 정보를 수정하는 엔드포인트
+     *
+     * @param response               HTTP 응답 객체
+     * @param request                HTTP 요청 객체 (현재 사용자 인증 정보 포함)
+     * @param updateMyProfileRequest 수정할 프로필 정보
+     * @return ResponseEntity<BaseResponse < Void>> 수정 결과 응답
+     */
+    @PatchMapping("/profile")
+    public ResponseEntity<BaseResponse<Void>> updateMyProfile(
+            HttpServletResponse response,
+            HttpServletRequest request,
+            @ModelAttribute UpdateMyProfileRequest updateMyProfileRequest) throws IOException {
+
+        Long userId = oAuthService.findIdByToken(request);
+        userService.updateMyProfile(userId, request, updateMyProfileRequest, response);
+
+        return ResponseEntity.ok(BaseResponse.withMessage("프로필 수정 완료"));
     }
 }
