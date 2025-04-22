@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class GetMyProfileResponse {
+public class GetUserProfileResponse {
 
     private Long userId;
     private String nickname;
@@ -15,4 +15,5 @@ public class GetMyProfileResponse {
     private int grade;
     private int followerCnt;
     private int followingCnt;
+    private Boolean isFollowing;
 }
