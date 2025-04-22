@@ -5,6 +5,8 @@ import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Optional;
+
 public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
@@ -13,7 +15,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @param socialId 소셜 로그인 ID
      * @return User 엔티티
      */
-    User findBySocialId(String socialId);
+    Optional<User> findBySocialId(String socialId);
 
     /**
      * 닉네임으로 사용자 ID를 조회합니다.
@@ -22,7 +24,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return 사용자 ID
      */
     @Query("SELECT u.userId FROM User u WHERE u.nickname = :nickname")
-    Long findIdByNickname(@Param("nickname") String nickname);
+    Long findUserIdByNickname(@Param("nickname") String nickname);
 
     /**
      * 소셜 ID로 닉네임을 조회합니다.

@@ -24,7 +24,7 @@ public class User extends BaseEntity {
     @Column(name = "social_type", nullable = false)
     private String socialType;
 
-    @Column(name = "nickname", nullable = false, length = 10)
+    @Column(name = "nickname", nullable = true, length = 10)
     private String nickname;
 
     @Column(name = "profile_image", nullable = true, length = 300)
@@ -48,11 +48,10 @@ public class User extends BaseEntity {
     @Column(name = "user_status", nullable = false)
     private Boolean userStatus;
 
-    public User(String socialId, String socialType, String nickname, String profileImage, String message,
+    public User(String socialId, String socialType, String profileImage, String message,
             Integer point, Integer grade, Integer positiveness, String role, Boolean userStatus) {
         this.socialId = socialId;
         this.socialType = socialType;
-        this.nickname = nickname;
         this.profileImage = profileImage;
         this.message = message;
         this.point = point;
@@ -60,6 +59,29 @@ public class User extends BaseEntity {
         this.positiveness = positiveness;
         this.role = role;
         this.userStatus = userStatus;
+    }
+
+    /**
+     * 사용자 닉네임을 생성합니다.
+     *
+     * @param nickname      새로운 닉네임
+     */
+    public void createNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    /**
+     * 사용자 탈퇴를 합니다.
+     */
+    public void deleteUser() {
+        this.socialId = "-";
+        this.profileImage = null;
+        this.nickname = "(알수없음)";
+        this.message = null;
+        this.point = -1;
+        this.grade = -1;
+        this.positiveness = -101;
+        this.userStatus = false;
     }
 
     /**

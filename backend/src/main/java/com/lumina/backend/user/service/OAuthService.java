@@ -20,7 +20,7 @@ public interface OAuthService {
     /**
      * 현재 로그인한 사용자의 ID를 닉네임을 통해 조회하는 메서드
      */
-    Long findIdByNickname(HttpServletRequest request);
+    Long findIdByToken(HttpServletRequest request);
 
 
     /**

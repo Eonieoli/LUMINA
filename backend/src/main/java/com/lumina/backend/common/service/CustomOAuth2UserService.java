@@ -1,5 +1,6 @@
 package com.lumina.backend.common.service;
 
+import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.user.model.dto.CustomOAuth2User;
 import com.lumina.backend.user.model.dto.UserDto;
 import com.lumina.backend.user.model.entity.User;
@@ -8,6 +9,7 @@ import com.lumina.backend.user.model.response.KakaoResponse;
 import com.lumina.backend.user.model.response.OAuth2Response;
 import com.lumina.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -56,14 +58,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String formattedName = oAuth2Response.getName() + "_" + registrationId;
 
         // 소셜 ID로 기존 사용자 조회
-        User existData = userRepository.findBySocialId(oAuth2Response.getProviderId());
+        User existData = userRepository.findBySocialId(oAuth2Response.getProviderId())
+                .orElse(null);
 
         if (existData == null) {
             // 기존 데이터가 없을 경우 새 사용자 생성 및 저장
             User user = new User(
                     oAuth2Response.getProviderId(),
                     oAuth2Response.getProvider(),
-                    formattedName, // 변환된 이름 사용
                     oAuth2Response.getProfileImage(),
                     "상태메시지를 작성해주세요!",
                     0,
@@ -73,7 +75,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     true
             );
 
-            userRepository.save(user);
+            User savedUser = userRepository.save(user);
+            String nickname = formattedName + savedUser.getUserId();
+            savedUser.createNickname(nickname);
+            userRepository.save(savedUser);
         }
 
         // 사용자 정보를 UserDto에 매핑 (새 사용자든 기존 사용자든 동일한 처리)

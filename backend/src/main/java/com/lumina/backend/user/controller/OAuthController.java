@@ -2,6 +2,8 @@ package com.lumina.backend.user.controller;
 
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.user.service.OAuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,8 @@ import java.io.IOException;
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
 public class OAuthController {
+
+    private final OAuthService oAuthService;
 
 
     /**
@@ -44,10 +48,24 @@ public class OAuthController {
      * 로그아웃 완료 메시지를 반환합니다.
      */
     @PostMapping("/logout")
-    public ResponseEntity<BaseResponse<Void>> redirectToGoogleLogout() {
-        BaseResponse<Void> baseResponse = BaseResponse.withMessage("로그아웃 완료");
-        return ResponseEntity.ok(baseResponse);
+    public ResponseEntity<BaseResponse<Void>> redirectToLogout() {
+        //logoutFilter 에서 로그아웃 진행 후 응답 반환
+        return ResponseEntity.ok(BaseResponse.withMessage("로그아웃 완료"));
     }
 
+
+    /**
+     * 회원 탈퇴를 처리합니다.
+     * 회원탈퇴 완료 메시지를 반환합니다.
+     */
+    @GetMapping("/delete")
+    public ResponseEntity<BaseResponse<Void>> deleteUser(
+            HttpServletRequest request, HttpServletResponse response) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        oAuthService.deleteUser(userId, request, response);
+
+        return ResponseEntity.ok(BaseResponse.withMessage("회원탈퇴 완료"));
+    }
 }
 
