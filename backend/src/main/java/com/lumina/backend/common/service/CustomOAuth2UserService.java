@@ -1,6 +1,7 @@
 package com.lumina.backend.common.service;
 
 import com.lumina.backend.common.exception.CustomException;
+import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.user.model.dto.CustomOAuth2User;
 import com.lumina.backend.user.model.dto.UserDto;
 import com.lumina.backend.user.model.entity.User;
@@ -23,6 +24,8 @@ import java.util.Map;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+
+    private final RedisUtil redisUtil;
 
 
     /**
@@ -80,6 +83,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             String nickname = formattedName + savedUser.getId();
             savedUser.createNickname(nickname);
             userRepository.save(savedUser);
+
+            String rankKey = "sum-point:rank";
+            String userKey = "user:" + savedUser.getId();
+
+            redisUtil.addSumPointToZSetWithTTL(rankKey, userKey, 0);
         }
 
         // 사용자 정보를 UserDto에 매핑 (새 사용자든 기존 사용자든 동일한 처리)
