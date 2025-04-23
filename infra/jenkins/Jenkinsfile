@@ -33,6 +33,12 @@ pipeline {
                         writeFile file: '.env.front', text: envFrontContent
                     }
                 }
+                withCredentials([file(credentialsId: 'htpasswd-content', variable: "HTPASSWD_PATH")]) {
+                    script {
+                        def htpasswdContent = readFile(HTPASSWD_PATH)
+                        writeFile file: '.htpasswd', text: htpasswdContent
+                    }
+                }
             }
         }
 
@@ -44,7 +50,7 @@ pipeline {
                             branch 'develop'
                             branch 'frontend'
                             branch 'backend'
-                            branch 'feat/S12P31S306-30-jenkins-ci-cd/infra'
+                            branch 'feat/S12P31S306-43-prometheus-grafana/infra'
                         }
                     }
                     stages {
@@ -70,13 +76,18 @@ pipeline {
                         stage('Deploy to GCP') {
                             steps {
                                 sshagent(credentials: ['gcp-ssh-key']) {
+                                    // 애플리케이션 배포
                                     sh "scp -o StrictHostKeyChecking=no .env ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/.env"
-                                    sh "scp -o StrictHostKeyChecking=no .env.front ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/.env.front"
-
-                                    sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/docker-compose.yml"
-                                    sh "scp -o StrictHostKeyChecking=no ./infra/proxy/nginx.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/nginx.conf"
-
                                     // sh "scp -o StrictHostKeyChecking=no ./backend/redis.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/redis.conf"
+                                    sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/docker-compose.yml"
+
+                                    // 프록시 설정 배포
+                                    sh "scp -o StrictHostKeyChecking=no .htpasswd ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/proxy/.htpasswd"
+                                    sh "scp -o StrictHostKeyChecking=no -r ./infra/proxy/* ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/proxy/"
+                                    
+                                    // 모니터링 파일 배포
+                                    sh "scp -o StrictHostKeyChecking=no -r ./infra/monitoring/* ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/monitoring/"
+
 
                                     sh """
                                     ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
@@ -84,6 +95,14 @@ pipeline {
                                         docker compose down --remove-orphans &&
                                         docker compose pull &&
                                         docker compose up -d &&
+                                        cd ${GCP_DEPLOY_PATH}/infra/proxy &&
+                                        docker compose -f proxy-compose.yml -p proxy down --remove-orphans &&
+                                        docker compose -f proxy-compose.yml -p proxy pull &&
+                                        docker compose -f proxy-compose.yml -p proxy up -d &&
+                                        cd ${GCP_DEPLOY_PATH}/infra/monitoring &&
+                                        docker compose -f monitoring-compose.yml -p monitoring down --remove-orphans &&
+                                        docker compose -f monitoring-compose.yml -p monitoring pull &&
+                                        docker compose -f monitoring-compose.yml -p monitoring up -d &&
                                         docker system prune -af
                                     '
                                     """
@@ -99,7 +118,7 @@ pipeline {
     post {
         success {
             script {
-                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'feat/S12P31S306-30-jenkins-ci-cd/infra') {
+                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'feat/S12P31S306-43-prometheus-grafana/infra') {
                     echo '개발 환경 배포 성공'
                 } else if (env.BRANCH_NAME == 'master') {
                     echo '운영 환경 배포 성공'
@@ -108,7 +127,7 @@ pipeline {
         }
         failure {
             script {
-                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'feat/S12P31S306-30-jenkins-ci-cd/infra') {
+                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'feat/S12P31S306-43-prometheus-grafana/infra') {
                     echo '개발 환경 배포 실패'
                 } else if (env.BRANCH_NAME == 'master') {
                     echo '운영 환경 배포 실패'
