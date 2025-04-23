@@ -3,6 +3,7 @@ package com.lumina.backend.user.service.impl;
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.jwt.JWTUtil;
 import com.lumina.backend.common.utill.RedisUtil;
+import com.lumina.backend.post.repository.PostRepository;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
@@ -29,6 +30,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
+    private final PostRepository postRepository;
 
     private final OAuthService oAuthService;
 
@@ -61,9 +63,17 @@ public class UserServiceImpl implements UserService {
         int followerCnt = followRepository.countByFollowingId(userId);
         int followingCnt = followRepository.countByFollowerId(userId);
 
+        String rankKey = "sum-point:rank";
+        String userKey = "user:" + userId;
+        Long rank = redisUtil.getUserRank(rankKey, userKey);
+        int sumPointRank = (rank != null) ? rank.intValue() + 1 : 0;
+
+        int postCnt = postRepository.countByUserId(userId);
+
         GetMyProfileResponse response = new GetMyProfileResponse(
-                user.getId(), user.getNickname(), user.getProfileImage(), user.getMessage(),
-                user.getPositiveness(), user.getGrade(), followerCnt, followingCnt
+                user.getId(), user.getNickname(), user.getProfileImage(),
+                user.getMessage(), user.getPositiveness(), user.getGrade(),
+                sumPointRank, postCnt, followerCnt, followingCnt
         );
 
         return response;
@@ -92,12 +102,19 @@ public class UserServiceImpl implements UserService {
         int followerCnt = followRepository.countByFollowingId(userId);
         int followingCnt = followRepository.countByFollowerId(userId);
 
+        String rankKey = "sum-point:rank";
+        String userKey = "user:" + userId;
+        Long rank = redisUtil.getUserRank(rankKey, userKey);
+        int sumPointRank = (rank != null) ? rank.intValue() + 1 : 0;
+
+        int postCnt = postRepository.countByUserId(userId);
+
         Boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, userId);
 
         GetUserProfileResponse response = new GetUserProfileResponse(
                 user.getId(), user.getNickname(), user.getProfileImage(),
                 user.getMessage(), user.getPositiveness(), user.getGrade(),
-                followerCnt, followingCnt, isFollowing
+                sumPointRank, postCnt, followerCnt, followingCnt, isFollowing
         );
 
         return response;

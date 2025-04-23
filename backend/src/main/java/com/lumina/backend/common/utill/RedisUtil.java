@@ -144,4 +144,16 @@ public class RedisUtil {
 
         return redisTemplate.opsForZSet().reverseRank(key, userId);
     }
+
+
+    /**
+     * ZSet에서 특정 사용자 ID를 삭제합니다.
+     *
+     * @param key    ZSet의 Redis 키
+     * @param userId 삭제할 사용자 ID
+     * @return 삭제된 요소의 개수(0 또는 1)
+     */
+    public Long removeUserFromZSet(String key, String userId) {
+        return redisTemplate.opsForZSet().remove(key, userId);
+    }
 }

@@ -13,6 +13,8 @@ public class GetUserProfileResponse {
     private String message;
     private int positiveness;
     private int grade;
+    private int rank;
+    private int postCnt;
     private int followerCnt;
     private int followingCnt;
     private Boolean isFollowing;

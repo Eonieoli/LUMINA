@@ -153,6 +153,11 @@ public class OAuthServiceImpl implements OAuthService {
         user.deleteUser();
         userRepository.save(user);
 
+        // Redis에서 rank 삭제
+        String rankKey = "sum-point:rank";
+        String rankUserKey = "user:" + userId;
+        redisUtil.removeUserFromZSet(rankKey, rankUserKey);
+
         // Redis에서 Refresh Token 삭제
         String userAgent = request.getHeader("User-Agent").toLowerCase();
         String deviceType = getDeviceType(userAgent); // 기기 유형 판별
