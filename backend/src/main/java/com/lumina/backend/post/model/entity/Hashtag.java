@@ -1,9 +1,7 @@
 package com.lumina.backend.post.model.entity;
 
 import com.lumina.backend.common.model.entity.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -14,4 +12,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @NoArgsConstructor
 @Table(name = "hashtag")
 public class Hashtag extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "hashtag_id")
+    private Long id;
+
+    @Column(name = "hashtag_name", nullable = false, length = 10)
+    private String hashtagName;
+
+    public Hashtag(String hashtagName) {
+        this.hashtagName = hashtagName;
+    }
 }

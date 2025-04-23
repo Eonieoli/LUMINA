@@ -1,7 +1,6 @@
 package com.lumina.backend.post.model.entity;
 
 import com.lumina.backend.common.model.entity.BaseEntity;
-import com.lumina.backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,24 +10,24 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "post_like")
-public class PostLike extends BaseEntity {
+@Table(name = "post_hashtag")
+public class PostHashtag extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "post_like_id")
+    @Column(name = "post_hashtag_id")
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
 
-    public PostLike(Post post, User user) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hashtag_id")
+    private Hashtag hashtag;
+
+    public PostHashtag(Post post, Hashtag hashtag) {
         this.post = post;
-        this.user = user;
+        this.hashtag = hashtag;
     }
 }
