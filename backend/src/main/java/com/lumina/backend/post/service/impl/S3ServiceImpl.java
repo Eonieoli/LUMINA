@@ -93,7 +93,7 @@ public class S3ServiceImpl implements S3Service {
         // URL에서 이미지 파일명을 추출
         String imageName = extractFileName(imageUrl, folderName);
         if (imageName == null) {
-            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "해당 이미지 없음");
+            return;
         }
 
         // S3에 삭제 요청 생성 및 실행
@@ -123,7 +123,7 @@ public class S3ServiceImpl implements S3Service {
             return url.substring(index + prefix.length());
         }
 
-        throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "해당 url 없음");
+        return null;
     }
 
 

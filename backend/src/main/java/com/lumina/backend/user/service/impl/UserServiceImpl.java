@@ -4,6 +4,7 @@ import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.jwt.JWTUtil;
 import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.post.repository.PostRepository;
+import com.lumina.backend.post.service.S3Service;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
@@ -33,6 +34,7 @@ public class UserServiceImpl implements UserService {
     private final PostRepository postRepository;
 
     private final OAuthService oAuthService;
+    private final S3Service s3Service;
 
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
@@ -158,10 +160,10 @@ public class UserServiceImpl implements UserService {
         String profileImageUrl = existingProfileImageUrl; // 기본적으로 기존 이미지 유지
 
         // 새 프로필 이미지가 들어왔을 때만 업데이트
-//        if (request.getProfileImageFile() != null && !request.getProfileImageFile().isEmpty()) {
-//            photoService.deleteProfileFile(existingProfileImageUrl); // 기존 이미지 삭제
-//            profileImageUrl = photoService.uploadProfileFile(request.getProfileImageFile());
-//        }
+        if (request.getProfileImageFile() != null && !request.getProfileImageFile().isEmpty()) {
+            s3Service.deleteImageFile(existingProfileImageUrl, "profile"); // 기존 이미지 삭제
+            profileImageUrl = s3Service.uploadImageFile(request.getProfileImageFile(), "profile");
+        }
 
         // 닉네임 변경 시 토큰 재발급
         if (!user.getNickname().equals(request.getNickname())) {
