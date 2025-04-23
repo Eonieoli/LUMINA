@@ -15,7 +15,17 @@ public interface S3Service {
     String uploadImageFile(MultipartFile file, String folderName) throws IOException;
 
     /**
+     * S3에서 프로필 이미지 삭제
+     */
+    void deleteImageFile(String imageUrl, String folderName);
+
+    /**
+     * permanent 폴더 파일명 추출
+     */
+    String extractFileName(String url, String folderName);
+
+    /**
      * S3 파일 URL 생성
      */
-    String getFileUrl(String folder, String fileName);
+    String getFileUrl(String folderName, String fileName);
 }

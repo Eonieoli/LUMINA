@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
@@ -64,20 +65,67 @@ public class S3ServiceImpl implements S3Service {
     /**
      * S3 버킷 내 특정 폴더와 파일명을 기반으로 파일 URL을 생성하는 메서드
      *
-     * @param folder 폴더 이름 (예: "profile/", "permanent/")
+     * @param folderName 폴더 이름 (예: "profile/", "post/")
      * @param fileName 파일 이름
      * @return String 생성된 파일 URL
      */
     @Override
     public String getFileUrl(
-            String folder, String fileName) {
+            String folderName, String fileName) {
 
         return String.format("https://%s.s3.%s.amazonaws.com/%s%s",
                 bucketName,
                 s3Client.serviceClientConfiguration().region(),
-                folder,
+                folderName,
                 fileName);
     }
+
+
+    /**
+     * S3에서 이미지를 삭제하는 메서드
+     *
+     * @param imageUrl 삭제할 이미지의 URL
+     */
+    @Override
+    public void deleteImageFile(
+            String imageUrl, String folderName) {
+
+        // URL에서 이미지 파일명을 추출
+        String imageName = extractFileName(imageUrl, folderName);
+        if (imageName == null) {
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "해당 이미지 없음");
+        }
+
+        // S3에 삭제 요청 생성 및 실행
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(folderName + "/" + imageName)
+                .build();
+
+        s3Client.deleteObject(deleteObjectRequest);
+    }
+
+
+    /**
+     * URL에서 permanent 폴더의 파일명을 추출하는 메서드
+     *
+     * @param url 파일 URL
+     * @return String 추출된 파일명 (없으면 null 반환)
+     */
+    @Override
+    public String extractFileName(
+            String url, String folderName) {
+
+        String prefix = folderName + "/";
+        int index = url.indexOf(prefix);
+
+        if (index != -1) {
+            return url.substring(index + prefix.length());
+        }
+
+        throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "해당 url 없음");
+    }
+
 
 
     /**
