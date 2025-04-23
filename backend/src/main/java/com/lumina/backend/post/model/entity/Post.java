@@ -19,7 +19,7 @@ public class Post extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "post_id")
+    @Column(name = "post_id", nullable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

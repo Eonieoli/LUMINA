@@ -1,9 +1,8 @@
 package com.lumina.backend.post.model.entity;
 
 import com.lumina.backend.common.model.entity.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Table;
+import com.lumina.backend.user.model.entity.User;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -14,4 +13,31 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @NoArgsConstructor
 @Table(name = "comment")
 public class Comment extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "comment_id", nullable = false)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_comment_id")
+    private Comment parentComment;
+
+    @Column(name = "comment_content", nullable = false, length = 300)
+    private String commentContent;
+
+    public Comment(User user, Post post, Comment parentComment, String commentContent) {
+        this.user = user;
+        this.post = post;
+        this.parentComment = parentComment;
+        this.commentContent = commentContent;
+    }
 }

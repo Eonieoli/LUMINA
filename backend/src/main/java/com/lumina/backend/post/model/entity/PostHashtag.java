@@ -15,15 +15,15 @@ public class PostHashtag extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "post_hashtag_id")
+    @Column(name = "post_hashtag_id", nullable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hashtag_id")
+    @JoinColumn(name = "hashtag_id", nullable = false)
     private Hashtag hashtag;
 
     public PostHashtag(Post post, Hashtag hashtag) {

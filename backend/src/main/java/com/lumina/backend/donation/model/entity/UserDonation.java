@@ -1,8 +1,6 @@
-package com.lumina.backend.category.model.entity;
+package com.lumina.backend.donation.model.entity;
 
-import com.lumina.backend.common.model.entity.BaseEntity;
-import com.lumina.backend.post.model.entity.Hashtag;
-import com.lumina.backend.post.model.entity.Post;
+import com.lumina.backend.category.model.entity.Category;
 import com.lumina.backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -13,12 +11,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "user_category")
-public class UserCategory extends BaseEntity {
+@Table(name = "user_donation")
+public class UserDonation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_category_id", nullable = false)
+    @Column(name = "user_donation_id", nullable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -26,11 +24,15 @@ public class UserCategory extends BaseEntity {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @JoinColumn(name = "donation_id", nullable = false)
+    private Donation donation;
 
-    public UserCategory(User user, Category category) {
+    @Column(name = "registration", nullable = false)
+    private String registration;
+
+    public UserDonation(User user, Donation donation, String registration) {
         this.user = user;
-        this.category = category;
+        this.donation = donation;
+        this.registration = registration;
     }
 }
