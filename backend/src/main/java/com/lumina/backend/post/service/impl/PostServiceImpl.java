@@ -7,19 +7,25 @@ import com.lumina.backend.post.model.entity.Hashtag;
 import com.lumina.backend.post.model.entity.Post;
 import com.lumina.backend.post.model.entity.PostHashtag;
 import com.lumina.backend.post.model.request.UploadPostRequest;
-import com.lumina.backend.post.repository.HashtagRepository;
-import com.lumina.backend.post.repository.PostHashtagRepository;
-import com.lumina.backend.post.repository.PostRepository;
+import com.lumina.backend.post.model.response.GetPostResponse;
+import com.lumina.backend.post.repository.*;
 import com.lumina.backend.post.service.PostService;
 import com.lumina.backend.post.service.S3Service;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +36,11 @@ public class PostServiceImpl implements PostService {
     private final CategoryRepository categoryRepository;
     private final HashtagRepository hashtagRepository;
     private final PostHashtagRepository postHashtagRepository;
+    private final PostLikeRepository postLikeRepository;
+    private final CommentRepository commentRepository;
 
     private final S3Service s3Service;
+
 
     /**
      * 게시물을 업로드하는 메서드
@@ -79,5 +88,55 @@ public class PostServiceImpl implements PostService {
                 postHashtagRepository.save(postHashtag);
             }
         }
+    }
+
+
+    @Override
+    public Map<String, Object> getPosts(Long myId, Long userId, String categoryName, int pageNum) {
+
+        if (pageNum < 1) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
+        }
+
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> postPage;
+
+        if (userId != null) {
+            // 특정 유저 게시물 조회
+            postPage = postRepository.findByUserId(userId, pageRequest);
+
+        } else if (categoryName != null) {
+            // 특정 카테고리 게시물 조회
+            Long categoryId = categoryRepository.findIdByCategoryName(categoryName);
+            postPage = postRepository.findByCategoryId(categoryId, pageRequest);
+
+        } else {
+            // 전체 게시물 조회
+            postPage = postRepository.findAll(pageRequest);
+        }
+
+        List<GetPostResponse> posts = postPage.getContent().stream()
+                .map(post -> {
+                    User user = post.getUser();
+                    Category category = post.getCategory();
+                    List<String> hashtagList = postHashtagRepository.findHashtagNamesByPostId(post.getId());
+                    int likeCnt = postLikeRepository.countByPostId(post.getId());
+                    int commentCnt = commentRepository.countByPostId(post.getId());
+                    Boolean isLike = postLikeRepository.existsByUserIdAndPostId(myId, post.getId());
+
+                    return new GetPostResponse(
+                            post.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
+                            post.getPostImage(), post.getPostContent(), category.getCategoryName(),
+                            hashtagList, likeCnt, commentCnt, isLike
+                    );
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalPages", postPage.getTotalPages());
+        result.put("currentPage", pageNum);
+        result.put("posts", posts);
+
+        return result;
     }
 }
