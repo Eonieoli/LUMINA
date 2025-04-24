@@ -12,6 +12,7 @@ import com.lumina.backend.post.repository.*;
 import com.lumina.backend.post.service.PostService;
 import com.lumina.backend.post.service.S3Service;
 import com.lumina.backend.user.model.entity.User;
+import com.lumina.backend.user.repository.FollowRepository;
 import com.lumina.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -38,6 +39,7 @@ public class PostServiceImpl implements PostService {
     private final PostHashtagRepository postHashtagRepository;
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
+    private final FollowRepository followRepository;
 
     private final S3Service s3Service;
 
@@ -111,8 +113,9 @@ public class PostServiceImpl implements PostService {
             postPage = postRepository.findByCategoryId(categoryId, pageRequest);
 
         } else {
-            // 전체 게시물 조회
-            postPage = postRepository.findAll(pageRequest);
+            // 팔로우한 사람의 게시물만 조회
+            List<Long> followingIds = followRepository.findFollowingIdsByFollowerId(myId);
+            postPage = postRepository.findByUserIdIn(followingIds, pageRequest);
         }
 
         List<GetPostResponse> posts = postPage.getContent().stream()

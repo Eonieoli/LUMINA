@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface PostRepository extends JpaRepository<Post, Long> {
 
     /**
@@ -23,5 +25,5 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByCategoryId(Long categoryId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "category"})
-    Page<Post> findAll(Pageable pageable);
+    Page<Post> findByUserIdIn(List<Long> userIds, Pageable pageable);
 }
