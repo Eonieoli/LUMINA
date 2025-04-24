@@ -161,8 +161,8 @@ public class UserServiceImpl implements UserService {
 
         // 새 프로필 이미지가 들어왔을 때만 업데이트
         if (request.getProfileImageFile() != null && !request.getProfileImageFile().isEmpty()) {
-            s3Service.deleteImageFile(existingProfileImageUrl, "profile"); // 기존 이미지 삭제
-            profileImageUrl = s3Service.uploadImageFile(request.getProfileImageFile(), "profile");
+            s3Service.deleteImageFile(existingProfileImageUrl, "profile/"); // 기존 이미지 삭제
+            profileImageUrl = s3Service.uploadImageFile(request.getProfileImageFile(), "profile/");
         }
 
         // 닉네임 변경 시 토큰 재발급
