@@ -29,4 +29,8 @@ public interface PostService {
     Boolean toggleLike(Long userId, Long photoId);
 
     void uploadComment(Long userId, Long postId, UploadCommentRequest request);
+
+    Map<String, Object> getComment(Long userId, Long postId, int pageNum);
+
+    Map<String, Object> getChildComment(Long userId, Long postId, Long ParentCommentId, int pageNum);
 }

@@ -103,4 +103,31 @@ public class PostController {
 
         return ResponseEntity.ok(BaseResponse.withMessage("댓글 등록 완료"));
     }
+
+
+    @GetMapping("/{postId}/comment")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getComment(
+            HttpServletRequest request,
+            @PathVariable Long postId,
+            @RequestParam int pageNum) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        Map<String, Object> response = postService.getComment(userId, postId, pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("댓글 조회 성공", response));
+    }
+
+
+    @GetMapping("/{postId}/comment/{commentId}")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getChildComment(
+            HttpServletRequest request,
+            @PathVariable Long postId,
+            @PathVariable Long commentId,
+            @RequestParam int pageNum) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        Map<String, Object> response = postService.getChildComment(userId, postId, commentId, pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("대댓글 조회 성공", response));
+    }
 }

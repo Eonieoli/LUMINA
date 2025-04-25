@@ -6,6 +6,8 @@ import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.post.model.entity.*;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.request.UploadPostRequest;
+import com.lumina.backend.post.model.response.GetChildCommentResponse;
+import com.lumina.backend.post.model.response.GetCommentResponse;
 import com.lumina.backend.post.model.response.GetPostResponse;
 import com.lumina.backend.post.repository.*;
 import com.lumina.backend.post.service.PostService;
@@ -25,7 +27,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +41,7 @@ public class PostServiceImpl implements PostService {
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
     private final FollowRepository followRepository;
+    private final CommentLikeRepository commentLikeRepository;
 
     private final S3Service s3Service;
 
@@ -235,5 +237,71 @@ public class PostServiceImpl implements PostService {
             comment = new Comment(user, post, request.getCommentContent());
         }
         commentRepository.save(comment);
+    }
+
+
+    @Override
+    public Map<String, Object> getComment(Long userId, Long postId, int pageNum) {
+
+        if (pageNum < 1) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
+        }
+
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Comment> commentPage = commentRepository.findByPostIdAndParentCommentIsNull(postId, pageRequest);
+
+        List<GetCommentResponse> comments = commentPage.getContent().stream()
+                .map(comment -> {
+                    User user = comment.getUser();
+                    int likeCnt = commentLikeRepository.countByCommentId(comment.getId());
+                    int childCommentCnt = commentRepository.countByParentCommentId(comment.getId());
+                    Boolean isLike = commentLikeRepository.existsByUserIdAndCommentId(userId, comment.getId());
+
+                    return new GetCommentResponse(
+                            comment.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
+                            comment.getCommentContent(), likeCnt, childCommentCnt, isLike
+                    );
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalPages", commentPage.getTotalPages());
+        result.put("currentPage", pageNum);
+        result.put("comments", comments);
+
+        return result;
+    }
+
+
+    @Override
+    public Map<String, Object> getChildComment(
+            Long userId, Long postId, Long ParentCommentId,  int pageNum) {
+
+        if (pageNum < 1) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
+        }
+
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Comment> commentPage = commentRepository.findByPostIdAndParentCommentId(postId, ParentCommentId, pageRequest);
+
+        List<GetChildCommentResponse> comments = commentPage.getContent().stream()
+                .map(comment -> {
+                    User user = comment.getUser();
+                    int likeCnt = commentLikeRepository.countByCommentId(comment.getId());
+                    Boolean isLike = commentLikeRepository.existsByUserIdAndCommentId(userId, comment.getId());
+
+                    return new GetChildCommentResponse(
+                            comment.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
+                            comment.getCommentContent(), likeCnt, isLike
+                    );
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalPages", commentPage.getTotalPages());
+        result.put("currentPage", pageNum);
+        result.put("comments", comments);
+
+        return result;
     }
 }
