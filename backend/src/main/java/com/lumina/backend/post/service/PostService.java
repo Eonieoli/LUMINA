@@ -38,4 +38,9 @@ public interface PostService {
      * 특정 댓글을 삭제하는 메서드
      */
     void deleteComment(Long userId, String role, Long postId, Long commentId);
+
+    /**
+     * 댓글에 대한 좋아요 토글 메서드
+     */
+    Boolean toggleCommentLike(Long userId, Long photoId, Long commentId);
 }

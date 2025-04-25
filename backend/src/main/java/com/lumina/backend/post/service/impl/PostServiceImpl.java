@@ -325,6 +325,7 @@ public class PostServiceImpl implements PostService {
         // 댓글 조회
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "댓글을 찾을수 없음: " + commentId ));
+
         // 해당 댓글이 해당 게시물의 댓글이 아닌 경우 에러 반환
         if (!comment.getPost().equals(post)) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "해당 게시글의 댓글이 아닙니다");
@@ -337,5 +338,54 @@ public class PostServiceImpl implements PostService {
 
         // mySQL에서 삭제
         commentRepository.delete(comment);
+    }
+
+
+    /**
+     * 댓글 좋아요를 토글하는 메서드
+     *
+     * @param postId     댓글 게시물의 ID
+     * @param commentId  좋아요 할 댓글의 ID
+     * @return 좋아요 상태 (true: 좋아요, false: 좋아요 취소)
+     */
+    @Override
+    @Transactional
+    public Boolean toggleCommentLike(
+            Long userId, Long postId, Long commentId) {
+
+        if (postId == null || postId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 게시물 ID입니다.");
+        }
+
+        if (commentId == null || commentId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 댓글 ID입니다.");
+        }
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 게시물을 찾을 수 없습니다. 게시물 ID: " + postId));
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다. 댓글 ID: " + commentId));
+
+        // 해당 댓글이 해당 게시물의 댓글이 아닌 경우 에러 반환
+        if (!comment.getPost().equals(post)) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "해당 게시글의 댓글이 아닙니다");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
+
+        CommentLike existCommentLike = commentLikeRepository.findByUserIdAndCommentId(userId, commentId)
+                .orElse(null);
+
+        if (existCommentLike != null) {
+            // 기존 좋아요 관계가 있으면 좋아요 취소
+            commentLikeRepository.delete(existCommentLike);
+            return false;
+        } else {
+            CommentLike commentLike = new CommentLike(user, comment);
+            commentLikeRepository.save(commentLike);
+        }
+        return true;
     }
 }
