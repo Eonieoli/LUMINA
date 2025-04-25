@@ -33,4 +33,9 @@ public interface PostService {
     Map<String, Object> getComment(Long userId, Long postId, int pageNum);
 
     Map<String, Object> getChildComment(Long userId, Long postId, Long ParentCommentId, int pageNum);
+
+    /**
+     * 특정 댓글을 삭제하는 메서드
+     */
+    void deleteComment(Long userId, String role, Long postId, Long commentId);
 }

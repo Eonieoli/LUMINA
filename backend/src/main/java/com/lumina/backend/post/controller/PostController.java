@@ -130,4 +130,25 @@ public class PostController {
 
         return ResponseEntity.ok(BaseResponse.success("대댓글 조회 성공", response));
     }
+
+
+    /**
+     * 특정 게시물을 삭제하는 엔드포인트
+     *
+     * @param request HTTP 요청 객체 (사용자 인증 정보 포함)
+     * @param postId 삭제할 게시물 ID
+     * @return ResponseEntity<BaseResponse<Void>> 삭제 결과 응답
+     */
+    @DeleteMapping("{postId}/comment/{commentId}")
+    public ResponseEntity<BaseResponse<Void>> deleteComment(
+            HttpServletRequest request,
+            @PathVariable Long postId,
+            @PathVariable Long commentId) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        String role = oAuthService.findRoleByToken(request);
+        postService.deleteComment(userId, role, postId, commentId);
+
+        return ResponseEntity.ok(BaseResponse.withMessage("댓글 삭제 완료"));
+    }
 }

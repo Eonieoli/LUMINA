@@ -304,4 +304,38 @@ public class PostServiceImpl implements PostService {
 
         return result;
     }
+
+
+    /**
+     * 특정 댓글을 삭제하는 메서드
+     *
+     * @param postId 댓글 게시물의 ID
+     * @param commentId 삭제할 댓글의 ID
+     * @param userId 삭제 요청을 한 사용자의 ID
+     */
+    @Override
+    @Transactional
+    public void deleteComment(
+            Long userId, String role, Long postId, Long commentId) {
+
+        // 게시물 조회
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "게시물을 찾을수 없음: " + postId ));
+
+        // 댓글 조회
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "댓글을 찾을수 없음: " + commentId ));
+        // 해당 댓글이 해당 게시물의 댓글이 아닌 경우 에러 반환
+        if (!comment.getPost().equals(post)) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "해당 게시글의 댓글이 아닙니다");
+        }
+
+        // 요청한 사용자 ID가 게시물 소유자가 아닐 경우 에러 반환
+        if (role.equals("ROLE_USER") && !comment.getUser().getId().equals(userId)) {
+            throw new CustomException(HttpStatus.FORBIDDEN, "댓글 삭제 권한이 없습니다.");
+        }
+
+        // mySQL에서 삭제
+        commentRepository.delete(comment);
+    }
 }
