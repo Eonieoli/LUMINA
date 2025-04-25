@@ -16,4 +16,9 @@ public interface PostService {
     void uploadPost(Long userId, UploadPostRequest request) throws IOException;
 
     Map<String, Object> getPosts(Long myId, Long userId, String categoryName, int pageNum);
+
+    /**
+     * 특정 게시물을 삭제하는 메서드
+     */
+    void deletePost(Long userId, String role, Long postId);
 }

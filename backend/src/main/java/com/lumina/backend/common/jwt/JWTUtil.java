@@ -95,11 +95,12 @@ public class JWTUtil {
      * @param expiredMs 만료 시간 (밀리초)
      * @return 생성된 JWT 토큰
      */
-    public String createJwt(String category, String nickname, Long expiredMs) {
+    public String createJwt(String category, String nickname, String role, Long expiredMs) {
 
         return Jwts.builder()
                 .claim("category", category)
                 .claim("nickname", nickname)
+                .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)

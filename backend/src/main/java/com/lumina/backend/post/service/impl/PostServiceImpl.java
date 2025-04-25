@@ -142,4 +142,32 @@ public class PostServiceImpl implements PostService {
 
         return result;
     }
+
+
+    /**
+     * 특정 게시물을 삭제하는 메서드
+     *
+     * @param postId 삭제할 게시물의 ID
+     * @param userId 삭제 요청을 한 사용자의 ID
+     */
+    @Override
+    @Transactional
+    public void deletePost(Long userId, String role, Long postId) {
+
+        // 게시물 조회
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "게시물을 찾을수 없음: " + postId ));
+
+        // 요청한 사용자 ID가 게시물 소유자가 아닐 경우 에러 반환
+        if (role.equals("ROLE_USER") && !post.getUser().getId().equals(userId)) {
+            throw new CustomException(HttpStatus.FORBIDDEN, "사진 삭제 권한이 없습니다.");
+        }
+
+        // mySQL에서 삭제
+        postRepository.delete(post);
+        // S3에서 삭제
+        if (post.getPostImage() != null) {
+            s3Service.deleteImageFile(post.getPostImage(), "post/");
+        }
+    }
 }

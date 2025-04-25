@@ -91,9 +91,10 @@ public class OAuthServiceImpl implements OAuthService {
             throw new CustomException(HttpStatus.BAD_REQUEST, "Redis의 값과 다름");
         }
 
+        String role = jwtUtil.getRole(refresh);
         // 새로운 액세스 및 리프레시 토큰 생성
-        String newAccess = jwtUtil.createJwt("access", nickname, Long.parseLong(jwtAccessExp)); // 10분 유효
-        String newRefresh = jwtUtil.createJwt("refresh", nickname, Long.parseLong(jwtRefreshExp)); // 1일 유효
+        String newAccess = jwtUtil.createJwt("access", nickname, role, Long.parseLong(jwtAccessExp)); // 10분 유효
+        String newRefresh = jwtUtil.createJwt("refresh", nickname, role, Long.parseLong(jwtRefreshExp)); // 1일 유효
 
         // Redis에 새 리프레시 토큰 저장
         redisUtil.setex(userKey, newRefresh, Long.parseLong(jwtRedisExp));
@@ -223,5 +224,34 @@ public class OAuthServiceImpl implements OAuthService {
         }
 
         return "pc";
+    }
+
+
+    /**
+     * 현재 로그인한 사용자의 Role을 토큰을 통해 조회하는 메서드
+     *
+     * @param request HTTP 요청 객체 (쿠키에서 AccessToken 추출)
+     * @return String 사용자 Role
+     */
+    @Override
+    public String findRoleByToken(
+            HttpServletRequest request) {
+
+        // 쿠키에서 AccessToken 추출
+        String access = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("access".equals(cookie.getName())) {
+                    access = cookie.getValue();
+                    break; // AccessToken을 찾았으므로 루프 종료
+                }
+            }
+        }
+
+        // JWT에서 role 추출
+        String role = jwtUtil.getRole(access);
+
+        return role;
     }
 }

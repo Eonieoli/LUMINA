@@ -32,17 +32,29 @@ public class PostController {
         return ResponseEntity.ok(BaseResponse.withMessage("게시물 등록 완료"));
     }
 
+
     @GetMapping("")
     public ResponseEntity<BaseResponse<Map<String, Object>>> getPost(
             HttpServletRequest request,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) String categoryName,
-            @RequestParam int pageNum
-    ) {
+            @RequestParam int pageNum) {
 
         Long myId = oAuthService.findIdByToken(request);
         Map<String, Object> response = postService.getPosts(myId, userId, categoryName, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("게시물 조회 성공", response));
+    }
+
+
+    @DeleteMapping("{postId}")
+    public ResponseEntity<BaseResponse<Void>> deletePost(
+            HttpServletRequest request, @PathVariable Long postId) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        String role = oAuthService.findRoleByToken(request);
+        postService.deletePost(userId, role, postId);
+
+        return ResponseEntity.ok(BaseResponse.withMessage("게시물 삭제 완료"));
     }
 }
