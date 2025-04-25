@@ -161,8 +161,8 @@ public class UserServiceImpl implements UserService {
 
         // 새 프로필 이미지가 들어왔을 때만 업데이트
         if (request.getProfileImageFile() != null && !request.getProfileImageFile().isEmpty()) {
-            s3Service.deleteImageFile(existingProfileImageUrl, "profile"); // 기존 이미지 삭제
-            profileImageUrl = s3Service.uploadImageFile(request.getProfileImageFile(), "profile");
+            s3Service.deleteImageFile(existingProfileImageUrl, "profile/"); // 기존 이미지 삭제
+            profileImageUrl = s3Service.uploadImageFile(request.getProfileImageFile(), "profile/");
         }
 
         // 닉네임 변경 시 토큰 재발급
@@ -171,10 +171,11 @@ public class UserServiceImpl implements UserService {
             String userAgent = httpRequest.getHeader("User-Agent").toLowerCase();
             String deviceType = oAuthService.getDeviceType(userAgent); // 기기 유형 판별
             String userKey = "refresh:" + userId + ":" + deviceType;
+            String role = oAuthService.findRoleByToken(httpRequest);
 
             // 새로운 액세스 및 리프레시 토큰 생성
-            String newAccess = jwtUtil.createJwt("access", request.getNickname(), Long.parseLong(jwtAccessExp)); // 10분 유효
-            String newRefresh = jwtUtil.createJwt("refresh", request.getNickname(), Long.parseLong(jwtRefreshExp)); // 1일 유효
+            String newAccess = jwtUtil.createJwt("access", request.getNickname(), role, Long.parseLong(jwtAccessExp)); // 10분 유효
+            String newRefresh = jwtUtil.createJwt("refresh", request.getNickname(), role, Long.parseLong(jwtRefreshExp)); // 1일 유효
 
             // Redis에 새 리프레시 토큰 저장
             redisUtil.setex(userKey, newRefresh, Long.parseLong(jwtRedisExp));

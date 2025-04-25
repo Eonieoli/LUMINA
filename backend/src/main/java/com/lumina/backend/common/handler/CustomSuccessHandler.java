@@ -59,14 +59,15 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         String socialId = customUserDetails.getSocialId();
         String nickname = userRepository.findNicknameBySocialId(socialId);
+        String role = userRepository.findRoleBySocialId(socialId);
 
         // 기기 정보 가져오기
         String userAgent = request.getHeader("User-Agent").toLowerCase();
         String deviceType = oAuthService.getDeviceType(userAgent); // 기기 유형 판별
 
         // Access Token 및 Refresh Token 생성
-        String access = jwtUtil.createJwt("access", nickname, Long.parseLong(jwtAccessExp)); // 10분 유효
-        String refresh = jwtUtil.createJwt("refresh", nickname, Long.parseLong(jwtRefreshExp)); // 1일 유효
+        String access = jwtUtil.createJwt("access", nickname, role, Long.parseLong(jwtAccessExp)); // 10분 유효
+        String refresh = jwtUtil.createJwt("refresh", nickname, role, Long.parseLong(jwtRefreshExp)); // 1일 유효
 
         // Redis에 Refresh Token 저장
         String userKey = "refresh:" + userRepository.findIdByNickname(nickname) + ":" + deviceType;

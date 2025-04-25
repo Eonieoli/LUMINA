@@ -42,5 +42,10 @@ public interface OAuthService {
     /**
      * User-Agent를 분석하여 기기 유형을 판별합니다.
      */
-    public String getDeviceType(String userAgent);
+    String getDeviceType(String userAgent);
+
+    /**
+     * 현재 로그인한 사용자의 Role을 토큰을 통해 조회하는 메서드
+     */
+    String findRoleByToken(HttpServletRequest request);
 }
