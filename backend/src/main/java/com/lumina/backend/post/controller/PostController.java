@@ -47,6 +47,13 @@ public class PostController {
     }
 
 
+    /**
+     * 특정 게시물을 삭제하는 엔드포인트
+     *
+     * @param request HTTP 요청 객체 (사용자 인증 정보 포함)
+     * @param postId 삭제할 게시물 ID
+     * @return ResponseEntity<BaseResponse<Void>> 삭제 결과 응답
+     */
     @DeleteMapping("{postId}")
     public ResponseEntity<BaseResponse<Void>> deletePost(
             HttpServletRequest request, @PathVariable Long postId) {
@@ -56,5 +63,29 @@ public class PostController {
         postService.deletePost(userId, role, postId);
 
         return ResponseEntity.ok(BaseResponse.withMessage("게시물 삭제 완료"));
+    }
+
+
+    /**
+     * 게시물 좋아요를 토글하는 API
+     *
+     * @param request   사용자 인증 정보를 포함한 HTTP 요청 객체
+     * @param postId   좋아요를 토글할 게시물의 ID
+     * @return ResponseEntity<BaseResponse<Void>> 좋아요 상태에 따른 응답 메시지 반환
+     */
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<BaseResponse<Void>> toggleLike(
+            HttpServletRequest request, @PathVariable Long postId) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        Boolean like = postService.toggleLike(userId, postId);
+
+        // 결과에 따른 응답 메시지 생성
+        BaseResponse<Void> baseResponse = like ?
+                BaseResponse.withMessage("게시물 좋아요 완료") :
+                BaseResponse.withMessage("게시물 좋아요 취소 완료");
+
+        // 응답 반환
+        return ResponseEntity.ok(baseResponse);
     }
 }

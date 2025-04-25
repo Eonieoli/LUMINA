@@ -6,6 +6,7 @@ import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.post.model.entity.Hashtag;
 import com.lumina.backend.post.model.entity.Post;
 import com.lumina.backend.post.model.entity.PostHashtag;
+import com.lumina.backend.post.model.entity.PostLike;
 import com.lumina.backend.post.model.request.UploadPostRequest;
 import com.lumina.backend.post.model.response.GetPostResponse;
 import com.lumina.backend.post.repository.*;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -169,5 +171,40 @@ public class PostServiceImpl implements PostService {
         if (post.getPostImage() != null) {
             s3Service.deleteImageFile(post.getPostImage(), "post/");
         }
+    }
+
+
+    /**
+     * 게시물에 대한 좋아요 토글 메서드
+     *
+     * @param userId  사용자 ID
+     * @param postId 게시물 ID
+     * @return 좋아요 상태 (true: 좋아요, false: 좋아요 취소)
+     */
+    @Override
+    public Boolean toggleLike(Long userId, Long postId) {
+
+        if (postId == null || postId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 게시물 ID입니다.");
+        }
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 게시물을 찾을 수 없습니다. 게시물 ID: " + postId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
+
+        PostLike existPostLike = postLikeRepository.findByUserIdAndPostId(userId, postId)
+                .orElse(null);
+
+        if (existPostLike != null) {
+            // 기존 좋아요 관계가 있으면 좋아요 취소
+            postLikeRepository.delete(existPostLike);
+            return false;
+        } else {
+            PostLike postLike = new PostLike(user, post);
+            postLikeRepository.save(postLike);
+        }
+        return true;
     }
 }

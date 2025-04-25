@@ -21,4 +21,9 @@ public interface PostService {
      * 특정 게시물을 삭제하는 메서드
      */
     void deletePost(Long userId, String role, Long postId);
+
+    /**
+     * 게시물에 대한 좋아요 토글 메서드
+     */
+    Boolean toggleLike(Long userId, Long photoId);
 }
