@@ -1,12 +1,14 @@
 package com.lumina.backend.post.controller;
 
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.request.UploadPostRequest;
 import com.lumina.backend.post.model.response.GetPostResponse;
 import com.lumina.backend.post.service.PostService;
 import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -87,5 +89,18 @@ public class PostController {
 
         // 응답 반환
         return ResponseEntity.ok(baseResponse);
+    }
+
+
+    @PostMapping("/{postId}/comment")
+    public ResponseEntity<BaseResponse<Void>> uploadComment(
+            HttpServletRequest request,
+            @RequestBody UploadCommentRequest uploadCommentRequest,
+            @PathVariable Long postId) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        postService.uploadComment(userId, postId, uploadCommentRequest);
+
+        return ResponseEntity.ok(BaseResponse.withMessage("댓글 등록 완료"));
     }
 }

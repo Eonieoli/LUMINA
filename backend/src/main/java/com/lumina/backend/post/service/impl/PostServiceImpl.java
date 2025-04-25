@@ -3,10 +3,8 @@ package com.lumina.backend.post.service.impl;
 import com.lumina.backend.category.model.entity.Category;
 import com.lumina.backend.category.repository.CategoryRepository;
 import com.lumina.backend.common.exception.CustomException;
-import com.lumina.backend.post.model.entity.Hashtag;
-import com.lumina.backend.post.model.entity.Post;
-import com.lumina.backend.post.model.entity.PostHashtag;
-import com.lumina.backend.post.model.entity.PostLike;
+import com.lumina.backend.post.model.entity.*;
+import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.request.UploadPostRequest;
 import com.lumina.backend.post.model.response.GetPostResponse;
 import com.lumina.backend.post.repository.*;
@@ -182,6 +180,7 @@ public class PostServiceImpl implements PostService {
      * @return 좋아요 상태 (true: 좋아요, false: 좋아요 취소)
      */
     @Override
+    @Transactional
     public Boolean toggleLike(Long userId, Long postId) {
 
         if (postId == null || postId <= 0) {
@@ -206,5 +205,35 @@ public class PostServiceImpl implements PostService {
             postLikeRepository.save(postLike);
         }
         return true;
+    }
+
+
+    @Override
+    @Transactional
+    public void uploadComment(Long userId, Long postId, UploadCommentRequest request) {
+
+        if (request.getCommentContent() == null || request.getCommentContent().trim().isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "댓글 내용을 입력해주세요.");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 게시물을 찾을 수 없습니다. 게시물 ID: " + postId));
+
+        Comment comment;
+        if (request.getParentCommentId() != null) {
+            Comment parentComment = commentRepository.findById(request.getParentCommentId())
+                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다. 댓글 ID: " + request.getParentCommentId()));
+            if (!parentComment.getPost().getId().equals(postId)) {
+                throw new CustomException(HttpStatus.BAD_REQUEST, "부모 댓글의 게시물 불일치");
+            }
+
+            comment = new Comment(user, post, parentComment, request.getCommentContent());
+        } else {
+            comment = new Comment(user, post, request.getCommentContent());
+        }
+        commentRepository.save(comment);
     }
 }

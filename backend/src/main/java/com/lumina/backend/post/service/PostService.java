@@ -1,5 +1,6 @@
 package com.lumina.backend.post.service;
 
+import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.request.UploadPostRequest;
 
 import java.io.IOException;
@@ -26,4 +27,6 @@ public interface PostService {
      * 게시물에 대한 좋아요 토글 메서드
      */
     Boolean toggleLike(Long userId, Long photoId);
+
+    void uploadComment(Long userId, Long postId, UploadCommentRequest request);
 }
