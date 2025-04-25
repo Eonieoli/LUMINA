@@ -44,7 +44,7 @@ public class S3ServiceImpl implements S3Service {
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
-                .key(folderName + "/" + fileName)
+                .key(folderName + fileName)
                 .contentType(file.getContentType())
                 .build();
 
@@ -54,7 +54,7 @@ public class S3ServiceImpl implements S3Service {
                     RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
             // 업로드된 파일의 URL 반환
-            return getFileUrl(folderName + "/", fileName);
+            return getFileUrl(folderName, fileName);
         } catch (Exception e) {
             // 업로드 실패 시 에러 로그 출력 및 예외 발생
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드 실패: " + e);
@@ -99,7 +99,7 @@ public class S3ServiceImpl implements S3Service {
         // S3에 삭제 요청 생성 및 실행
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                 .bucket(bucketName)
-                .key(folderName + "/" + imageName)
+                .key(folderName  + imageName)
                 .build();
 
         s3Client.deleteObject(deleteObjectRequest);
@@ -116,11 +116,10 @@ public class S3ServiceImpl implements S3Service {
     public String extractFileName(
             String url, String folderName) {
 
-        String prefix = folderName + "/";
-        int index = url.indexOf(prefix);
+        int index = url.indexOf(folderName);
 
         if (index != -1) {
-            return url.substring(index + prefix.length());
+            return url.substring(index + folderName.length());
         }
 
         return null;

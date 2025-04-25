@@ -51,4 +51,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     @Query("SELECT u.profileImage FROM User u WHERE u.id = :userId")
     String findProfileImageByUserId(@Param("userId") Long userId);
+
+    /**
+     * 소셜 ID로 Role을 조회합니다.
+     *
+     * @param socialId 소셜 로그인 ID
+     * @return role
+     */
+    @Query("SELECT u.role FROM User u WHERE u.socialId = :socialId")
+    String findRoleBySocialId(@Param("socialId") String socialId);
 }
