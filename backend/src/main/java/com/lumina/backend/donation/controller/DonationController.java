@@ -52,4 +52,15 @@ public class DonationController {
         // 응답 반환
         return ResponseEntity.ok(baseResponse);
     }
+
+
+    @GetMapping("/me")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getSubscribeDonation(
+            HttpServletRequest request, @RequestParam int pageNum) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        Map<String, Object> response = donationService.getSubscribeDonation(userId, pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("관심 기부처 조회 성공", response));
+    }
 }

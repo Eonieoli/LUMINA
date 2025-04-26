@@ -6,6 +6,7 @@ import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.donation.model.entity.Donation;
 import com.lumina.backend.donation.model.entity.UserDonation;
 import com.lumina.backend.donation.model.response.GetDonationResponse;
+import com.lumina.backend.donation.model.response.GetSubscribeDonationResponse;
 import com.lumina.backend.donation.repository.DonationRepository;
 import com.lumina.backend.donation.repository.UserDonationRepository;
 import com.lumina.backend.donation.service.DonationService;
@@ -92,5 +93,30 @@ public class DonationServiceImpl implements DonationService {
             userDonationRepository.save(userDonation);
         }
         return true;
+    }
+
+
+    @Override
+    public Map<String, Object> getSubscribeDonation(
+            Long userId, int pageNum) {
+
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<UserDonation> userDonationPage = userDonationRepository.findByUserIdAndRegistration(userId, "USER", pageRequest);
+
+        List<GetSubscribeDonationResponse> donationList = userDonationPage.getContent().stream()
+                .map(userDonation -> {
+                    Donation donation = userDonation.getDonation();
+                    return new GetSubscribeDonationResponse(
+                            donation.getId(), donation.getDonationName()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalPages", userDonationPage.getTotalPages());
+        result.put("currentPage", pageNum);
+        result.put("donations", donationList);
+
+        return result;
     }
 }
