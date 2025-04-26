@@ -111,6 +111,14 @@ public class User extends BaseEntity {
         this.point += point;
     }
 
+    /**
+     * 사용자의 누적포인트(리워드)를 업데이트합니다.
+     *
+     * @param point 추가할 포인트 값
+     */
+    public void updateSumPoint(Integer point) {
+        this.point += point;
+    }
 
     /**
      * 사용자의 등급을 업데이트합니다.

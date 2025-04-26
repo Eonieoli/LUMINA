@@ -1,5 +1,6 @@
 package com.lumina.backend.user.service;
 
+import com.lumina.backend.user.model.request.DoDonationRequest;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
 import com.lumina.backend.user.model.response.GetUserPointResponse;
@@ -27,4 +28,6 @@ public interface UserService {
     void updateMyProfile(Long userId, HttpServletRequest request, UpdateMyProfileRequest updateRequest, HttpServletResponse response) throws IOException;
 
     GetUserPointResponse getUserPoint(Long userId);
+
+    void doDonation(Long userId, DoDonationRequest request);
 }

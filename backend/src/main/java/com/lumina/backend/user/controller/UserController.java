@@ -1,6 +1,7 @@
 package com.lumina.backend.user.controller;
 
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.user.model.request.DoDonationRequest;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
 import com.lumina.backend.user.model.response.GetUserPointResponse;
@@ -93,5 +94,17 @@ public class UserController {
         GetUserPointResponse response = userService.getUserPoint(userId);
 
         return ResponseEntity.ok(BaseResponse.success("포인트 조회 성공", response));
+    }
+
+
+    @PostMapping("/donation")
+    public ResponseEntity<BaseResponse<Void>> doDonation(
+            HttpServletRequest request,
+            @RequestBody DoDonationRequest doDonationRequest) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        userService.doDonation(userId, doDonationRequest);
+
+        return ResponseEntity.ok(BaseResponse.withMessage("기부 완료"));
     }
 }
