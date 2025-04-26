@@ -179,4 +179,16 @@ public class PostController {
         // 응답 반환
         return ResponseEntity.ok(baseResponse);
     }
+
+
+    @GetMapping("/category")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getSubscribePost(
+            HttpServletRequest request,
+            @RequestParam int pageNum) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        Map<String, Object> response = postService.getSubscribePost(userId, pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("구독 카테고리 게시물 조회 성공", response));
+    }
 }
