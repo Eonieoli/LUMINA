@@ -43,4 +43,6 @@ public interface PostService {
      * 댓글에 대한 좋아요 토글 메서드
      */
     Boolean toggleCommentLike(Long userId, Long photoId, Long commentId);
+
+    Map<String, Object> getSubscribePost(Long userId, int pageNum);
 }
