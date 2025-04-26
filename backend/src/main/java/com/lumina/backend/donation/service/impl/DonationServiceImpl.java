@@ -1,15 +1,23 @@
 package com.lumina.backend.donation.service.impl;
 
+import com.lumina.backend.category.model.entity.Category;
+import com.lumina.backend.category.model.entity.UserCategory;
+import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.donation.model.entity.Donation;
+import com.lumina.backend.donation.model.entity.UserDonation;
 import com.lumina.backend.donation.model.response.GetDonationResponse;
 import com.lumina.backend.donation.repository.DonationRepository;
 import com.lumina.backend.donation.repository.UserDonationRepository;
 import com.lumina.backend.donation.service.DonationService;
+import com.lumina.backend.user.model.entity.User;
+import com.lumina.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +30,7 @@ public class DonationServiceImpl implements DonationService {
 
     private final DonationRepository donationRepository;
     private final UserDonationRepository userDonationRepository;
+    private final UserRepository userRepository;
 
 
     @Override
@@ -47,5 +56,41 @@ public class DonationServiceImpl implements DonationService {
         result.put("donations", donationList);
 
         return result;
+    }
+
+
+    /**
+     * 기부처 구독을 토글하는 API
+     *
+     * @param userId  사용자 ID
+     * @param donationId   구독을 토글할 기부처의 ID
+     * @return 구독 상태 (true: 구독, false: 구독 취소)
+     */
+    @Override
+    @Transactional
+    public Boolean toggleDonationSubscribe(Long userId, Long donationId) {
+
+        if (donationId == null || donationId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 기부처 ID입니다.");
+        }
+
+        Donation donation = donationRepository.findById(donationId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 기부처를 찾을 수 없습니다. 기부처 ID: " + donationId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
+
+        UserDonation existUserDonation = userDonationRepository.findByUserIdAndDonationId(userId, donationId)
+                .orElse(null);
+
+        if (existUserDonation != null) {
+            // 기존 구독 관계가 있으면 구독 취소
+            userDonationRepository.delete(existUserDonation);
+            return false;
+        } else {
+            UserDonation userDonation = new UserDonation(user, donation, "USER");
+            userDonationRepository.save(userDonation);
+        }
+        return true;
     }
 }

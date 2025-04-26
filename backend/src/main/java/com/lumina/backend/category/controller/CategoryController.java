@@ -39,11 +39,11 @@ public class CategoryController {
      * @return ResponseEntity<BaseResponse<Void>> 구독 상태에 따른 응답 메시지 반환
      */
     @PostMapping("/{categoryId}")
-    public ResponseEntity<BaseResponse<Void>> toggleSubscribe(
+    public ResponseEntity<BaseResponse<Void>> toggleCategorySubscribe(
             HttpServletRequest request, @PathVariable Long categoryId) {
 
         Long userId = oAuthService.findIdByToken(request);
-        Boolean subscribe = categoryService.toggleSubscribe(userId, categoryId);
+        Boolean subscribe = categoryService.toggleCategorySubscribe(userId, categoryId);
 
         // 결과에 따른 응답 메시지 생성
         BaseResponse<Void> baseResponse = subscribe ?

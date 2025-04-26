@@ -6,10 +6,7 @@ import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -30,5 +27,29 @@ public class DonationController {
         Map<String, Object> response = donationService.getDonation(userId, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("전체 기부처 조회 성공", response));
+    }
+
+
+    /**
+     * 기부처 구독을 토글하는 API
+     *
+     * @param request   사용자 인증 정보를 포함한 HTTP 요청 객체
+     * @param donationId   구독을 토글할 기부처의 ID
+     * @return ResponseEntity<BaseResponse<Void>> 구독 상태에 따른 응답 메시지 반환
+     */
+    @PostMapping("/{donationId}")
+    public ResponseEntity<BaseResponse<Void>> toggleDonationSubscribe(
+            HttpServletRequest request, @PathVariable Long donationId) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        Boolean subscribe = donationService.toggleDonationSubscribe(userId, donationId);
+
+        // 결과에 따른 응답 메시지 생성
+        BaseResponse<Void> baseResponse = subscribe ?
+                BaseResponse.withMessage("기부처 구독 완료") :
+                BaseResponse.withMessage("기부처 구독 취소 완료");
+
+        // 응답 반환
+        return ResponseEntity.ok(baseResponse);
     }
 }

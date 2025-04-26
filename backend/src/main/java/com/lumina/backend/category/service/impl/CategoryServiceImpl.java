@@ -55,7 +55,7 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     @Transactional
-    public Boolean toggleSubscribe(Long userId, Long categoryId) {
+    public Boolean toggleCategorySubscribe(Long userId, Long categoryId) {
 
         if (categoryId == null || categoryId <= 0) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 카테고리 ID입니다.");
