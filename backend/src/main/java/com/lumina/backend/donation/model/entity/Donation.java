@@ -1,6 +1,7 @@
 package com.lumina.backend.donation.model.entity;
 
 import com.lumina.backend.category.model.entity.Category;
+import com.lumina.backend.common.model.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Getter
 @NoArgsConstructor
 @Table(name = "donation")
-public class Donation {
+public class Donation extends BaseEntity {
 
 
     @Id
