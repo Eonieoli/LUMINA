@@ -8,6 +8,7 @@ import com.lumina.backend.post.service.S3Service;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
+import com.lumina.backend.user.model.response.GetUserPointResponse;
 import com.lumina.backend.user.model.response.GetUserProfileResponse;
 import com.lumina.backend.user.repository.FollowRepository;
 import com.lumina.backend.user.repository.UserRepository;
@@ -187,5 +188,15 @@ public class UserServiceImpl implements UserService {
 
         user.updateProfile(profileImageUrl, request.getNickname(), request.getMessage());
         userRepository.save(user);
+    }
+
+
+    @Override
+    public GetUserPointResponse getUserPoint(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
+
+        return new GetUserPointResponse(user.getId(), user.getNickname(), user.getPoint());
     }
 }

@@ -3,6 +3,7 @@ package com.lumina.backend.user.controller;
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
+import com.lumina.backend.user.model.response.GetUserPointResponse;
 import com.lumina.backend.user.model.response.GetUserProfileResponse;
 import com.lumina.backend.user.service.OAuthService;
 import com.lumina.backend.user.service.UserService;
@@ -81,5 +82,16 @@ public class UserController {
         userService.updateMyProfile(userId, request, updateMyProfileRequest, response);
 
         return ResponseEntity.ok(BaseResponse.withMessage("프로필 수정 완료"));
+    }
+
+
+    @GetMapping("/point")
+    public ResponseEntity<BaseResponse<GetUserPointResponse>> getUserPoint(
+            HttpServletRequest request) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        GetUserPointResponse response = userService.getUserPoint(userId);
+
+        return ResponseEntity.ok(BaseResponse.success("포인트 조회 성공", response));
     }
 }

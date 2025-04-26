@@ -2,6 +2,7 @@ package com.lumina.backend.user.service;
 
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
+import com.lumina.backend.user.model.response.GetUserPointResponse;
 import com.lumina.backend.user.model.response.GetUserProfileResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,4 +25,6 @@ public interface UserService {
      * 내 프로필을 수정합니다.
      */
     void updateMyProfile(Long userId, HttpServletRequest request, UpdateMyProfileRequest updateRequest, HttpServletResponse response) throws IOException;
+
+    GetUserPointResponse getUserPoint(Long userId);
 }
