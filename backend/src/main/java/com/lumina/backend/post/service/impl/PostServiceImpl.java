@@ -2,6 +2,7 @@ package com.lumina.backend.post.service.impl;
 
 import com.lumina.backend.category.model.entity.Category;
 import com.lumina.backend.category.repository.CategoryRepository;
+import com.lumina.backend.category.repository.UserCategoryRepository;
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.post.model.entity.*;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
@@ -42,6 +43,7 @@ public class PostServiceImpl implements PostService {
     private final CommentRepository commentRepository;
     private final FollowRepository followRepository;
     private final CommentLikeRepository commentLikeRepository;
+    private final UserCategoryRepository userCategoryRepository;
 
     private final S3Service s3Service;
 
@@ -387,5 +389,43 @@ public class PostServiceImpl implements PostService {
             commentLikeRepository.save(commentLike);
         }
         return true;
+    }
+
+
+    @Override
+    public Map<String, Object> getSubscribePost(Long userId, int pageNum) {
+
+        if (pageNum < 1) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
+        }
+
+        List<Long> subscribedCategoryIds = userCategoryRepository.findCategoryIdsByUserId(userId);
+
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> postPage = postRepository.findByCategoryIdIn(subscribedCategoryIds, pageRequest);
+
+        List<GetPostResponse> posts = postPage.getContent().stream()
+                .map(post -> {
+                    User user = post.getUser();
+                    Category category = post.getCategory();
+                    List<String> hashtagList = postHashtagRepository.findHashtagNamesByPostId(post.getId());
+                    int likeCnt = postLikeRepository.countByPostId(post.getId());
+                    int commentCnt = commentRepository.countByPostId(post.getId());
+                    Boolean isLike = postLikeRepository.existsByUserIdAndPostId(userId, post.getId());
+
+                    return new GetPostResponse(
+                            post.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
+                            post.getPostImage(), post.getPostContent(), category.getCategoryName(),
+                            hashtagList, likeCnt, commentCnt, isLike
+                    );
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalPages", postPage.getTotalPages());
+        result.put("currentPage", pageNum);
+        result.put("posts", posts);
+
+        return result;
     }
 }
