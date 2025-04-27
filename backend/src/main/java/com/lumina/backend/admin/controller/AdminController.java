@@ -1,5 +1,6 @@
 package com.lumina.backend.admin.controller;
 
+import com.lumina.backend.admin.model.response.GetUserPostResponse;
 import com.lumina.backend.admin.model.response.GetUserResponse;
 import com.lumina.backend.admin.service.AdminService;
 import com.lumina.backend.common.model.response.BaseResponse;
@@ -53,5 +54,18 @@ public class AdminController {
         Map<String, Object> response = adminService.getCurUser(userId, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("현재 접속 유저 조회 완료", response));
+    }
+
+
+    @GetMapping("/post")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getUserPost(
+            HttpServletRequest request,
+            @RequestParam Long userId,
+            @RequestParam int pageNum) {
+
+        Long myId = oAuthService.findIdByToken(request);
+        Map<String, Object> response = adminService.getUserPost(myId, userId, pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("유저 게시물 조회 완료", response));
     }
 }

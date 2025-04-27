@@ -11,4 +11,6 @@ public interface AdminService {
     void deleteUser(Long myId, Long userId);
 
     Map<String, Object> getCurUser(Long userId, int pageNum);
+
+    Map<String, Object> getUserPost(Long myId, Long userId, int pageNum);
 }

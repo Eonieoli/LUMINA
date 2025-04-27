@@ -1,9 +1,13 @@
 package com.lumina.backend.admin.service.impl;
 
+import com.lumina.backend.admin.model.response.GetUserPostResponse;
 import com.lumina.backend.admin.model.response.GetUserResponse;
 import com.lumina.backend.admin.service.AdminService;
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.utill.RedisUtil;
+import com.lumina.backend.post.model.entity.Post;
+import com.lumina.backend.post.repository.CommentRepository;
+import com.lumina.backend.post.repository.PostRepository;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.model.response.SearchUserResponse;
 import com.lumina.backend.user.repository.UserRepository;
@@ -26,6 +30,8 @@ import java.util.stream.Collectors;
 public class AdminServiceImpl implements AdminService {
 
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
     private final RedisUtil redisUtil;
 
@@ -106,10 +112,10 @@ public class AdminServiceImpl implements AdminService {
             throw new CustomException(HttpStatus.FORBIDDEN, "관리자만 접근할 수 있습니다.");
         }
 
-        // 1. Redis에서 접속자 키 조회
+        // Redis에서 접속자 키 조회
         Set<String> keys = redisUtil.getKeysByPattern("refresh:*:*");
 
-        // 2. 키에서 userId 추출
+        // 키에서 userId 추출
         Set<Long> userIds = keys.stream()
                 .map(key -> {
                     String[] parts = key.split(":");
@@ -117,17 +123,17 @@ public class AdminServiceImpl implements AdminService {
                 })
                 .collect(Collectors.toSet());
 
-        // 3. 페이징 처리
+        // 페이징 처리
         List<Long> userIdList = new ArrayList<>(userIds);
         int pageSize = 10;
         int fromIndex = Math.max(0, (pageNum - 1) * pageSize);
         int toIndex = Math.min(fromIndex + pageSize, userIdList.size());
         List<Long> pagedUserIds = userIdList.subList(fromIndex, toIndex);
 
-        // 4. 해당 유저 조회
+        // 해당 유저 조회
         List<User> users = userRepository.findAllById(pagedUserIds);
 
-        // 5. DTO 변환
+        // DTO 변환
         List<GetUserResponse> userResponses = users.stream()
                 .map(user -> new GetUserResponse(
                         user.getId(),
@@ -151,6 +157,42 @@ public class AdminServiceImpl implements AdminService {
         result.put("users", userResponses);
 
         return result;
+    }
+
+
+    @Override
+    public Map<String, Object> getUserPost(
+            Long myId, Long userId, int pageNum) {
+
+        Boolean isAdmin = checkAdmin(myId);
+
+        if (!isAdmin) {
+            throw new CustomException(HttpStatus.FORBIDDEN, "관리자만 접근할 수 있습니다.");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
+
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> postPage = postRepository.findByUserId(userId, pageRequest);
+
+        List<GetUserPostResponse> posts = postPage.getContent().stream()
+                .map(post -> {
+                    return new GetUserPostResponse(
+                            post.getId(),
+                            post.getPostImage(),
+                            post.getPostContent()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalPages", postPage.getTotalPages());
+        result.put("currentPage", pageNum);
+        result.put("posts", posts);
+
+        return result;
+
     }
 
 
