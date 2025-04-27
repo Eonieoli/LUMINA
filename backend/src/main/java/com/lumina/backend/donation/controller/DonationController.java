@@ -63,4 +63,21 @@ public class DonationController {
 
         return ResponseEntity.ok(BaseResponse.success("관심 기부처 조회 성공", response));
     }
+
+
+    /**
+     * 기부처를 검색하는 엔드포인트
+     *
+     * @param keyword 검색어 텍스트
+     * @return ResponseEntity<BaseResponse<Map<String, Object>>> 검색 결과 응답
+     */
+    @GetMapping("/search")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> searchDonation(
+            @RequestParam String keyword,
+            @RequestParam int pageNum) {
+
+        Map<String, Object> response = donationService.searchDonation(keyword, pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("기부처 검색 성공", response));
+    }
 }

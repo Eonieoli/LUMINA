@@ -7,10 +7,12 @@ import com.lumina.backend.donation.model.entity.Donation;
 import com.lumina.backend.donation.model.entity.UserDonation;
 import com.lumina.backend.donation.model.response.GetDonationResponse;
 import com.lumina.backend.donation.model.response.GetSubscribeDonationResponse;
+import com.lumina.backend.donation.model.response.SearchDonationResponse;
 import com.lumina.backend.donation.repository.DonationRepository;
 import com.lumina.backend.donation.repository.UserDonationRepository;
 import com.lumina.backend.donation.service.DonationService;
 import com.lumina.backend.user.model.entity.User;
+import com.lumina.backend.user.model.response.SearchUserResponse;
 import com.lumina.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -117,6 +119,39 @@ public class DonationServiceImpl implements DonationService {
         result.put("currentPage", pageNum);
         result.put("donations", donationList);
 
+        return result;
+    }
+
+
+    /**
+     * 기부처 검색 기능을 제공하는 메서드
+     *
+     * @param keyword 검색할 기부처 텍스트
+     * @return ResponseEntity<BaseResponse<Map<String, Object>>> 검색된 기부처 목록을 포함한 응답
+     */
+    @Override
+    public Map<String, Object> searchDonation(
+            String keyword, int pageNum) {
+
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Donation> donationPage = donationRepository.findByDonationNameContaining(keyword, pageRequest);
+
+        // 조회된 사용자 목록을 SearchDonationResponse DTO로 변환
+        List<SearchDonationResponse> donations = donationPage.getContent().stream()
+                .map(donation -> {
+                    return new SearchDonationResponse(
+                            donation.getId(),
+                            donation.getDonationName()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalPages", donationPage.getTotalPages());
+        result.put("currentPage", pageNum);
+        result.put("donations", donations);
+
+        // 3. 성공 응답 생성 및 반환
         return result;
     }
 }

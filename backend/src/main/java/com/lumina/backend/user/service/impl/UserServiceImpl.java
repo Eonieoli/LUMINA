@@ -273,7 +273,7 @@ public class UserServiceImpl implements UserService {
         Map<String, Object> result = new HashMap<>();
         result.put("totalPages", userPage.getTotalPages());
         result.put("currentPage", pageNum);
-        result.put("posts", users);
+        result.put("users", users);
 
         // 3. 성공 응답 생성 및 반환
         return result;
