@@ -10,10 +10,7 @@ import com.lumina.backend.post.service.S3Service;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.model.request.DoDonationRequest;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
-import com.lumina.backend.user.model.response.GetMyProfileResponse;
-import com.lumina.backend.user.model.response.GetUserPointResponse;
-import com.lumina.backend.user.model.response.GetUserProfileResponse;
-import com.lumina.backend.user.model.response.SearchUserResponse;
+import com.lumina.backend.user.model.response.*;
 import com.lumina.backend.user.repository.FollowRepository;
 import com.lumina.backend.user.repository.UserRepository;
 import com.lumina.backend.user.service.OAuthService;
@@ -30,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -277,5 +275,56 @@ public class UserServiceImpl implements UserService {
 
         // 3. 성공 응답 생성 및 반환
         return result;
+    }
+
+
+    @Override
+    public List<GetSumPointRankResponse> getSumPointRank(
+            Long userId) {
+
+        String rankKey = "sum-point:rank";
+        String userKey = "user:" + userId;
+        List<GetSumPointRankResponse> rankList = new ArrayList<>();
+
+        // 내 정보 세팅
+        User my = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
+        Long myRank = redisUtil.getUserRank(rankKey, userKey);
+
+        rankList.add(new GetSumPointRankResponse(
+                my.getId(),
+                my.getNickname(),
+                my.getProfileImage(),
+                my.getSumPoint(),
+                myRank.intValue() + 1
+        ));
+
+        // 10등까지의 랭킹 정보 가져오기
+        List<String> userKeys = redisUtil.getTopRankersInOrder(rankKey, 0, 9);
+
+        // 랭킹에 포함된 유저 정보 조회 (userId는 Long이므로 변환)
+        List<Long> userIds = userKeys.stream()
+                .map(key -> Long.parseLong(key.replace("user:", "")))
+                .toList();
+
+        Map<Long, User> userMap = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+
+        // 3. 10등까지의 정보 세팅
+        for (int i = 0; i < userIds.size(); i++) {
+            Long uid = userIds.get(i);
+            User user = userMap.get(uid);
+            if (user == null) continue; // 혹시라도 유저가 없는 경우 방어
+
+            rankList.add(new GetSumPointRankResponse(
+                    user.getId(),
+                    user.getNickname(),
+                    user.getProfileImage(),
+                    user.getPositiveness(),
+                    i + 1 // 1등부터 시작
+            ));
+        }
+
+        return rankList;
     }
 }

@@ -6,7 +6,6 @@ import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
 import com.lumina.backend.user.model.response.GetUserPointResponse;
 import com.lumina.backend.user.model.response.GetUserProfileResponse;
-import com.lumina.backend.user.model.response.SearchUserResponse;
 import com.lumina.backend.user.service.OAuthService;
 import com.lumina.backend.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 /**

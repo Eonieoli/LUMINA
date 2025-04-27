@@ -2,10 +2,7 @@ package com.lumina.backend.user.service;
 
 import com.lumina.backend.user.model.request.DoDonationRequest;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
-import com.lumina.backend.user.model.response.GetMyProfileResponse;
-import com.lumina.backend.user.model.response.GetUserPointResponse;
-import com.lumina.backend.user.model.response.GetUserProfileResponse;
-import com.lumina.backend.user.model.response.SearchUserResponse;
+import com.lumina.backend.user.model.response.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -35,4 +32,6 @@ public interface UserService {
     void doDonation(Long userId, DoDonationRequest request);
 
     Map<String, Object> searchUser(String keyword, int pageNum);
+
+    List<GetSumPointRankResponse> getSumPointRank(Long userId);
 }
