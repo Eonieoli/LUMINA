@@ -191,4 +191,23 @@ public class PostController {
 
         return ResponseEntity.ok(BaseResponse.success("구독 카테고리 게시물 조회 성공", response));
     }
+
+
+    /**
+     * 게시물를 검색하는 엔드포인트
+     *
+     * @param keyword 검색어 텍스트
+     * @return ResponseEntity<BaseResponse<Map<String, Object>>> 검색 결과 응답
+     */
+    @GetMapping("/search")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> searchPost(
+            HttpServletRequest request,
+            @RequestParam String keyword,
+            @RequestParam int pageNum) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        Map<String, Object> response = postService.searchPost(userId, keyword, pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("게시물 검색 성공", response));
+    }
 }
