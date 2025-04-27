@@ -7,10 +7,7 @@ import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -29,9 +26,20 @@ public class AdminController {
             @RequestParam int pageNum) {
 
         Long userId = oAuthService.findIdByToken(request);
-
         Map<String, Object> response = adminService.getUser(userId, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("전체 유저 조회 완료", response));
+    }
+
+
+    @DeleteMapping("/user/{userId}")
+    public ResponseEntity<BaseResponse<Void>> deleteUser(
+            HttpServletRequest request,
+            @PathVariable Long userId) {
+
+        Long myId = oAuthService.findIdByToken(request);
+        adminService.deleteUser(myId, userId);
+
+        return ResponseEntity.ok(BaseResponse.withMessage("유저 삭제 성공"));
     }
 }
