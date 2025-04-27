@@ -40,6 +40,18 @@ public class AdminController {
         Long myId = oAuthService.findIdByToken(request);
         adminService.deleteUser(myId, userId);
 
-        return ResponseEntity.ok(BaseResponse.withMessage("유저 삭제 성공"));
+        return ResponseEntity.ok(BaseResponse.withMessage("유저 삭제 완료"));
+    }
+
+
+    @GetMapping("/cur-user")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getCurUser(
+            HttpServletRequest request,
+            @RequestParam int pageNum) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        Map<String, Object> response = adminService.getCurUser(userId, pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("현재 접속 유저 조회 완료", response));
     }
 }

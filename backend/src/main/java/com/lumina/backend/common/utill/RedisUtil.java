@@ -84,6 +84,14 @@ public class RedisUtil {
 
 
     /**
+     * 패턴에 맞는 모든 키를 반환합니다.
+     */
+    public Set<String> getKeysByPattern(String pattern) {
+        return redisTemplate.keys(pattern);
+    }
+
+
+    /**
      * ZSet에 사용자 누적 기부금액을 추가하거나 갱신합니다.
      * 금액이 기존보다 높을 때만 갱신하며, 점수는 '금액 * 1e13 + timestamp' 형태로 저장되어
      * 동점일 경우 더 과거 기록이 우선 정렬됩니다.
