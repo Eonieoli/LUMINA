@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * 사용자 관련 API를 처리하는 컨트롤러
@@ -106,5 +107,22 @@ public class UserController {
         userService.doDonation(userId, doDonationRequest);
 
         return ResponseEntity.ok(BaseResponse.withMessage("기부 완료"));
+    }
+
+
+    /**
+     * 사용자를 검색하는 엔드포인트
+     *
+     * @param keyword 검색어 텍스트
+     * @return ResponseEntity<BaseResponse<Map<String, Object>>> 검색 결과 응답
+     */
+    @GetMapping("/search")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> searchUser(
+            @RequestParam String keyword,
+            @RequestParam int pageNum) {
+
+        Map<String, Object> response = userService.searchUser(keyword, pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("유저 검색 성공", response));
     }
 }

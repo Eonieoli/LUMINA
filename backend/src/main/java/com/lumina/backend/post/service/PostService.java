@@ -45,4 +45,6 @@ public interface PostService {
     Boolean toggleCommentLike(Long userId, Long photoId, Long commentId);
 
     Map<String, Object> getSubscribePost(Long userId, int pageNum);
+
+    Map<String, Object> searchPost(Long userId, String keyword, int pageNum);
 }
