@@ -13,6 +13,7 @@ import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
 import com.lumina.backend.user.model.response.GetUserPointResponse;
 import com.lumina.backend.user.model.response.GetUserProfileResponse;
+import com.lumina.backend.user.model.response.SearchUserResponse;
 import com.lumina.backend.user.repository.FollowRepository;
 import com.lumina.backend.user.repository.UserRepository;
 import com.lumina.backend.user.service.OAuthService;
@@ -21,12 +22,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -237,5 +243,39 @@ public class UserServiceImpl implements UserService {
         String userKey = "user:" + userId;
 
         redisUtil.addSumPointToZSetWithTTL(rankKey, userKey, savedUser.getSumPoint());
+    }
+
+
+    /**
+     * 사용자 검색 기능을 제공하는 메서드
+     *
+     * @param keyword 검색할 닉네임 텍스트
+     * @return ResponseEntity<BaseResponse<Map<String, Object>>> 검색된 사용자 목록을 포함한 응답
+     */
+    @Override
+    public Map<String, Object> searchUser(
+            String keyword, int pageNum) {
+
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<User> userPage = userRepository.findByNicknameContaining(keyword, pageRequest);
+
+        // 조회된 사용자 목록을 SearchUsersResponse DTO로 변환
+        List<SearchUserResponse> users = userPage.getContent().stream()
+                        .map(user -> {
+                            return new SearchUserResponse(
+                                    user.getId(),
+                                    user.getProfileImage(),
+                                    user.getNickname()
+                            );
+                        })
+                        .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalPages", userPage.getTotalPages());
+        result.put("currentPage", pageNum);
+        result.put("posts", users);
+
+        // 3. 성공 응답 생성 및 반환
+        return result;
     }
 }
