@@ -1,6 +1,7 @@
 package com.lumina.backend.post.repository;
 
 import com.lumina.backend.post.model.entity.Comment;
+import com.lumina.backend.post.model.entity.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -17,4 +18,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     @EntityGraph(attributePaths = {"user"})
     Page<Comment> findByPostIdAndParentCommentId(Long postId, Long parentCommentId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"post"})
+    Page<Comment> findByUserId(Long userId, Pageable pageable);
 }

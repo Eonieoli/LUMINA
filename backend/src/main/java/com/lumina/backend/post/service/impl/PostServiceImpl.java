@@ -14,7 +14,6 @@ import com.lumina.backend.post.repository.*;
 import com.lumina.backend.post.service.PostService;
 import com.lumina.backend.post.service.S3Service;
 import com.lumina.backend.user.model.entity.User;
-import com.lumina.backend.user.model.response.SearchUserResponse;
 import com.lumina.backend.user.repository.FollowRepository;
 import com.lumina.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
