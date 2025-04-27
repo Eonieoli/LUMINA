@@ -15,4 +15,6 @@ public interface AdminService {
     Map<String, Object> getUserPost(Long myId, Long userId, int pageNum);
 
     Map<String, Object> getUserComment(Long myId, Long userId, int pageNum);
+
+    void deletePost(Long userId, Long postId);
 }

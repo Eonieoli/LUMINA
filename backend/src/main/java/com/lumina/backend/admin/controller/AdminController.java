@@ -81,4 +81,16 @@ public class AdminController {
 
         return ResponseEntity.ok(BaseResponse.success("유저 댓글 조회 완료", response));
     }
+
+
+    @DeleteMapping("/post/{postId}")
+    public ResponseEntity<BaseResponse<Void>> deletePost(
+            HttpServletRequest request,
+            @PathVariable Long postId) {
+
+        Long myId = oAuthService.findIdByToken(request);
+        adminService.deletePost(myId, postId);
+
+        return ResponseEntity.ok(BaseResponse.withMessage("게시물 삭제 완료"));
+    }
 }

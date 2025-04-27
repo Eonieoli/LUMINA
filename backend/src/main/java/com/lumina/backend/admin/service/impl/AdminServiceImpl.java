@@ -10,6 +10,7 @@ import com.lumina.backend.post.model.entity.Comment;
 import com.lumina.backend.post.model.entity.Post;
 import com.lumina.backend.post.repository.CommentRepository;
 import com.lumina.backend.post.repository.PostRepository;
+import com.lumina.backend.post.service.PostService;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.model.response.SearchUserResponse;
 import com.lumina.backend.user.repository.UserRepository;
@@ -36,6 +37,8 @@ public class AdminServiceImpl implements AdminService {
     private final CommentRepository commentRepository;
 
     private final RedisUtil redisUtil;
+
+    private final PostService postService;
 
 
     @Override
@@ -229,6 +232,18 @@ public class AdminServiceImpl implements AdminService {
         result.put("comments", comments);
 
         return result;
+    }
+
+
+    public void deletePost(Long userId, Long postId) {
+
+        Boolean isAdmin = checkAdmin(userId);
+
+        if (!isAdmin) {
+            throw new CustomException(HttpStatus.FORBIDDEN, "관리자만 접근할 수 있습니다.");
+        }
+
+        postService.deletePost(userId, "ROLE_ADMIN", postId);
     }
 
 
