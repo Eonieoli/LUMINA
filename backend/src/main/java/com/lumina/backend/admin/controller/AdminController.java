@@ -68,4 +68,17 @@ public class AdminController {
 
         return ResponseEntity.ok(BaseResponse.success("유저 게시물 조회 완료", response));
     }
+
+
+    @GetMapping("/comment")
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getUserComment(
+            HttpServletRequest request,
+            @RequestParam Long userId,
+            @RequestParam int pageNum) {
+
+        Long myId = oAuthService.findIdByToken(request);
+        Map<String, Object> response = adminService.getUserComment(myId, userId, pageNum);
+
+        return ResponseEntity.ok(BaseResponse.success("유저 댓글 조회 완료", response));
+    }
 }

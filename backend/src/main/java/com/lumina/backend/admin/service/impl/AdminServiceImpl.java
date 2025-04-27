@@ -1,10 +1,12 @@
 package com.lumina.backend.admin.service.impl;
 
+import com.lumina.backend.admin.model.response.GetUserCommentResponse;
 import com.lumina.backend.admin.model.response.GetUserPostResponse;
 import com.lumina.backend.admin.model.response.GetUserResponse;
 import com.lumina.backend.admin.service.AdminService;
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.utill.RedisUtil;
+import com.lumina.backend.post.model.entity.Comment;
 import com.lumina.backend.post.model.entity.Post;
 import com.lumina.backend.post.repository.CommentRepository;
 import com.lumina.backend.post.repository.PostRepository;
@@ -192,7 +194,41 @@ public class AdminServiceImpl implements AdminService {
         result.put("posts", posts);
 
         return result;
+    }
 
+
+    @Override
+    public Map<String, Object> getUserComment(
+            Long myId, Long userId, int pageNum) {
+
+        Boolean isAdmin = checkAdmin(myId);
+
+        if (!isAdmin) {
+            throw new CustomException(HttpStatus.FORBIDDEN, "관리자만 접근할 수 있습니다.");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
+
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Comment> commentPage = commentRepository.findByUserId(userId, pageRequest);
+
+        List<GetUserCommentResponse> comments = commentPage.getContent().stream()
+                .map(comment -> {
+                    return new GetUserCommentResponse(
+                            comment.getId(),
+                            comment.getPost().getId(),
+                            comment.getCommentContent()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalPages", commentPage.getTotalPages());
+        result.put("currentPage", pageNum);
+        result.put("comments", comments);
+
+        return result;
     }
 
 

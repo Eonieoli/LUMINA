@@ -13,4 +13,6 @@ public interface AdminService {
     Map<String, Object> getCurUser(Long userId, int pageNum);
 
     Map<String, Object> getUserPost(Long myId, Long userId, int pageNum);
+
+    Map<String, Object> getUserComment(Long myId, Long userId, int pageNum);
 }
