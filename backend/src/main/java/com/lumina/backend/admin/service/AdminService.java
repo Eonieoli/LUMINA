@@ -17,4 +17,6 @@ public interface AdminService {
     Map<String, Object> getUserComment(Long myId, Long userId, int pageNum);
 
     void deletePost(Long userId, Long postId);
+
+    void deleteComment(Long userId, Long postId, Long commentId);
 }

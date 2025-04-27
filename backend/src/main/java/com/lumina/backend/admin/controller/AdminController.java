@@ -93,4 +93,17 @@ public class AdminController {
 
         return ResponseEntity.ok(BaseResponse.withMessage("게시물 삭제 완료"));
     }
+
+
+    @DeleteMapping("/post/{postId}/comment/{commentId}")
+    public ResponseEntity<BaseResponse<Void>> deleteComment(
+            HttpServletRequest request,
+            @PathVariable Long postId,
+            @PathVariable Long commentId) {
+
+        Long myId = oAuthService.findIdByToken(request);
+        adminService.deleteComment(myId, postId, commentId);
+
+        return ResponseEntity.ok(BaseResponse.withMessage("댓글 삭제 완료"));
+    }
 }

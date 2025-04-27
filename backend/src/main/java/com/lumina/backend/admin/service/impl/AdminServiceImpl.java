@@ -235,6 +235,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
 
+    @Override
     public void deletePost(Long userId, Long postId) {
 
         Boolean isAdmin = checkAdmin(userId);
@@ -244,6 +245,19 @@ public class AdminServiceImpl implements AdminService {
         }
 
         postService.deletePost(userId, "ROLE_ADMIN", postId);
+    }
+
+
+    @Override
+    public void deleteComment(Long userId, Long postId, Long commentId) {
+
+        Boolean isAdmin = checkAdmin(userId);
+
+        if (!isAdmin) {
+            throw new CustomException(HttpStatus.FORBIDDEN, "관리자만 접근할 수 있습니다.");
+        }
+
+        postService.deleteComment(userId, "ROLE_ADMIN", postId, commentId);
     }
 
 
