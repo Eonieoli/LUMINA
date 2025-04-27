@@ -14,6 +14,7 @@ import com.lumina.backend.post.repository.*;
 import com.lumina.backend.post.service.PostService;
 import com.lumina.backend.post.service.S3Service;
 import com.lumina.backend.user.model.entity.User;
+import com.lumina.backend.user.model.response.SearchUserResponse;
 import com.lumina.backend.user.repository.FollowRepository;
 import com.lumina.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -403,6 +404,45 @@ public class PostServiceImpl implements PostService {
 
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postPage = postRepository.findByCategoryIdIn(subscribedCategoryIds, pageRequest);
+
+        List<GetPostResponse> posts = postPage.getContent().stream()
+                .map(post -> {
+                    User user = post.getUser();
+                    Category category = post.getCategory();
+                    List<String> hashtagList = postHashtagRepository.findHashtagNamesByPostId(post.getId());
+                    int likeCnt = postLikeRepository.countByPostId(post.getId());
+                    int commentCnt = commentRepository.countByPostId(post.getId());
+                    Boolean isLike = postLikeRepository.existsByUserIdAndPostId(userId, post.getId());
+
+                    return new GetPostResponse(
+                            post.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
+                            post.getPostImage(), post.getPostContent(), category.getCategoryName(),
+                            hashtagList, likeCnt, commentCnt, isLike
+                    );
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalPages", postPage.getTotalPages());
+        result.put("currentPage", pageNum);
+        result.put("posts", posts);
+
+        return result;
+    }
+
+
+    /**
+     * 게시물 검색 기능을 제공하는 메서드
+     *
+     * @param keyword 검색할 게시물 텍스트
+     * @return ResponseEntity<BaseResponse<Map<String, Object>>> 검색된 게시물 목록을 포함한 응답
+     */
+    @Override
+    public Map<String, Object> searchPost(
+            Long userId, String keyword, int pageNum) {
+
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> postPage = postRepository.findPostsByHashtagName(keyword, pageRequest);
 
         List<GetPostResponse> posts = postPage.getContent().stream()
                 .map(post -> {

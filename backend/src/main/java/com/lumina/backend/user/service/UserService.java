@@ -5,10 +5,13 @@ import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
 import com.lumina.backend.user.model.response.GetUserPointResponse;
 import com.lumina.backend.user.model.response.GetUserProfileResponse;
+import com.lumina.backend.user.model.response.SearchUserResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public interface UserService {
 
@@ -30,4 +33,6 @@ public interface UserService {
     GetUserPointResponse getUserPoint(Long userId);
 
     void doDonation(Long userId, DoDonationRequest request);
+
+    Map<String, Object> searchUser(String keyword, int pageNum);
 }

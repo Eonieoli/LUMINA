@@ -12,4 +12,6 @@ public interface DonationService {
     Boolean toggleDonationSubscribe(Long userId, Long donationId);
 
     Map<String, Object> getSubscribeDonation(Long userId, int pageNum);
+
+    Map<String, Object> searchDonation(String keyword, int pageNum);
 }
