@@ -2,9 +2,13 @@ package com.lumina.backend.common.utill;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -76,5 +80,88 @@ public class RedisUtil {
             String key) {
 
         return redisTemplate.delete(key);
+    }
+
+
+    /**
+     * 패턴에 맞는 모든 키를 반환합니다.
+     */
+    public Set<String> getKeysByPattern(String pattern) {
+        return redisTemplate.keys(pattern);
+    }
+
+
+    /**
+     * ZSet에 사용자 누적 기부금액을 추가하거나 갱신합니다.
+     * 금액이 기존보다 높을 때만 갱신하며, 점수는 '금액 * 1e13 + timestamp' 형태로 저장되어
+     * 동점일 경우 더 과거 기록이 우선 정렬됩니다.
+     *
+     * @param key      ZSet의 Redis 키
+     * @param userId   사용자 식별자
+     * @param sumPoint 새로 저장할 누적 기부금
+     */
+    public void addSumPointToZSetWithTTL(
+            String key, String userId, Integer sumPoint) {
+
+        // 현재 저장된 score 가져오기
+        Double currentRawSumPoint = redisTemplate.opsForZSet().score(key, userId);
+        double currentSumPoint = currentRawSumPoint != null ? currentRawSumPoint : -1;
+
+        long now = System.currentTimeMillis();
+        double finalSumPoint = sumPoint * 1e13 + (Long.MAX_VALUE - now);
+
+        // 기존 누적 기부금보다 클 때만 갱신
+        if (finalSumPoint > currentSumPoint) {
+
+            redisTemplate.opsForZSet().add(key, userId, finalSumPoint);
+        }
+    }
+
+
+    /**
+     * ZSet에서 누적 기부금액이 높은 순으로 유저 ID 리스트를 반환합니다.
+     * 순위는 start ~ end 범위로 지정할 수 있으며, 누적 기부금액이 높은 순으로 정렬됩니다.
+     *
+     * @param key   ZSet의 Redis 키
+     * @param start 시작 인덱스 (0부터 시작)
+     * @param end   종료 인덱스
+     * @return 사용자 ID 리스트 (점수 내림차순 정렬)
+     */
+    public List<String> getTopRankersInOrder(
+            String key, int start, int end) {
+
+        Set<ZSetOperations.TypedTuple<Object>> tuples = redisTemplate.opsForZSet()
+                .reverseRangeWithScores(key, start, end);
+
+        return tuples.stream()
+                .map(t -> t.getValue().toString())
+                .collect(Collectors.toList()); // List로 변환 → 순서 보장
+    }
+
+
+    /**
+     * 특정 사용자 ID의 현재 랭킹을 반환합니다.
+     * 누적 기부금액이 높은 순서대로 랭크되며, 0부터 시작합니다.
+     *
+     * @param key     ZSet의 Redis 키
+     * @param userId  사용자 ID
+     * @return 사용자의 랭킹 (0: 1위), 없으면 null
+     */
+    public Long getUserRank(
+            String key, String userId) {
+
+        return redisTemplate.opsForZSet().reverseRank(key, userId);
+    }
+
+
+    /**
+     * ZSet에서 특정 사용자 ID를 삭제합니다.
+     *
+     * @param key    ZSet의 Redis 키
+     * @param userId 삭제할 사용자 ID
+     * @return 삭제된 요소의 개수(0 또는 1)
+     */
+    public Long removeUserFromZSet(String key, String userId) {
+        return redisTemplate.opsForZSet().remove(key, userId);
     }
 }
