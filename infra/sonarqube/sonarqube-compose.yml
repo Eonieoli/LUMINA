@@ -2,6 +2,7 @@ services:
   sonarqube-db:
     image: postgres:15
     container_name: sonarqube-db
+    restart: always
     environment:
       POSTGRES_USER: sonar_user
       POSTGRES_PASSWORD: sonar_password
@@ -14,6 +15,7 @@ services:
   sonarqube:
     image: sonarqube:lts
     container_name: sonarqube
+    restart: always
     depends_on:
       - sonarqube-db
     ports:

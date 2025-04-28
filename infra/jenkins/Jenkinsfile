@@ -37,7 +37,7 @@ pipeline {
                             }
                         }
                         // Quality Gate 확인
-                        timeout(time: 1, unit: 'HOURS') {
+                        timeout(time: 3, unit: 'MINUTES') {
                             waitForQualityGate abortPipeline: false
                         }
                     }
@@ -54,7 +54,7 @@ pipeline {
                             }
                         }
                         // Quality Gate 확인
-                        timeout(time: 1, unit: 'HOURS') {
+                        timeout(time: 3, unit: 'MINUTES') {
                             waitForQualityGate abortPipeline: false
                         }
                     }
