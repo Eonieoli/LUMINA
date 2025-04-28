@@ -53,7 +53,7 @@ pipeline {
                 }
                 
                 stage('Prod Environment') {
-                    when {
+                    anyOf {
                         branch 'master'
                         branch 'feat/S12P31S306-168-dev-prod-env-setup/infra'
                     }
@@ -179,7 +179,7 @@ pipeline {
                 }
                 
                 stage('Master Branch') {
-                    when {
+                    anyOf {
                         branch 'master'
                         branch 'feat/S12P31S306-168-dev-prod-env-setup/infra'
                     }

@@ -1,19 +1,19 @@
 services:
-  frontend:
-    container_name: frontend
-    build:
-      context: ../../frontend
-      dockerfile: Dockerfile
-      args:
-        - ENV_FILE=.env.front
-    image: rublin322/lumina-frontend:latest
-    restart: always
-    networks:
-      - lumina-network
-    labels:
-      com.docker.compose.service: "frontend"
-      com.docker.compose.project: "lumina"
-      environment: "production"
+  # frontend:
+  #   container_name: frontend
+  #   build:
+  #     context: ../../frontend
+  #     dockerfile: Dockerfile
+  #     args:
+  #       - ENV_FILE=.env.front
+  #   image: rublin322/lumina-frontend:latest
+  #   restart: always
+  #   networks:
+  #     - lumina-network
+  #   labels:
+  #     com.docker.compose.service: "frontend"
+  #     com.docker.compose.project: "lumina"
+  #     environment: "production"
 
   backend:
     container_name: backend
