@@ -83,6 +83,15 @@ public class JWTFilter extends OncePerRequestFilter {
                 }
             }
 
+            // 개발용
+            if (accessToken == null) {
+                String authorizationHeader = request.getHeader("Authorization");
+                if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                    accessToken = authorizationHeader.substring(7); // "Bearer " 부분을 제외하고 토큰만 추출
+                }
+            }
+            // 여기까지
+
             // 액세스 토큰이 없으면 다음 필터로 진행
             if (accessToken == null) {
                 throw new CustomException(HttpStatus.UNAUTHORIZED, "인증 토큰 없음");

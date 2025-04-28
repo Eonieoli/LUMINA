@@ -129,6 +129,15 @@ public class OAuthServiceImpl implements OAuthService {
             }
         }
 
+        //개발용
+        if (access == null) {
+            String authorizationHeader = request.getHeader("Authorization");
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                access = authorizationHeader.substring(7); // "Bearer " 부분을 제외하고 토큰만 추출
+            }
+        }
+        //여기까지
+
         // JWT에서 닉네임 추출
         String nickname = jwtUtil.getNickname(access);
         // 닉네임으로 사용자 ID 조회
@@ -185,7 +194,7 @@ public class OAuthServiceImpl implements OAuthService {
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(60 * 60 * 24); // 1일 유지
 //        cookie.setSecure(true); // HTTPS에서만 전송 (배포 환경에서는 필수)
-//        cookie.setHttpOnly(true); // JavaScript에서 접근 불가
+        cookie.setHttpOnly(true); // JavaScript에서 접근 불가
         cookie.setPath("/"); // 모든 경로에서 접근 가능
 
         return cookie;
@@ -248,6 +257,15 @@ public class OAuthServiceImpl implements OAuthService {
                 }
             }
         }
+
+        //개발용
+        if (access == null) {
+            String authorizationHeader = request.getHeader("Authorization");
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                access = authorizationHeader.substring(7); // "Bearer " 부분을 제외하고 토큰만 추출
+            }
+        }
+        //여기까지
 
         // JWT에서 role 추출
         String role = jwtUtil.getRole(access);

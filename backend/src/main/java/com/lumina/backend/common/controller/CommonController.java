@@ -3,6 +3,7 @@ package com.lumina.backend.common.controller;
 import com.lumina.backend.common.jwt.JWTUtil;
 import com.lumina.backend.common.model.entity.BaseEntity;
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.common.model.response.GetToken;
 import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.user.repository.UserRepository;
 import com.lumina.backend.user.service.OAuthService;
@@ -42,7 +43,7 @@ public class CommonController {
     private String jwtRedisExp;
 
     @GetMapping("/token")
-    public ResponseEntity<BaseResponse<Void>> getToken(
+    public ResponseEntity<BaseResponse<GetToken>> getToken(
             HttpServletRequest request,
             HttpServletResponse response) throws IOException {
 
@@ -68,6 +69,8 @@ public class CommonController {
         //인증 성공 후 리다이렉트
         response.sendRedirect(successURL);
 
-        return ResponseEntity.ok(BaseResponse.withMessage("개발용 토큰 발급 완료"));
+        GetToken getToken = new GetToken(access, refresh);
+
+        return ResponseEntity.ok(BaseResponse.success("개발용 토큰 발급 완료", getToken));
     }
 }
