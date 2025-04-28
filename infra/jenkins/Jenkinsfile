@@ -24,10 +24,7 @@ pipeline {
             parallel {
                 stage('Backend Analysis') {
                     when {
-                        anyOf {
-                            branch 'develop'
-                            branch 'feat/S12P31S306-48-sonarqube/infra'
-                        }
+                        branch 'develop'
                     }
                     steps {
                         withSonarQubeEnv('SonarQube') {
