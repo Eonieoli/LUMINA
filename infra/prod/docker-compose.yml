@@ -1,26 +1,31 @@
 services:
-  # frontend:
-  #   container_name: frontend
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   image: rublin322/lumina-frontend:develop
-  #   networks:
-  #     - lumina-network
-  #   labels:
-  #     - "com.docker.compose.service=frontend"
-  #     - "com.docker.compose.project=lumina"
+  frontend:
+    container_name: frontend
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+      args:
+        - ENV_FILE=.env.front
+    image: rublin322/lumina-frontend:latest
+    restart: always
+    networks:
+      - lumina-network
+    labels:
+      com.docker.compose.service: "frontend"
+      com.docker.compose.project: "lumina"
+      environment: "production"
 
   backend:
     container_name: backend
     build:
-      context: ./backend
+      context: ../../backend
       dockerfile: Dockerfile
-    image: rublin322/lumina-backend:develop
+    image: rublin322/lumina-backend:latest
+    restart: always
     env_file:
       - .env
     ports:
-      - "8082:8080"
+      - "8080:8080"
     depends_on:
       mysql:
         condition: service_healthy
@@ -34,8 +39,9 @@ services:
     networks:
       - lumina-network
     labels:
-      - "com.docker.compose.service=backend"
-      - "com.docker.compose.project=lumina"
+      com.docker.compose.service: "backend"
+      com.docker.compose.project: "lumina"
+      environment: "production"
 
   mysql:
     container_name: mysql
@@ -55,8 +61,9 @@ services:
     networks:
       - lumina-network
     labels:
-      - "com.docker.compose.service=mysql"
-      - "com.docker.compose.project=lumina"
+      com.docker.compose.service: "mysql"
+      com.docker.compose.project: "lumina"
+      environment: "production"
 
   redis:
     container_name: redis
@@ -76,8 +83,9 @@ services:
     networks:
       - lumina-network
     labels:
-      - "com.docker.compose.service=redis"
-      - "com.docker.compose.project=lumina"
+      com.docker.compose.service: "redis"
+      com.docker.compose.project: "lumina"
+      environment: "production"
 
 volumes:
   mysql-data:
