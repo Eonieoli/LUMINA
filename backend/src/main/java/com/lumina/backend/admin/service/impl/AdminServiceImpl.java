@@ -178,7 +178,7 @@ public class AdminServiceImpl implements AdminService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postPage = postRepository.findByUserId(userId, pageRequest);
 
         List<GetUserPostResponse> posts = postPage.getContent().stream()
@@ -186,7 +186,8 @@ public class AdminServiceImpl implements AdminService {
                     return new GetUserPostResponse(
                             post.getId(),
                             post.getPostImage(),
-                            post.getPostContent()
+                            post.getPostContent(),
+                            post.getPostViews()
                     );
                 })
                 .collect(Collectors.toList());

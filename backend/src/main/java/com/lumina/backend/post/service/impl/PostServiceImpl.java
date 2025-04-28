@@ -76,9 +76,9 @@ public class PostServiceImpl implements PostService {
         Post post;
         if (request.getPostImageFile() != null && !request.getPostImageFile().isEmpty()) {
             String postImage = s3Service.uploadImageFile(request.getPostImageFile(), "post/");
-            post = new Post(user, category, postImage, request.getPostContent());
+            post = new Post(user, category, postImage, request.getPostContent(), 0);
         } else {
-            post = new Post(user, category, request.getPostContent());
+            post = new Post(user, category, request.getPostContent(), 0);
         }
         postRepository.save(post);
 
@@ -104,7 +104,7 @@ public class PostServiceImpl implements PostService {
             throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
         }
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postPage;
 
         if (userId != null) {
@@ -130,11 +130,13 @@ public class PostServiceImpl implements PostService {
                     int likeCnt = postLikeRepository.countByPostId(post.getId());
                     int commentCnt = commentRepository.countByPostId(post.getId());
                     Boolean isLike = postLikeRepository.existsByUserIdAndPostId(myId, post.getId());
+                    post.plusViews(1);
+                    postRepository.save(post);
 
                     return new GetPostResponse(
                             post.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
-                            post.getPostImage(), post.getPostContent(), category.getCategoryName(),
-                            hashtagList, likeCnt, commentCnt, isLike
+                            post.getPostImage(), post.getPostContent(), post.getPostViews(),
+                            category.getCategoryName(), hashtagList, likeCnt, commentCnt, isLike
                     );
                 })
                 .collect(Collectors.toList());
@@ -401,7 +403,7 @@ public class PostServiceImpl implements PostService {
 
         List<Long> subscribedCategoryIds = userCategoryRepository.findCategoryIdsByUserId(userId);
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postPage = postRepository.findByCategoryIdIn(subscribedCategoryIds, pageRequest);
 
         List<GetPostResponse> posts = postPage.getContent().stream()
@@ -412,11 +414,13 @@ public class PostServiceImpl implements PostService {
                     int likeCnt = postLikeRepository.countByPostId(post.getId());
                     int commentCnt = commentRepository.countByPostId(post.getId());
                     Boolean isLike = postLikeRepository.existsByUserIdAndPostId(userId, post.getId());
+                    post.plusViews(1);
+                    postRepository.save(post);
 
                     return new GetPostResponse(
                             post.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
-                            post.getPostImage(), post.getPostContent(), category.getCategoryName(),
-                            hashtagList, likeCnt, commentCnt, isLike
+                            post.getPostImage(), post.getPostContent(), post.getPostViews(),
+                            category.getCategoryName(), hashtagList, likeCnt, commentCnt, isLike
                     );
                 })
                 .collect(Collectors.toList());
@@ -440,7 +444,7 @@ public class PostServiceImpl implements PostService {
     public Map<String, Object> searchPost(
             Long userId, String keyword, int pageNum) {
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postPage = postRepository.findPostsByHashtagName(keyword, pageRequest);
 
         List<GetPostResponse> posts = postPage.getContent().stream()
@@ -451,11 +455,13 @@ public class PostServiceImpl implements PostService {
                     int likeCnt = postLikeRepository.countByPostId(post.getId());
                     int commentCnt = commentRepository.countByPostId(post.getId());
                     Boolean isLike = postLikeRepository.existsByUserIdAndPostId(userId, post.getId());
+                    post.plusViews(1);
+                    postRepository.save(post);
 
                     return new GetPostResponse(
                             post.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
-                            post.getPostImage(), post.getPostContent(), category.getCategoryName(),
-                            hashtagList, likeCnt, commentCnt, isLike
+                            post.getPostImage(), post.getPostContent(), post.getPostViews(),
+                            category.getCategoryName(), hashtagList, likeCnt, commentCnt, isLike
                     );
                 })
                 .collect(Collectors.toList());
