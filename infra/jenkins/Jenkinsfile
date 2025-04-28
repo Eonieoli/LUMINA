@@ -19,6 +19,47 @@ pipeline {
                 }
             }
         }
+        
+        stage('SonarQube Analysis') {
+            parallel {
+                stage('Backend Analysis') {
+                    when {
+                        anyOf {
+                            branch 'develop'
+                            branch 'feat/S12P31S306-48-sonarqube/infra'
+                        }
+                    }
+                    steps {
+                        withSonarQubeEnv('SonarQube') {
+                            dir('backend') {
+                                sh './gradlew clean test jacocoTestReport sonar'
+                            }
+                        }
+                        // Quality Gate 확인
+                        timeout(time: 1, unit: 'HOURS') {
+                            waitForQualityGate abortPipeline: false
+                        }
+                    }
+                }
+                
+                stage('Frontend Analysis') {
+                    when {
+                        branch 'develop'
+                    }
+                    steps {
+                        withSonarQubeEnv('SonarQube') {
+                            dir('frontend') {
+                                sh 'sonar-scanner -Dsonar.projectKey=lumina-frontend'
+                            }
+                        }
+                        // Quality Gate 확인
+                        timeout(time: 1, unit: 'HOURS') {
+                            waitForQualityGate abortPipeline: false
+                        }
+                    }
+                }
+            }
+        }
 
         stage('Prepare Environment') {
             parallel {

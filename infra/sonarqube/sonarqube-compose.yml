@@ -35,6 +35,10 @@ networks:
 
 volumes:
   sonarqube-db-data:
+    name: sonarqube-db-data
   sonarqube-data:
+    name: sonarqube-data
   sonarqube-extensions:
+    name: sonarqube-extensions
   sonarqube-logs:
+    name: sonarqube-logs
