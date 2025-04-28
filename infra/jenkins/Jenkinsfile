@@ -54,10 +54,7 @@ pipeline {
                 
                 stage('Prod Environment') {
                     when {
-                        anyOf {
-                            branch 'master'
-                            branch 'feat/S12P31S306-168-dev-prod-env-setup/infra'
-                        }
+                        branch 'master'
                     }
                     steps {
                         withCredentials([file(credentialsId: 'env-prod-content', variable: 'ENV_PROD_PATH')]) {
@@ -182,20 +179,17 @@ pipeline {
                 
                 stage('Master Branch') {
                     when {
-                        anyOf {
-                            branch 'master'
-                            branch 'feat/S12P31S306-168-dev-prod-env-setup/infra'
-                        }
+                        branch 'master'
                     }
                     stages {
                         stage('Build Docker Images - Prod') {
                             steps {
                                 script {
                                     // 프론트엔드 이미지 빌드
-                                    // dir('frontend') {
-                                    //     sh "cp ../infra/prod/.env.front .env.front"
-                                    //     sh "docker build -t rublin322/lumina-frontend:latest ."
-                                    // }
+                                    dir('frontend') {
+                                        sh "cp ../infra/prod/.env.front .env.front"
+                                        sh "docker build -t rublin322/lumina-frontend:latest ."
+                                    }
                                     
                                     // 백엔드 이미지 빌드
                                     dir('backend') {
@@ -208,7 +202,7 @@ pipeline {
                         stage('Push to DockerHub - Prod') {
                             steps {
                                 withDockerRegistry([credentialsId: 'dockerhub-token', url: '']) {
-                                    // sh "docker push rublin322/lumina-frontend:latest"
+                                    sh "docker push rublin322/lumina-frontend:latest"
                                     sh "docker push rublin322/lumina-backend:latest"
                                 }
                             }
@@ -269,7 +263,7 @@ pipeline {
             script {
                 if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
                     echo '개발 환경 배포 성공'
-                } else if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feat/S12P31S306-168-dev-prod-env-setup/infra') {
+                } else if (env.BRANCH_NAME == 'master') {
                     echo '운영 환경 배포 성공'
                 }
             }
@@ -278,7 +272,7 @@ pipeline {
             script {
                 if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
                     echo '개발 환경 배포 실패'
-                } else if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feat/S12P31S306-168-dev-prod-env-setup/infra') {
+                } else if (env.BRANCH_NAME == 'master') {
                     echo '운영 환경 배포 실패'
                 }
             }
