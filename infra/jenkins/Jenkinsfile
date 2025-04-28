@@ -53,9 +53,11 @@ pipeline {
                 }
                 
                 stage('Prod Environment') {
-                    anyOf {
-                        branch 'master'
-                        branch 'feat/S12P31S306-168-dev-prod-env-setup/infra'
+                    when {
+                        anyOf {
+                            branch 'master'
+                            branch 'feat/S12P31S306-168-dev-prod-env-setup/infra'
+                        }
                     }
                     steps {
                         withCredentials([file(credentialsId: 'env-prod-content', variable: 'ENV_PROD_PATH')]) {
@@ -179,9 +181,11 @@ pipeline {
                 }
                 
                 stage('Master Branch') {
-                    anyOf {
-                        branch 'master'
-                        branch 'feat/S12P31S306-168-dev-prod-env-setup/infra'
+                    when {
+                        anyOf {
+                            branch 'master'
+                            branch 'feat/S12P31S306-168-dev-prod-env-setup/infra'
+                        }
                     }
                     stages {
                         stage('Build Docker Images - Prod') {
