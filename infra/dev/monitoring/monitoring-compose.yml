@@ -20,6 +20,7 @@ services:
       - lumina-network
     labels:
       org.label-schema.group: "monitoring"
+      environment: "development"
 
   grafana:
     image: grafana/grafana:11.5.1
@@ -33,6 +34,8 @@ services:
       - GF_SERVER_ROOT_URL=https://picscore.net/grafana
       - GF_SERVER_DOMAIN=picscore.net
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      # - GF_SECURITY_ALLOW_EMBEDDING=true
+      # - GF_PANELS_DISABLE_SANITIZE_HTML=true
     depends_on:
       prometheus:
         condition: service_healthy
@@ -40,6 +43,7 @@ services:
       - lumina-network
     labels:
       org.label-schema.group: "monitoring"
+      environment: "development"
     
   node-exporter:
     image: prom/node-exporter:latest
@@ -57,6 +61,7 @@ services:
       - lumina-network
     labels:
       org.label-schema.group: "monitoring"
+      environment: "development"
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.2
@@ -73,6 +78,7 @@ services:
       - lumina-network
     labels:
       org.label-schema.group: "monitoring"
+      environment: "development"
     depends_on:
       - node-exporter
 
