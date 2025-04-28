@@ -28,7 +28,6 @@ pipeline {
                             branch 'develop'
                             branch 'backend'
                             branch 'frontend'
-                            branch 'feat/S12P31S306-168-dev-prod-env-setup/infra'
                         }
                     }
                     steps {
@@ -56,6 +55,7 @@ pipeline {
                 stage('Prod Environment') {
                     when {
                         branch 'master'
+                        branch 'feat/S12P31S306-168-dev-prod-env-setup/infra'
                     }
                     steps {
                         withCredentials([file(credentialsId: 'env-prod-content', variable: 'ENV_PROD_PATH')]) {
@@ -89,7 +89,6 @@ pipeline {
                             branch 'develop'
                             branch 'frontend'
                             branch 'backend'
-                            branch 'feat/S12P31S306-168-dev-prod-env-setup/infra'
                         }
                     }
                     stages {
@@ -105,7 +104,7 @@ pipeline {
                                     }
                                     
                                     // 백엔드 이미지 빌드 (backend 브랜치 또는 develop 브랜치인 경우)
-                                    if (env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'feat/S12P31S306-168-dev-prod-env-setup/infra') {
+                                    if (env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'develop') {
                                         dir('backend') {
                                             sh "docker build -t rublin322/lumina-backend:develop ."
                                         }
@@ -124,7 +123,7 @@ pipeline {
                                         }
                                         
                                         // 백엔드 이미지 푸시 (backend 브랜치 또는 develop 브랜치인 경우)
-                                        if (env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'feat/S12P31S306-168-dev-prod-env-setup/infra') {
+                                        if (env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'develop') {
                                             sh "docker push rublin322/lumina-backend:develop"
                                         }
                                     }
@@ -182,16 +181,17 @@ pipeline {
                 stage('Master Branch') {
                     when {
                         branch 'master'
+                        branch 'feat/S12P31S306-168-dev-prod-env-setup/infra'
                     }
                     stages {
                         stage('Build Docker Images - Prod') {
                             steps {
                                 script {
                                     // 프론트엔드 이미지 빌드
-                                    dir('frontend') {
-                                        sh "cp ../infra/prod/.env.front .env.front"
-                                        sh "docker build -t rublin322/lumina-frontend:latest ."
-                                    }
+                                    // dir('frontend') {
+                                    //     sh "cp ../infra/prod/.env.front .env.front"
+                                    //     sh "docker build -t rublin322/lumina-frontend:latest ."
+                                    // }
                                     
                                     // 백엔드 이미지 빌드
                                     dir('backend') {
@@ -265,18 +265,18 @@ pipeline {
     post {
         success {
             script {
-                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend' || env.BRANCH_NAME == 'feat/S12P31S306-168-dev-prod-env-setup/infra') {
+                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
                     echo '개발 환경 배포 성공'
-                } else if (env.BRANCH_NAME == 'master') {
+                } else if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feat/S12P31S306-168-dev-prod-env-setup/infra') {
                     echo '운영 환경 배포 성공'
                 }
             }
         }
         failure {
             script {
-                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend' || env.BRANCH_NAME == 'feat/S12P31S306-168-dev-prod-env-setup/infra') {
+                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
                     echo '개발 환경 배포 실패'
-                } else if (env.BRANCH_NAME == 'master') {
+                } else if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feat/S12P31S306-168-dev-prod-env-setup/infra') {
                     echo '운영 환경 배포 실패'
                 }
             }
