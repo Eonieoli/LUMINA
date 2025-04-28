@@ -129,6 +129,15 @@ public class OAuthServiceImpl implements OAuthService {
             }
         }
 
+        //개발용
+        if (access == null) {
+            String authorizationHeader = request.getHeader("Authorization");
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                access = authorizationHeader.substring(7); // "Bearer " 부분을 제외하고 토큰만 추출
+            }
+        }
+        //여기까지
+
         // JWT에서 닉네임 추출
         String nickname = jwtUtil.getNickname(access);
         // 닉네임으로 사용자 ID 조회
@@ -248,6 +257,15 @@ public class OAuthServiceImpl implements OAuthService {
                 }
             }
         }
+
+        //개발용
+        if (access == null) {
+            String authorizationHeader = request.getHeader("Authorization");
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                access = authorizationHeader.substring(7); // "Bearer " 부분을 제외하고 토큰만 추출
+            }
+        }
+        //여기까지
 
         // JWT에서 role 추출
         String role = jwtUtil.getRole(access);
