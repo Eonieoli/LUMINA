@@ -208,7 +208,7 @@ pipeline {
                         stage('Push to DockerHub - Prod') {
                             steps {
                                 withDockerRegistry([credentialsId: 'dockerhub-token', url: '']) {
-                                    sh "docker push rublin322/lumina-frontend:latest"
+                                    // sh "docker push rublin322/lumina-frontend:latest"
                                     sh "docker push rublin322/lumina-backend:latest"
                                 }
                             }
