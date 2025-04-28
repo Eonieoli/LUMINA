@@ -158,7 +158,7 @@ pipeline {
                                     // 개발 환경 배포 실행
                                     sh """
                                     ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
-                                        cd ${GCP_DEPLOY_PATH} &&
+                                        cd ${GCP_DEPLOY_PATH}/infra/dev &&
                                         docker compose down --remove-orphans &&
                                         docker compose pull &&
                                         docker compose up -d &&
