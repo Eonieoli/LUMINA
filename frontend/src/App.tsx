@@ -1,10 +1,15 @@
 import "./App.css";
+import Main from "./pages/Main";
+import Auth from "./pages/Auth";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 function App() {
   return (
-    <>
-      <div className="bg-amber-50">LUMINA LUMINA</div>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/*" element={<Main/>} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
