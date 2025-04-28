@@ -32,7 +32,7 @@ pipeline {
                     steps {
                         withSonarQubeEnv('SonarQube') {
                             dir('backend') {
-                                sh 'chmod +x ./backend/gradlew'
+                                sh 'chmod +x ./gradlew' 
                                 sh './gradlew clean test jacocoTestReport sonar'
                             }
                         }
