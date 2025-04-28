@@ -62,8 +62,16 @@ public class CommonController {
         redisUtil.setex(userKey, refresh, Long.parseLong(jwtRedisExp)); // 1일 TTL
 
         // 클라이언트에 Access Token 및 Refresh Token 쿠키로 설정
-        response.addCookie(oAuthService.createCookie("access", access));
-        response.addCookie(oAuthService.createCookie("refresh", refresh));
+//        response.addCookie(oAuthService.createCookie("access", access));
+//        response.addCookie(oAuthService.createCookie("refresh", refresh));
+
+        // 개발용 쿠키 헤더에 설정
+        String accessCookie = "access=" + access + "; Path=/; HttpOnly; Secure; SameSite=None; Domain=localhost; Max-Age=86400";
+        String refreshCookie = "refresh=" + refresh + "; Path=/; HttpOnly; Secure; SameSite=None; Domain=localhost; Max-Age=86400";
+
+        response.setHeader("Set-Cookie", accessCookie);
+        response.addHeader("Set-Cookie", refreshCookie);
+        // 여기까지
 
         //인증 성공 후 리다이렉트
         response.sendRedirect(successURL);
