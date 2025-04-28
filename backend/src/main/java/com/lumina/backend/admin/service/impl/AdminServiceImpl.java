@@ -186,7 +186,8 @@ public class AdminServiceImpl implements AdminService {
                     return new GetUserPostResponse(
                             post.getId(),
                             post.getPostImage(),
-                            post.getPostContent()
+                            post.getPostContent(),
+                            post.getPostViews()
                     );
                 })
                 .collect(Collectors.toList());

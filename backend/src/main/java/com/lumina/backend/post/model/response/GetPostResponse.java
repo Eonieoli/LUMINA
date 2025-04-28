@@ -15,6 +15,7 @@ public class GetPostResponse {
     private String profileImage;
     private String postImage;
     private String postContent;
+    private int postViews;
     private String categoryName;
     private List<String> hashtagList;
     private int likeCnt;
