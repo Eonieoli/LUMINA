@@ -36,16 +36,25 @@ public class Post extends BaseEntity {
     @Column(name = "post_content", nullable = false, length = 300)
     private String postContent;
 
-    public Post (User user, Category category, String postImage, String postContent) {
+    @Column(name = "post_views", nullable = false)
+    private Integer postViews;
+
+    public Post (User user, Category category, String postImage, String postContent, Integer postViews) {
         this.user = user;
         this.category = category;
         this.postImage = postImage;
         this.postContent = postContent;
+        this.postViews = postViews;
     }
 
-    public Post (User user, Category category, String postContent) {
+    public Post (User user, Category category, String postContent, Integer postViews) {
         this.user = user;
         this.category = category;
         this.postContent = postContent;
+        this.postViews = postViews;
+    }
+
+    public void plusViews(Integer postViews) {
+        this.postViews += postViews;
     }
 }

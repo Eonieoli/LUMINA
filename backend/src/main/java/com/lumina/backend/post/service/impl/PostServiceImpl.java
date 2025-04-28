@@ -76,9 +76,9 @@ public class PostServiceImpl implements PostService {
         Post post;
         if (request.getPostImageFile() != null && !request.getPostImageFile().isEmpty()) {
             String postImage = s3Service.uploadImageFile(request.getPostImageFile(), "post/");
-            post = new Post(user, category, postImage, request.getPostContent());
+            post = new Post(user, category, postImage, request.getPostContent(), 0);
         } else {
-            post = new Post(user, category, request.getPostContent());
+            post = new Post(user, category, request.getPostContent(), 0);
         }
         postRepository.save(post);
 
@@ -130,11 +130,13 @@ public class PostServiceImpl implements PostService {
                     int likeCnt = postLikeRepository.countByPostId(post.getId());
                     int commentCnt = commentRepository.countByPostId(post.getId());
                     Boolean isLike = postLikeRepository.existsByUserIdAndPostId(myId, post.getId());
+                    post.plusViews(1);
+                    postRepository.save(post);
 
                     return new GetPostResponse(
                             post.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
-                            post.getPostImage(), post.getPostContent(), category.getCategoryName(),
-                            hashtagList, likeCnt, commentCnt, isLike
+                            post.getPostImage(), post.getPostContent(), post.getPostViews(),
+                            category.getCategoryName(), hashtagList, likeCnt, commentCnt, isLike
                     );
                 })
                 .collect(Collectors.toList());
@@ -412,11 +414,13 @@ public class PostServiceImpl implements PostService {
                     int likeCnt = postLikeRepository.countByPostId(post.getId());
                     int commentCnt = commentRepository.countByPostId(post.getId());
                     Boolean isLike = postLikeRepository.existsByUserIdAndPostId(userId, post.getId());
+                    post.plusViews(1);
+                    postRepository.save(post);
 
                     return new GetPostResponse(
                             post.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
-                            post.getPostImage(), post.getPostContent(), category.getCategoryName(),
-                            hashtagList, likeCnt, commentCnt, isLike
+                            post.getPostImage(), post.getPostContent(), post.getPostViews(),
+                            category.getCategoryName(), hashtagList, likeCnt, commentCnt, isLike
                     );
                 })
                 .collect(Collectors.toList());
@@ -451,11 +455,13 @@ public class PostServiceImpl implements PostService {
                     int likeCnt = postLikeRepository.countByPostId(post.getId());
                     int commentCnt = commentRepository.countByPostId(post.getId());
                     Boolean isLike = postLikeRepository.existsByUserIdAndPostId(userId, post.getId());
+                    post.plusViews(1);
+                    postRepository.save(post);
 
                     return new GetPostResponse(
                             post.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
-                            post.getPostImage(), post.getPostContent(), category.getCategoryName(),
-                            hashtagList, likeCnt, commentCnt, isLike
+                            post.getPostImage(), post.getPostContent(), post.getPostViews(),
+                            category.getCategoryName(), hashtagList, likeCnt, commentCnt, isLike
                     );
                 })
                 .collect(Collectors.toList());

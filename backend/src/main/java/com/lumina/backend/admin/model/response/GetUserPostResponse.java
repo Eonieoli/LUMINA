@@ -10,4 +10,5 @@ public class GetUserPostResponse {
     private Long postId;
     private String postImage;
     private String postContent;
+    private int postViews;
 }
