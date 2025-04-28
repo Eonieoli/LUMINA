@@ -235,9 +235,7 @@ pipeline {
                                     // 모니터링 파일 배포
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/monitoring-compose.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/monitoring-compose.yml"
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/prometheus/prometheus.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/prometheus/prometheus.yml"
-                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/prometheus/alert_rules.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/prometheus/alert_rules.yml"
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/datasource.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/datasource.yml"
-                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/dashboards/dashboard.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/dashboards/dashboard.yml"
 
                                     // 운영 환경 배포 실행
                                     sh """
