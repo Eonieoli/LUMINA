@@ -185,7 +185,7 @@ public class OAuthServiceImpl implements OAuthService {
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(60 * 60 * 24); // 1일 유지
 //        cookie.setSecure(true); // HTTPS에서만 전송 (배포 환경에서는 필수)
-        cookie.setHttpOnly(true); // JavaScript에서 접근 불가
+//        cookie.setHttpOnly(true); // JavaScript에서 접근 불가
         cookie.setPath("/"); // 모든 경로에서 접근 가능
 
         return cookie;
