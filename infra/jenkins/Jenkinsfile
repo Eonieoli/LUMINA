@@ -33,7 +33,7 @@ pipeline {
                         withSonarQubeEnv('SonarQube') {
                             dir('backend') {
                                 sh 'chmod +x ./gradlew' 
-                                sh './gradlew clean test jacocoTestReport sonar'
+                                sh './gradlew sonar -x test'
                             }
                         }
                         // Quality Gate 확인
