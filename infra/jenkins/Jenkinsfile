@@ -66,8 +66,20 @@ pipeline {
                         }
                     } else {
                         // GitLab 이벤트가 없는 경우 기본값 설정 (수동 빌드 등)
-                        env.AUTHOR_NAME = sh(script: 'git log -1 --pretty=format:"%an"', returnStdout: true).trim()
-                        env.AUTHOR_EMAIL = sh(script: 'git log -1 --pretty=format:"%ae"', returnStdout: true).trim()
+                        if (isUnix()) {
+                            env.AUTHOR_NAME = sh(script: 'git log -1 --pretty=format:"%an"', returnStdout: true).trim()
+                            env.AUTHOR_EMAIL = sh(script: 'git log -1 --pretty=format:"%ae"', returnStdout: true).trim()
+                        } else {
+                            env.AUTHOR_NAME = bat(script: '@git log -1 --pretty=format:"%an"', returnStdout: true).trim()
+                            env.AUTHOR_EMAIL = bat(script: '@git log -1 --pretty=format:"%ae"', returnStdout: true).trim()
+                            // Windows bat 명령은 명령 자체도 출력하므로 필요시 추가 처리
+                            if (env.AUTHOR_NAME.contains('\r\n')) {
+                                env.AUTHOR_NAME = env.AUTHOR_NAME.split('\r\n').last()
+                            }
+                            if (env.AUTHOR_EMAIL.contains('\r\n')) {
+                                env.AUTHOR_EMAIL = env.AUTHOR_EMAIL.split('\r\n').last()
+                            }
+                        }
                         env.CHANGE_INFO = "Branch: ${env.BRANCH_NAME}"
                     }
                     
@@ -376,7 +388,7 @@ pipeline {
                     mattermostSend color: 'good', 
                         message: """
 ✅ 배포 성공: ${env.BRANCH_NAME} #${env.BUILD_NUMBER}
-👤 작성자: ${env.AUTHOR_NAME} ${env.AUTHOR_EMAIL ? '(' + env.AUTHOR_EMAIL + ')' : ''}
+👤 작성자: ${env.AUTHOR_NAME ?: 'Unknown'} ${(env.AUTHOR_EMAIL && env.AUTHOR_EMAIL != 'null') ? '(' + env.AUTHOR_EMAIL + ')' : ''}
 🌐 환경: ${deployEnv} (${deployType})
 📝 상세 정보: ${deployInfo}
 🔗 빌드 링크: ${env.BUILD_URL}
@@ -408,7 +420,7 @@ pipeline {
                     mattermostSend color: 'danger', 
                         message: """
 ❌ 배포 실패: ${env.BRANCH_NAME} #${env.BUILD_NUMBER}
-👤 작성자: ${env.AUTHOR_NAME} ${env.AUTHOR_EMAIL ? '(' + env.AUTHOR_EMAIL + ')' : ''}
+👤 작성자: ${env.AUTHOR_NAME ?: 'Unknown'} ${(env.AUTHOR_EMAIL && env.AUTHOR_EMAIL != 'null') ? '(' + env.AUTHOR_EMAIL + ')' : ''}
 🌐 환경: ${deployEnv} (${deployType})
 ⚠️ 상세 정보: ${deployInfo}
 🔗 빌드 링크: ${env.BUILD_URL}
