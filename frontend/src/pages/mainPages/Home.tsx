@@ -45,9 +45,9 @@ const posts = [
     },
 ]
 
-export const Home = () => {
+export default function HomePage() {
     return (
-        <div>
+        <div className="w-full">
             {posts.map((post) => (
                 <Board
                     key={post.postId}
@@ -65,3 +65,5 @@ export const Home = () => {
         </div>
     );
 };
+
+
