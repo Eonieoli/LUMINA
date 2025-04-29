@@ -1,8 +1,5 @@
-import HomeIcon from '../assets/images/navbar/Ic_home.png';
-import SearchIcon from '../assets/images/navbar/Ic_search.png'
-import DonateIcon from '../assets/images/navbar/Ic_donate.png'
-import RankingIcon from '../assets/images/navbar/Ic_ranking.png'
 import { Link } from 'react-router-dom';
+import { HomeIcon, SearchIcon, DonationIcon, RankingIcon } from '@/assets/images';
 import { useAuthStore } from '@/stores/auth';
 import { DefaultProfile } from '@/assets/images';
 
@@ -12,7 +9,7 @@ export default function Navbar() {
   return(
     <nav className="
      /* 모바일뷰 768px까지 */
-    fixed bottom-0 w-full bg-white p-2 flex justify-around h-20 border-t border-gray-300 items-center
+    fixed bottom-0 z-50 w-full bg-white p-2 flex justify-around h-20 border-t border-gray-300 items-center
 
     /* 웹뷰 768px부터 */
     md:top-0 md:left-0 md:h-full md:w-20 md:flex-col md:justify-around md:items-center md:py-10 md:border-r
@@ -27,7 +24,7 @@ export default function Navbar() {
       </Link>
 
       <Link to="/donate">
-      <img src={DonateIcon} alt="Donate" className="w-8 h-6 cursor-pointer transition-transform duration-300 hover:scale-120"/>
+      <img src={DonationIcon} alt="Donate" className="w-8 h-6 cursor-pointer transition-transform duration-300 hover:scale-120"/>
       </Link>
 
       <Link to="/ranking">
