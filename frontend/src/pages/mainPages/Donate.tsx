@@ -11,6 +11,7 @@ export default function DonatePage() {
     { donationId: 102, donationName: "기부처 B" },
     { donationId: 103, donationName: "기부처 C" },
     { donationId: 104, donationName: "기부처 D" },
+    { donationId: 105, donationName: "기부처 F"}
   ]
 
   return (
@@ -19,7 +20,7 @@ export default function DonatePage() {
       {/* 코인 조회 */}
       <div className="flex justify-end items-center mb-6">
         <img src={CoinIcon} alt="coinImg" className="w-5 mr-2"/>
-        <p className="text-xl font-bold">
+        <p className="text-[15px] font-bold">
           785
         </p>
       </div>

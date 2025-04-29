@@ -6,7 +6,7 @@ export default function Navbar() {
   return(
     <nav className="
      /* 모바일뷰 768px까지 */
-    fixed bottom-0 w-full bg-white p-2 flex justify-around h-20 border-t border-gray-300 items-center
+    fixed bottom-0 z-50 w-full bg-white p-2 flex justify-around h-20 border-t border-gray-300 items-center
 
     /* 웹뷰 768px부터 */
     md:top-0 md:left-0 md:h-full md:w-20 md:flex-col md:justify-around md:items-center md:py-10 md:border-r
