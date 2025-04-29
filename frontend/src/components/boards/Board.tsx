@@ -63,7 +63,7 @@ export const Board = ({postId, nickname, profileImage, postImage, categoryName, 
                     <span className="bg-[#9C97FA] text-white px-2 py-0.5 text-xs rounded-full">{categoryName}</span>
                 </div>
                 {/* 게시물 사진 (없을 수도 있음) */}
-                {postImage ? <div className="flex justify-center items-center max-w-80 max-h-80"><img src={postImage} alt="게시물" className="w-full h-full"/></div> : null}
+                {postImage ? <div className="flex justify-center items-center"><img src={postImage} alt="게시물" className="w-full h-full"/></div> : null}
                 {/* 게시물 내용 */}
                 <div
                     ref={contentRef}
