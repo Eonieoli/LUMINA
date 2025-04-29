@@ -24,7 +24,7 @@ pipeline {
         ENVIRONMENT = '개발'
         
         // Jenkins 빌드 URL
-        BUILD_URL = "${env.JENKINS_URL}job/${env.JOB_NAME}/${env.BUILD_NUMBER}"
+        BUILD_URL = "${env.JENKINS_URL}job/${env.JOB_NAME}/job/${env.BUILD_NUMBER}"
     }
 
     stages {
@@ -40,9 +40,17 @@ pipeline {
                         env.ENVIRONMENT = '운영'
                     }
                     
-                    // GitLab 정보 수집 - 개선된 방식
+                    /// GitLab 정보 수집 - 개선된 방식
                     if (env.gitlabActionType) {
                         echo "GitLab 이벤트: ${env.gitlabActionType}"
+                        
+                        // 모든 GitLab 환경 변수 출력 (디버깅용)
+                        echo "GitLab UserName: ${env.gitlabUserName}"
+                        echo "GitLab UserEmail: ${env.gitlabUserEmail}"
+                        echo "GitLab SourceBranch: ${env.gitlabSourceBranch}"
+                        echo "GitLab TargetBranch: ${env.gitlabTargetBranch}"
+                        echo "GitLab MergeRequestIid: ${env.gitlabMergeRequestIid}"
+                        echo "GitLab MergeRequestTitle: ${env.gitlabMergeRequestTitle}"
                         
                         // MR 관련 이벤트인 경우
                         if (env.gitlabMergeRequestIid) {
@@ -54,38 +62,7 @@ pipeline {
                         else if (env.gitlabBefore && env.gitlabAfter) {
                             env.AUTHOR_NAME = env.gitlabUserName ?: 'Unknown'
                             env.AUTHOR_EMAIL = env.gitlabUserEmail ?: ''
-                            env.CHANGE_INFO = "Branch: ${env.gitlabSourceBranch ?: env.BRANCH_NAME}"
-                        }
-                    }
-                    // GitLab 정보가 없는 경우 Git 명령어로 정보 가져오기 (Windows/Linux 호환)
-                    else {
-                        try {
-                            // Windows와 Linux 환경 모두 지원하는 방식
-                            if (isUnix()) {
-                                env.AUTHOR_NAME = sh(script: 'git log -1 --pretty=%an', returnStdout: true).trim()
-                                env.AUTHOR_EMAIL = sh(script: 'git log -1 --pretty=%ae', returnStdout: true).trim()
-                                env.CHANGE_INFO = sh(script: 'git log -1 --pretty=%s', returnStdout: true).trim()
-                            } else {
-                                env.AUTHOR_NAME = bat(script: '@git log -1 --pretty=%an', returnStdout: true).trim()
-                                env.AUTHOR_EMAIL = bat(script: '@git log -1 --pretty=%ae', returnStdout: true).trim()
-                                env.CHANGE_INFO = bat(script: '@git log -1 --pretty=%s', returnStdout: true).trim()
-                            }
-                            
-                            // 값이 비어있는 경우 기본값 설정
-                            if (!env.AUTHOR_NAME || env.AUTHOR_NAME.trim() == '') {
-                                env.AUTHOR_NAME = 'Unknown'
-                            }
-                            if (!env.AUTHOR_EMAIL || env.AUTHOR_EMAIL.trim() == '') {
-                                env.AUTHOR_EMAIL = ''
-                            }
-                            if (!env.CHANGE_INFO || env.CHANGE_INFO.trim() == '') {
-                                env.CHANGE_INFO = '코드 변경'
-                            }
-                        } catch (Exception e) {
-                            echo "Git 정보를 가져오는 중 오류 발생: ${e.message}"
-                            env.AUTHOR_NAME = 'Unknown'
-                            env.AUTHOR_EMAIL = ''
-                            env.CHANGE_INFO = '코드 변경'
+                            env.CHANGE_INFO = "Branch: ${env.gitlabSourceBranch ?: env.gitlabBranch ?: env.BRANCH_NAME}"
                         }
                     }
                     
