@@ -362,7 +362,7 @@ pipeline {
                     echo '개발 환경 배포 성공'
                     deployEnv = '개발'
                     deployType = 'GCP'
-                    deployInfo = 'DevOps 팀에서 배포를 완료했습니다.'
+                    deployInfo = '개발 서버에 배포가 완료되었습니다.'
                 } else if (env.BRANCH_NAME == 'master') {
                     echo '운영 환경 배포 성공'
                     deployEnv = '운영'
@@ -372,7 +372,7 @@ pipeline {
                 
                 mattermostSend color: 'good', 
                     message: """
-✅ 배포 성공: ${deployEnv} #${env.BUILD_NUMBER}
+✅ 배포 성공: ${env.BRANCH_NAME} #${env.BUILD_NUMBER}
 👤 작성자: ${env.AUTHOR_NAME} ${env.AUTHOR_EMAIL ? '(' + env.AUTHOR_EMAIL + ')' : ''}
 🔄 변경사항: ${env.CHANGE_INFO}
 🌐 환경: ${deployEnv} (${deployType})
@@ -399,7 +399,7 @@ pipeline {
                 
                 mattermostSend color: 'danger', 
                     message: """
-❌ 배포 실패: ${deployEnv} #${env.BUILD_NUMBER}
+❌ 배포 실패: ${env.BRANCH_NAME} #${env.BUILD_NUMBER}
 👤 작성자: ${env.AUTHOR_NAME} ${env.AUTHOR_EMAIL ? '(' + env.AUTHOR_EMAIL + ')' : ''}
 🔄 변경사항: ${env.CHANGE_INFO}
 🌐 환경: ${deployEnv} (${deployType})
