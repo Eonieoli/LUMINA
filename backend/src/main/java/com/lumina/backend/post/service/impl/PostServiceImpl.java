@@ -119,6 +119,7 @@ public class PostServiceImpl implements PostService {
         } else {
             // 팔로우한 사람의 게시물만 조회
             List<Long> followingIds = followRepository.findFollowingIdsByFollowerId(myId);
+            followingIds.add(myId); // 내 게시물도 추가
             postPage = postRepository.findByUserIdIn(followingIds, pageRequest);
         }
 
