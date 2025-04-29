@@ -1,9 +1,6 @@
-import HomeIcon from '../assets/images/navbar/Ic_home.png';
-import SearchIcon from '../assets/images/navbar/Ic_search.png'
-import DonateIcon from '../assets/images/navbar/Ic_donate.png'
-import RankingIcon from '../assets/images/navbar/Ic_ranking.png'
 import ProfileIcon from '../assets/images/navbar/Ic_Pre_profile.png'
 import { Link } from 'react-router-dom';
+import { HomeIcon, SearchIcon, DonationIcon, RankingIcon } from '@/assets/images';
 
 export default function Navbar() {
   return(
@@ -24,7 +21,7 @@ export default function Navbar() {
       </Link>
 
       <Link to="/donate">
-      <img src={DonateIcon} alt="Donate" className="w-8 h-6 cursor-pointer transition-transform duration-300 hover:scale-120"/>
+      <img src={DonationIcon} alt="Donate" className="w-8 h-6 cursor-pointer transition-transform duration-300 hover:scale-120"/>
       </Link>
 
       <Link to="/ranking">
