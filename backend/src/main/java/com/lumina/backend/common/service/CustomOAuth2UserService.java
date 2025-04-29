@@ -40,7 +40,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         // 부모 클래스의 loadUser 메서드를 호출하여 기본 사용자 정보를 가져옵니다.
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        System.out.println("oAuth2User = " + oAuth2User);
+
         // 클라이언트 등록 ID 확인 (예: google, kakao 등)
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuth2Response oAuth2Response = null;
@@ -63,7 +63,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         // 소셜 ID로 기존 사용자 조회
         User existData = userRepository.findBySocialId(oAuth2Response.getProviderId())
                 .orElse(null);
-        System.out.println("existData = " + existData);
+
         if (existData == null) {
             // 기존 데이터가 없을 경우 새 사용자 생성 및 저장
             User user = new User(
@@ -78,7 +78,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     "ROLE_USER",
                     true
             );
-            System.out.println("user = " + user);
+
             User savedUser = userRepository.save(user);
             String nickname = formattedName + savedUser.getId();
             savedUser.createNickname(nickname);
@@ -97,7 +97,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 nickname,
                 "ROLE_USER"
         );
-        System.out.println("userDto = " + userDto);
+
         return new CustomOAuth2User(userDto);
     }
 }
