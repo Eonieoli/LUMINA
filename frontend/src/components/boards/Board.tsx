@@ -15,9 +15,11 @@ interface BoardProps {
     isLike: boolean;
 }
 
-export const Board = ({postId, nickname, profileImage, postImage, categoryName, postContent, likeCnt, commentCnt, isLike}: BoardProps) => {
+export const Board = ({postId, nickname, profileImage, postImage, categoryName, postContent, likeCnt: initialLikeCnt, commentCnt, isLike: initialIsLike}: BoardProps) => {
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
+    const [isLiked, setIsLiked] = useState(initialIsLike);
+    const [likes, setLikes] = useState(initialLikeCnt);
     const contentRef = useRef<HTMLDivElement>(null);
     const [showComments, setShowComments] = useState(false);
   
@@ -30,9 +32,10 @@ export const Board = ({postId, nickname, profileImage, postImage, categoryName, 
 
     const heartClick = async (postId: number) => {
         try {
-            const response = await postLike(postId);
+            await postLike(postId);
     
-            console.log(response);
+            setIsLiked(prev => !prev);
+            setLikes(prev => prev + (isLiked ? -1 : 1));
             return;
         } catch (error) {
             console.log(error);
@@ -83,8 +86,8 @@ export const Board = ({postId, nickname, profileImage, postImage, categoryName, 
                 {/* 좋아요, 댓글 및 공유 */}
                 <div className="flex gap-x-4">
                     <div onClick={() => heartClick(postId)} className="flex gap-x-1 cursor-pointer">
-                        <img src={isLike ? HeartFilledIcon : HeartDefaultIcon} alt="좋아요" />
-                        <span>{likeCnt}</span>
+                        <img src={isLiked ? HeartFilledIcon : HeartDefaultIcon} alt="좋아요" />
+                        <span>{likes}</span>
                     </div>
                     <div onClick={openComments} className="flex gap-x-1">
                         <img src={ChatIcon} alt="댓글" />
