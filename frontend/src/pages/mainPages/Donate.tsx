@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import DonateSearchBar from "@/components/Donate/SearchBar"
 import FavoriteDonationList from "@/components/Donate/FavoriteDonationList"
 import RecommendDonationList from "@/components/Donate/RecommendDonationList"
-import { CoinIcon } from "@/assets/images"
+import PointInfo from "@/components/Donate/PointInfo"
 
 export default function DonatePage() {
 
@@ -18,12 +18,7 @@ export default function DonatePage() {
     <div className="flex flex-col w-full px-6 py-6">
 
       {/* 코인 조회 */}
-      <div className="flex justify-end items-center mb-6">
-        <img src={CoinIcon} alt="coinImg" className="w-5 mr-2"/>
-        <p className="text-[15px] font-bold">
-          785
-        </p>
-      </div>
+        <PointInfo />
 
       {/* 검색창 */}
       <div className="w-full mb-8">
