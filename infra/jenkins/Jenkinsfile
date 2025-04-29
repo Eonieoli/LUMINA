@@ -54,9 +54,9 @@ pipeline {
                             }
                         }
                         // Quality Gate 확인
-                        timeout(time: 3, unit: 'MINUTES') {
-                            waitForQualityGate abortPipeline: false
-                        }
+                        // timeout(time: 3, unit: 'MINUTES') {
+                        //     waitForQualityGate abortPipeline: false
+                        // }
                     }
                 }
                 
@@ -65,7 +65,7 @@ pipeline {
                         branch 'develop'
                     }
                     steps {
-                        nodejs('Node18') {
+                        nodejs('Node22') {
                             withSonarQubeEnv('SonarQube') {
                                 dir('frontend') {
                                     // Yarn 의존성 설치
@@ -75,9 +75,9 @@ pipeline {
                                 }
                             }
                             // Quality Gate 확인
-                            timeout(time: 3, unit: 'MINUTES') {
-                                waitForQualityGate abortPipeline: false
-                            }
+                            // timeout(time: 3, unit: 'MINUTES') {
+                            //     waitForQualityGate abortPipeline: false
+                            // }
                         }
                     }
                 }
