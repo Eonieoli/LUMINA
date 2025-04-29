@@ -1,16 +1,20 @@
 # Stage 1: React 앱 빌드
-	
+
 # Node LTS 버전 사용
 FROM node:22.14-alpine AS builder
 
 # 작업 디렉토리 설정
 WORKDIR /app
 
+# Yarn 설치 (Corepack 활성화)
+RUN corepack enable
+RUN yarn --version
+
 # 의존성 파일을 먼저 복사해서 캐시 활용
-COPY package.json package-lock.json ./
+COPY package.json yarn.lock ./
 
 # 의존성 설치
-RUN npm ci
+RUN yarn install --frozen-lockfile
 
 # 전체 소스 복사
 COPY . .
@@ -19,8 +23,7 @@ COPY . .
 COPY .env.front .env
 
 # React 빌드
-RUN npm run build
-
+RUN yarn build
 
 # Stage 2: Nginx로 정적 파일 서빙
 
