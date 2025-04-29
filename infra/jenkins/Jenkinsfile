@@ -24,7 +24,7 @@ pipeline {
         ENVIRONMENT = '개발'
         
         // Jenkins 빌드 URL
-        BUILD_URL = "${env.JENKINS_URL}job/${env.JOB_NAME}/job/${env.BUILD_NUMBER}"
+        BUILD_URL = "${env.JENKINS_URL}job/lumina/job/${env.BRANCH_NAME}/${env.BUILD_NUMBER}"
     }
 
     stages {
