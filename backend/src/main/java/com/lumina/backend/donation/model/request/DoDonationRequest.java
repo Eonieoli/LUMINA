@@ -1,4 +1,4 @@
-package com.lumina.backend.user.model.request;
+package com.lumina.backend.donation.model.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

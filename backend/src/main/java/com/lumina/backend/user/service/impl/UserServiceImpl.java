@@ -3,12 +3,10 @@ package com.lumina.backend.user.service.impl;
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.jwt.JWTUtil;
 import com.lumina.backend.common.utill.RedisUtil;
-import com.lumina.backend.donation.model.entity.Donation;
 import com.lumina.backend.donation.repository.DonationRepository;
 import com.lumina.backend.post.repository.PostRepository;
 import com.lumina.backend.post.service.S3Service;
 import com.lumina.backend.user.model.entity.User;
-import com.lumina.backend.user.model.request.DoDonationRequest;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.*;
 import com.lumina.backend.user.repository.FollowRepository;
@@ -206,41 +204,6 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
 
         return new GetUserPointResponse(user.getId(), user.getNickname(), user.getPoint());
-    }
-
-
-    @Override
-    @Transactional
-    public void doDonation(
-            Long userId, DoDonationRequest request) {
-
-        if (request.getDonationName() == null || request.getDonationName().trim().isEmpty()) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "기부처는 필수 입력값입니다.");
-        }
-
-        if (request.getPoint() == null) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "point는 필수 입력값입니다.");
-        }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
-
-        Donation donation = donationRepository.findByDonationName(request.getDonationName())
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "기부처를 찾을 수 없음: " + request.getDonationName()));
-
-        if (user.getPoint() < request.getPoint()) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "보유 point가 부족합니다.");
-        }
-
-        user.updatePoint(-request.getPoint());
-        user.updateSumPoint(request.getPoint());
-        user.updatePositiveness(request.getPoint() / 100);
-        User savedUser = userRepository.save(user);
-
-        String rankKey = "sum-point:rank";
-        String userKey = "user:" + userId;
-
-        redisUtil.addSumPointToZSetWithTTL(rankKey, userKey, savedUser.getSumPoint());
     }
 
 

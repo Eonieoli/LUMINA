@@ -1,11 +1,27 @@
 pipeline {
     agent any
+    
+    // GitLab 플러그인 트리거 설정
+    triggers {
+        gitlab(
+            triggerOnPush: true,
+            triggerOnMergeRequest: true,
+            branchFilterType: 'All'
+        )
+    }
 
     environment {
-        FRONTEND_IMAGE = "rublin322/lumina-frontend:develop"
-        BACKEND_IMAGE = "rublin322/lumina-backend:develop"
+        // 공통 환경 변수
         GCP_DEPLOY_HOST = "rublin322@picscore.net"
         GCP_DEPLOY_PATH = "/home/rublin322/lumina"
+        AWS_DEPLOY_HOST = "ubuntu@k12s306.p.ssafy.io"
+        AWS_DEPLOY_PATH = "/home/ubuntu/lumina"
+        
+        // 환경 변수
+        ENVIRONMENT = '개발'
+        
+        // Jenkins 빌드 URL
+        BUILD_URL = "${env.JENKINS_URL}job/lumina/job/${env.BRANCH_NAME}/${env.BUILD_NUMBER}"
     }
 
     stages {
@@ -15,28 +31,109 @@ pipeline {
                 script {
                     echo "현재 브랜치: ${env.BRANCH_NAME}"
                     echo "현재 워크스페이스: ${env.WORKSPACE}"
+                    
+                    // 환경 설정
+                    if (env.BRANCH_NAME == 'master') {
+                        env.ENVIRONMENT = '운영'
+                    }
+                }
+            }
+        }
+        
+        stage('SonarQube Analysis') {
+            parallel {
+                stage('Backend Analysis') {
+                    when {
+                        branch 'develop'
+                    }
+                    steps {
+                        withSonarQubeEnv('SonarQube') {
+                            dir('backend') {
+                                sh 'chmod +x ./gradlew' 
+                                sh './gradlew sonar -x test'
+                            }
+                        }
+                        // Quality Gate 확인
+                        timeout(time: 3, unit: 'MINUTES') {
+                            waitForQualityGate abortPipeline: false
+                        }
+                    }
+                }
+                
+                stage('Frontend Analysis') {
+                    when {
+                        branch 'develop'
+                    }
+                    steps {
+                        withSonarQubeEnv('SonarQube') {
+                            dir('frontend') {
+                                sh 'sonar-scanner -Dsonar.projectKey=lumina-frontend'
+                            }
+                        }
+                        // Quality Gate 확인
+                        timeout(time: 3, unit: 'MINUTES') {
+                            waitForQualityGate abortPipeline: false
+                        }
+                    }
                 }
             }
         }
 
         stage('Prepare Environment') {
-            steps {
-                withCredentials([file(credentialsId: 'env-content', variable: 'ENV_PATH')]) {
-                    script {
-                        def envContent = readFile(ENV_PATH)
-                        writeFile file: '.env', text: envContent
+            parallel {
+                stage('Dev Environment') {
+                    when {
+                        anyOf {
+                            branch 'develop'
+                            branch 'backend'
+                            branch 'frontend'
+                        }
+                    }
+                    steps {
+                        withCredentials([file(credentialsId: 'env-dev-content', variable: 'ENV_DEV_PATH')]) {
+                            script {
+                                def envContent = readFile(ENV_DEV_PATH)
+                                writeFile file: 'infra/dev/.env', text: envContent
+                            }
+                        }
+                        withCredentials([file(credentialsId: 'env-front-dev-content', variable: 'ENV_FRONT_DEV_PATH')]) {
+                            script {
+                                def envFrontContent = readFile(ENV_FRONT_DEV_PATH)
+                                writeFile file: 'infra/dev/.env.front', text: envFrontContent
+                            }
+                        }
+                        withCredentials([file(credentialsId: 'htpasswd-dev-content', variable: "HTPASSWD_DEV_PATH")]) {
+                            script {
+                                def htpasswdContent = readFile(HTPASSWD_DEV_PATH)
+                                writeFile file: 'infra/dev/proxy/.htpasswd', text: htpasswdContent
+                            }
+                        }
                     }
                 }
-                withCredentials([file(credentialsId: 'env-front-content', variable: 'ENV_FRONT_PATH')]) {
-                    script {
-                        def envFrontContent = readFile(ENV_FRONT_PATH)
-                        writeFile file: '.env.front', text: envFrontContent
+                
+                stage('Prod Environment') {
+                    when {
+                        branch 'master'
                     }
-                }
-                withCredentials([file(credentialsId: 'htpasswd-content', variable: "HTPASSWD_PATH")]) {
-                    script {
-                        def htpasswdContent = readFile(HTPASSWD_PATH)
-                        writeFile file: '.htpasswd', text: htpasswdContent
+                    steps {
+                        withCredentials([file(credentialsId: 'env-prod-content', variable: 'ENV_PROD_PATH')]) {
+                            script {
+                                def envContent = readFile(ENV_PROD_PATH)
+                                writeFile file: 'infra/prod/.env', text: envContent
+                            }
+                        }
+                        withCredentials([file(credentialsId: 'env-front-prod-content', variable: 'ENV_FRONT_PROD_PATH')]) {
+                            script {
+                                def envFrontContent = readFile(ENV_FRONT_PROD_PATH)
+                                writeFile file: 'infra/prod/.env.front', text: envFrontContent
+                            }
+                        }
+                        withCredentials([file(credentialsId: 'htpasswd-prod-content', variable: "HTPASSWD_PROD_PATH")]) {
+                            script {
+                                def htpasswdContent = readFile(HTPASSWD_PROD_PATH)
+                                writeFile file: 'infra/prod/proxy/.htpasswd', text: htpasswdContent
+                            }
+                        }
                     }
                 }
             }
@@ -50,56 +147,161 @@ pipeline {
                             branch 'develop'
                             branch 'frontend'
                             branch 'backend'
-                            branch 'feat/S12P31S306-43-prometheus-grafana/infra'
                         }
                     }
                     stages {
                         stage('Build Docker Images - Dev') {
                             steps {
-                                // dir('frontend') {
-                                //     sh "cp ../.env.front .env.front"
-                                //     sh "docker build -t ${FRONTEND_IMAGE} ."
-                                // }
-                                dir('backend') {
-                                    sh "docker build -t ${BACKEND_IMAGE} ."
+                                script {
+                                    // 프론트엔드 이미지 빌드 (frontend 브랜치 또는 develop 브랜치인 경우)
+                                    if (env.BRANCH_NAME == 'frontend' || env.BRANCH_NAME == 'develop') {
+                                        dir('frontend') {
+                                            sh "cp ../infra/dev/.env.front .env.front"
+                                            sh "docker build -t rublin322/lumina-frontend:develop ."
+                                        }
+                                    }
+                                    
+                                    // 백엔드 이미지 빌드 (backend 브랜치 또는 develop 브랜치인 경우)
+                                    if (env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'develop') {
+                                        dir('backend') {
+                                            sh "docker build -t rublin322/lumina-backend:develop ."
+                                        }
+                                    }
                                 }
                             }
                         }
-                        stage('Push to DockerHub') {
+                        
+                        stage('Push to DockerHub - Dev') {
                             steps {
                                 withDockerRegistry([credentialsId: 'dockerhub-token', url: '']) {
-                                    // sh "docker push ${FRONTEND_IMAGE}"
-                                    sh "docker push ${BACKEND_IMAGE}"
+                                    script {
+                                        // 프론트엔드 이미지 푸시 (frontend 브랜치 또는 develop 브랜치인 경우)
+                                        if (env.BRANCH_NAME == 'frontend' || env.BRANCH_NAME == 'develop') {
+                                            sh "docker push rublin322/lumina-frontend:develop"
+                                        }
+                                        
+                                        // 백엔드 이미지 푸시 (backend 브랜치 또는 develop 브랜치인 경우)
+                                        if (env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'develop') {
+                                            sh "docker push rublin322/lumina-backend:develop"
+                                        }
+                                    }
                                 }
                             }
                         }
-                        stage('Deploy to GCP') {
+                        
+                        stage('Deploy to GCP - Dev') {
                             steps {
                                 sshagent(credentials: ['gcp-ssh-key']) {
-                                    // 애플리케이션 배포
-                                    sh "scp -o StrictHostKeyChecking=no .env ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/.env"
-                                    // sh "scp -o StrictHostKeyChecking=no ./backend/redis.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/redis.conf"
-                                    sh "scp -o StrictHostKeyChecking=no docker-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/docker-compose.yml"
-
+                                    // 환경 설정 파일 전송
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/proxy'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/prometheus'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana'"
+                                    
+                                    // 환경 설정 파일 전송
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/.env ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/.env"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/.env.front ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/.env.front"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/docker-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/docker-compose.yml"
+                                    
                                     // 프록시 설정 배포
-                                    sh "scp -o StrictHostKeyChecking=no .htpasswd ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/proxy/.htpasswd"
-                                    sh "scp -o StrictHostKeyChecking=no -r ./infra/proxy/* ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/proxy/"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/.htpasswd ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/.htpasswd"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/nginx.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/nginx.conf"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/proxy-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/proxy-compose.yml"
                                     
                                     // 모니터링 파일 배포
-                                    sh "scp -o StrictHostKeyChecking=no -r ./infra/monitoring/* ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/monitoring/"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/monitoring-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/monitoring-compose.yml"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/prometheus/prometheus.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/prometheus/prometheus.yml"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/grafana/datasource.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/datasource.yml"
 
-
+                                    // 개발 환경 배포 실행
                                     sh """
                                     ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
-                                        cd ${GCP_DEPLOY_PATH} &&
+                                        cd ${GCP_DEPLOY_PATH}/infra/dev &&
                                         docker compose down --remove-orphans &&
                                         docker compose pull &&
                                         docker compose up -d &&
-                                        cd ${GCP_DEPLOY_PATH}/infra/proxy &&
+                                        cd ${GCP_DEPLOY_PATH}/infra/dev/proxy &&
                                         docker compose -f proxy-compose.yml -p proxy down --remove-orphans &&
                                         docker compose -f proxy-compose.yml -p proxy pull &&
                                         docker compose -f proxy-compose.yml -p proxy up -d &&
-                                        cd ${GCP_DEPLOY_PATH}/infra/monitoring &&
+                                        cd ${GCP_DEPLOY_PATH}/infra/dev/monitoring &&
+                                        docker compose -f monitoring-compose.yml -p monitoring down --remove-orphans &&
+                                        docker compose -f monitoring-compose.yml -p monitoring pull &&
+                                        docker compose -f monitoring-compose.yml -p monitoring up -d &&
+                                        docker system prune -af
+                                    '
+                                    """
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                stage('Master Branch') {
+                    when {
+                        branch 'master'
+                    }
+                    stages {
+                        stage('Build Docker Images - Prod') {
+                            steps {
+                                script {
+                                    // 프론트엔드 이미지 빌드
+                                    dir('frontend') {
+                                        sh "cp ../infra/prod/.env.front .env.front"
+                                        sh "docker build -t rublin322/lumina-frontend:latest ."
+                                    }
+                                    
+                                    // 백엔드 이미지 빌드
+                                    dir('backend') {
+                                        sh "docker build -t rublin322/lumina-backend:latest ."
+                                    }
+                                }
+                            }
+                        }
+                        
+                        stage('Push to DockerHub - Prod') {
+                            steps {
+                                withDockerRegistry([credentialsId: 'dockerhub-token', url: '']) {
+                                    sh "docker push rublin322/lumina-frontend:latest"
+                                    sh "docker push rublin322/lumina-backend:latest"
+                                }
+                            }
+                        }
+                        
+                        stage('Deploy to AWS - Prod') {
+                            steps {
+                                sshagent(credentials: ['aws-ssh-key']) {
+                                    // 디렉토리 생성
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/proxy'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/prometheus'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/dashboards'"
+                                    
+                                    // 환경 설정 파일 전송
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/.env ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/.env"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/.env.front ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/.env.front"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/docker-compose.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/docker-compose.yml"
+                                    
+                                    // 프록시 설정 배포
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/.htpasswd ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/.htpasswd"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/nginx.conf ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/nginx.conf"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/proxy-compose.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/proxy-compose.yml"
+                                    
+                                    // 모니터링 파일 배포
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/monitoring-compose.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/monitoring-compose.yml"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/prometheus/prometheus.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/prometheus/prometheus.yml"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/datasource.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/datasource.yml"
+
+                                    // 운영 환경 배포 실행
+                                    sh """
+                                    ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} '
+                                        cd ${AWS_DEPLOY_PATH}/infra/prod &&
+                                        docker compose down --remove-orphans &&
+                                        docker compose pull &&
+                                        docker compose up -d &&
+                                        cd ${AWS_DEPLOY_PATH}/infra/prod/proxy &&
+                                        docker compose -f proxy-compose.yml -p proxy down --remove-orphans &&
+                                        docker compose -f proxy-compose.yml -p proxy pull &&
+                                        docker compose -f proxy-compose.yml -p proxy up -d &&
+                                        cd ${AWS_DEPLOY_PATH}/infra/prod/monitoring &&
                                         docker compose -f monitoring-compose.yml -p monitoring down --remove-orphans &&
                                         docker compose -f monitoring-compose.yml -p monitoring pull &&
                                         docker compose -f monitoring-compose.yml -p monitoring up -d &&
@@ -118,19 +320,62 @@ pipeline {
     post {
         success {
             script {
-                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'feat/S12P31S306-43-prometheus-grafana/infra') {
+                def deployEnv = ''
+                def deployType = ''
+                def deployInfo = ''
+                
+                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
                     echo '개발 환경 배포 성공'
+                    deployEnv = '개발'
+                    deployType = 'GCP'
+                    deployInfo = '개발 서버에 배포가 완료되었습니다.'
                 } else if (env.BRANCH_NAME == 'master') {
                     echo '운영 환경 배포 성공'
+                    deployEnv = '운영'
+                    deployType = 'AWS'
+                    deployInfo = '운영 서버에 배포가 완료되었습니다.'
+                }
+                if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
+                    mattermostSend color: 'good', 
+                        message: """
+✅ 배포 성공: ${env.BRANCH_NAME} #${env.BUILD_NUMBER}
+🌐 환경: ${deployEnv} (${deployType})
+📝 상세 정보: ${deployInfo}
+🔗 빌드 링크: ${env.BUILD_URL}
+""",
+                        channel: 's306-alarm',
+                        endpoint: 'https://meeting.ssafy.com/hooks/7qa9fbgsbtb3fyak3sao9n887e'
                 }
             }
         }
         failure {
             script {
-                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'feat/S12P31S306-43-prometheus-grafana/infra') {
+                def deployEnv = ''
+                def deployType = ''
+                def deployInfo = ''
+                
+                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
                     echo '개발 환경 배포 실패'
+                    deployEnv = '개발'
+                    deployType = 'GCP'
+                    deployInfo = '개발 서버에 배포가 실패했습니다.'
                 } else if (env.BRANCH_NAME == 'master') {
                     echo '운영 환경 배포 실패'
+                    deployEnv = '운영'
+                    deployType = 'AWS'
+                    deployInfo = '운영 서버에 배포가 실패했습니다.'
+                }
+                if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
+                
+                    mattermostSend color: 'danger', 
+                        message: """
+❌ 배포 실패: ${env.BRANCH_NAME} #${env.BUILD_NUMBER}
+🌐 환경: ${deployEnv} (${deployType})
+⚠️ 상세 정보: ${deployInfo}
+🔗 빌드 링크: ${env.BUILD_URL}
+""",
+                        channel: 's306-alarm',
+                        endpoint: 'https://meeting.ssafy.com/hooks/7qa9fbgsbtb3fyak3sao9n887e'
                 }
             }
         }

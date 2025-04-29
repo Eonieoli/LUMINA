@@ -104,7 +104,7 @@ public class PostServiceImpl implements PostService {
             throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
         }
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postPage;
 
         if (userId != null) {
@@ -119,6 +119,7 @@ public class PostServiceImpl implements PostService {
         } else {
             // 팔로우한 사람의 게시물만 조회
             List<Long> followingIds = followRepository.findFollowingIdsByFollowerId(myId);
+            followingIds.add(myId); // 내 게시물도 추가
             postPage = postRepository.findByUserIdIn(followingIds, pageRequest);
         }
 
@@ -403,7 +404,7 @@ public class PostServiceImpl implements PostService {
 
         List<Long> subscribedCategoryIds = userCategoryRepository.findCategoryIdsByUserId(userId);
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postPage = postRepository.findByCategoryIdIn(subscribedCategoryIds, pageRequest);
 
         List<GetPostResponse> posts = postPage.getContent().stream()
@@ -444,7 +445,7 @@ public class PostServiceImpl implements PostService {
     public Map<String, Object> searchPost(
             Long userId, String keyword, int pageNum) {
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postPage = postRepository.findPostsByHashtagName(keyword, pageRequest);
 
         List<GetPostResponse> posts = postPage.getContent().stream()
