@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { getPosts } from "@/apis/board";
-import { Board } from "@/components/boards/Board";
+import { Board, Header } from "@/components";
 
 interface Post {
   postId: number;
@@ -75,6 +75,7 @@ export default function HomePage() {
 
   return (
     <>
+      <Header />
       {posts.map((post, index) => {
         const isLast = index === posts.length - 1;
 

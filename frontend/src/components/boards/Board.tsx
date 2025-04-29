@@ -1,7 +1,7 @@
 import { postLike, deletePost } from "@/apis/board";
 import { ChatIcon, DefaultProfile, HeartDefaultIcon, HeartFilledIcon } from "@/assets/images";
 import { useEffect, useRef, useState } from "react";
-import { Comments } from "./Comments";
+import { Comments } from "@/components";
 import { useAuthStore } from "@/stores/auth";
 
 interface BoardProps {

@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom"
 import { HomePage, SearchPage, DonatePage, RankingPage, MyPage} from "@/pages/mainPages"
-import Navbar from "@/components/Navbar"
+import { Navbar } from "@/components"
 import { useEffect } from "react"
 import { useAuthStore } from "@/stores/auth"
 import { getMyProfile } from "@/apis/auth"
