@@ -19,6 +19,45 @@ pipeline {
                 }
             }
         }
+        
+        stage('SonarQube Analysis') {
+            parallel {
+                stage('Backend Analysis') {
+                    when {
+                        branch 'develop'
+                    }
+                    steps {
+                        withSonarQubeEnv('SonarQube') {
+                            dir('backend') {
+                                sh 'chmod +x ./gradlew' 
+                                sh './gradlew sonar -x test'
+                            }
+                        }
+                        // Quality Gate 확인
+                        timeout(time: 3, unit: 'MINUTES') {
+                            waitForQualityGate abortPipeline: false
+                        }
+                    }
+                }
+                
+                stage('Frontend Analysis') {
+                    when {
+                        branch 'develop'
+                    }
+                    steps {
+                        withSonarQubeEnv('SonarQube') {
+                            dir('frontend') {
+                                sh 'sonar-scanner -Dsonar.projectKey=lumina-frontend'
+                            }
+                        }
+                        // Quality Gate 확인
+                        timeout(time: 3, unit: 'MINUTES') {
+                            waitForQualityGate abortPipeline: false
+                        }
+                    }
+                }
+            }
+        }
 
         stage('Prepare Environment') {
             parallel {
