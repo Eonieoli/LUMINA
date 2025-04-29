@@ -117,7 +117,7 @@ public class User extends BaseEntity {
      * @param point 추가할 포인트 값
      */
     public void updateSumPoint(Integer point) {
-        this.point += point;
+        this.sumPoint += point;
     }
 
     /**
