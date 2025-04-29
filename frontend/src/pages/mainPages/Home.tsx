@@ -23,15 +23,24 @@ export default function HomePage() {
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const observer = useRef<IntersectionObserver | null>(null);
+  // const fetchedOnce = useRef(false);
+
+  const handleDelete = (postId: number) => {
+    console.log('함수에 왔다!')
+    setPosts(prevPosts => prevPosts.filter(post => post.postId !== postId));
+  };
 
   useEffect(() => {
+    console.log('이제 좀 가라!')
     console.log(posts);
   }, [posts])
   
   useEffect(() => {
     const fetchPosts = async () => {
       if (isLoading || !hasMore) return;
+      // if (isLoading || !hasMore || fetchedOnce.current) return;
 
+      // fetchedOnce.current = true;
       setIsLoading(true);
       try {
         const data = await getPosts(pageNum);
@@ -66,21 +75,29 @@ export default function HomePage() {
 
   return (
     <>
-      {posts.map((post, index) => (
-        <div key={post.postId} ref={index === posts.length - 1 ? lastPostRef : undefined}>
-          <Board
-            postId={post.postId}
-            nickname={post.nickname}
-            profileImage={post.profileImage}
-            postImage={post.postImage}
-            categoryName={post.categoryName}
-            postContent={post.postContent}
-            likeCnt={post.likeCnt}
-            commentCnt={post.commentCnt}
-            isLike={post.isLike}
-          />
-        </div>
-      ))}
+      {posts.map((post, index) => {
+        const isLast = index === posts.length - 1;
+
+        return (
+          <div
+            key={post.postId}
+            ref={isLast ? lastPostRef : undefined}
+          >
+            <Board
+              postId={post.postId}
+              nickname={post.nickname}
+              profileImage={post.profileImage}
+              postImage={post.postImage}
+              categoryName={post.categoryName}
+              postContent={post.postContent}
+              likeCnt={post.likeCnt}
+              commentCnt={post.commentCnt}
+              isLike={post.isLike}
+              onDelete={handleDelete}
+            />
+          </div>
+        );
+      })}
       {isLoading && (
         <div className="text-center py-4 text-gray-400">불러오는 중...</div>
       )}

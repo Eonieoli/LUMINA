@@ -1,7 +1,8 @@
-import { postLike } from "@/apis/board";
+import { postLike, deletePost } from "@/apis/board";
 import { ChatIcon, DefaultProfile, HeartDefaultIcon, HeartFilledIcon } from "@/assets/images";
 import { useEffect, useRef, useState } from "react";
 import { Comments } from "./Comments";
+import { useAuthStore } from "@/stores/auth";
 
 interface BoardProps {
     postId: number;
@@ -13,9 +14,11 @@ interface BoardProps {
     likeCnt: number;
     commentCnt: number;
     isLike: boolean;
+    onDelete: (postId: number) => void;
 }
 
-export const Board = ({postId, nickname, profileImage, postImage, categoryName, postContent, likeCnt: initialLikeCnt, commentCnt, isLike: initialIsLike}: BoardProps) => {
+export const Board = ({postId, nickname, profileImage, postImage, categoryName, postContent, likeCnt: initialLikeCnt, commentCnt, isLike: initialIsLike, onDelete}: BoardProps) => {
+    const authStore = useAuthStore();
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
     const [isLiked, setIsLiked] = useState(initialIsLike);
@@ -42,6 +45,15 @@ export const Board = ({postId, nickname, profileImage, postImage, categoryName, 
         }
     }
 
+    const deleteClick = async (postId: number) => {
+        try{
+            await deletePost(postId);
+            onDelete(postId);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     useEffect(() => {
       if (contentRef.current) {
         const el = contentRef.current;
@@ -57,9 +69,19 @@ export const Board = ({postId, nickname, profileImage, postImage, categoryName, 
         <>
             <div className="w-full flex flex-col gap-y-2 px-5 py-2 border-y-3 border-gray-200">
                 {/* 사용자 프로필 */}
-                <div className="flex items-center gap-x-4">
-                    <img src={profileImage ? profileImage : DefaultProfile} alt="프로필 이미지" className="w-7 h-7 rounded-full"/>
-                    <span className="font-bold">{nickname}</span>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-x-4">
+                        <img src={profileImage ? profileImage : DefaultProfile} alt="프로필 이미지" className="w-7 h-7 rounded-full"/>
+                        <span className="font-bold">{nickname}</span>
+                    </div>
+                    {authStore.data.nickname === nickname ?
+                        <div onClick={() => deleteClick(postId)} className="relative w-4 h-4 flex gap-x-1 cursor-pointer py-2">
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 rotate-45 bg-black w-4 h-[2px]"></div>
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 -rotate-45 bg-black w-4 h-[2px]"></div>
+                        </div>
+                        :
+                        null
+                    }
                 </div>
                 {/* 게시물 카테고리 */}
                 <div>
