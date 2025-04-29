@@ -65,14 +65,21 @@ pipeline {
                         branch 'develop'
                     }
                     steps {
-                        withSonarQubeEnv('SonarQube') {
-                            dir('frontend') {
-                                sh 'sonar-scanner -Dsonar.projectKey=lumina-frontend'
+                        nodejs('Node22') {
+                            withSonarQubeEnv('SonarQube') {
+                                dir('frontend') {
+                                    // Yarn 의존성 설치
+                                    sh 'yarn install'
+                                    // SonarScanner 설치 및 실행
+                                    sh 'yarn global add sonar-scanner'
+                                    // SonarScanner 실행 (yarn으로 실행)
+                                    sh 'yarn sonar-scanner -Dsonar.projectKey=lumina-frontend'
+                                }
                             }
-                        }
-                        // Quality Gate 확인
-                        timeout(time: 3, unit: 'MINUTES') {
-                            waitForQualityGate abortPipeline: false
+                            // Quality Gate 확인
+                            timeout(time: 3, unit: 'MINUTES') {
+                                waitForQualityGate abortPipeline: false
+                            }
                         }
                     }
                 }
