@@ -64,6 +64,11 @@ pipeline {
                             env.AUTHOR_EMAIL = env.gitlabUserEmail ?: ''
                             env.CHANGE_INFO = "Branch: ${env.gitlabSourceBranch ?: env.gitlabBranch ?: env.BRANCH_NAME}"
                         }
+                    } else {
+                        // GitLab 이벤트가 없는 경우 기본값 설정 (수동 빌드 등)
+                        env.AUTHOR_NAME = sh(script: 'git log -1 --pretty=format:"%an"', returnStdout: true).trim()
+                        env.AUTHOR_EMAIL = sh(script: 'git log -1 --pretty=format:"%ae"', returnStdout: true).trim()
+                        env.CHANGE_INFO = "Branch: ${env.BRANCH_NAME}"
                     }
                     
                     echo "작성자: ${env.AUTHOR_NAME} (${env.AUTHOR_EMAIL})"
