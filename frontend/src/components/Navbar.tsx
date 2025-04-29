@@ -1,8 +1,11 @@
-import ProfileIcon from '../assets/images/navbar/Ic_Pre_profile.png'
 import { Link } from 'react-router-dom';
 import { HomeIcon, SearchIcon, DonationIcon, RankingIcon } from '@/assets/images';
+import { useAuthStore } from '@/stores/auth';
+import { DefaultProfile } from '@/assets/images';
 
 export default function Navbar() {
+  const authData = useAuthStore();
+
   return(
     <nav className="
      /* 모바일뷰 768px까지 */
@@ -29,7 +32,7 @@ export default function Navbar() {
       </Link>
 
       <Link to="/mypage">
-      <img src={ProfileIcon} alt="Profile" className="w-6 h-6 cursor-pointer transition-transform duration-300 hover:scale-120"/>
+      <img src={authData.data.profileImage ? authData.data.profileImage : DefaultProfile} alt="Profile" className="w-6 h-6 cursor-pointer transition-transform duration-300 hover:scale-120"/>
       </Link>
     </nav>
   )
