@@ -1,18 +1,35 @@
 import DonationCard from "./DonationCard"
 import { SmileLuna } from "@/assets/images";
+import { useState, useEffect } from "react";
+import { getFavoriteDonations } from "@/apis/donation";
+
 // 슬라이드 swiper 관련
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css"
 import "swiper/css/pagination"
 import { Pagination } from "swiper/modules";
 
-
-
-interface FavoriteDonationListProps {
-  donations: { donationId: number; donationName:string}[]
+interface FavoriteDonationList {
+  donationId: number
+  donationName:string
 }
 
-export default function FavoriteDonationList({ donations}: FavoriteDonationListProps) {
+export default function FavoriteDonationList() {
+
+  const [donations, setDonations] = useState<FavoriteDonationList[]>([])
+
+  useEffect(() => {
+    const fetchFavoriteDonations = async () => {
+      try {
+        const response = await getFavoriteDonations()
+        setDonations(response.data.data.donations)
+      }
+      catch (error) {
+        console.log("관심 기부처 가져오기 실패!", error)
+      }
+    }
+    fetchFavoriteDonations()
+  },[]) 
 
   // 4개 카드를 슬라이드 하나에 넣기
   const slides = []

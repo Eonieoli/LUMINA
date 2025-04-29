@@ -37,7 +37,7 @@ export default function DonatePage() {
 
       {/* 관심 기부처 */}
       <div className="w-full mb-6">
-        <FavoriteDonationList donations={mockData}/>
+        <FavoriteDonationList/>
       </div>
     </div>
   )
