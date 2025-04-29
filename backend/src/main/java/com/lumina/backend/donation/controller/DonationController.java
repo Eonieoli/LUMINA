@@ -2,6 +2,7 @@ package com.lumina.backend.donation.controller;
 
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.donation.service.DonationService;
+import com.lumina.backend.donation.model.request.DoDonationRequest;
 import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,17 @@ public class DonationController {
         Map<String, Object> response = donationService.getDonation(userId, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("전체 기부처 조회 성공", response));
+    }
+
+    @PostMapping("")
+    public ResponseEntity<BaseResponse<Void>> doDonation(
+            HttpServletRequest request,
+            @RequestBody DoDonationRequest doDonationRequest) {
+
+        Long userId = oAuthService.findIdByToken(request);
+        donationService.doDonation(userId, doDonationRequest);
+
+        return ResponseEntity.ok(BaseResponse.withMessage("기부 완료"));
     }
 
 

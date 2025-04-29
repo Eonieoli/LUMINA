@@ -1,8 +1,7 @@
 package com.lumina.backend.donation.service.impl;
 
-import com.lumina.backend.category.model.entity.Category;
-import com.lumina.backend.category.model.entity.UserCategory;
 import com.lumina.backend.common.exception.CustomException;
+import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.donation.model.entity.Donation;
 import com.lumina.backend.donation.model.entity.UserDonation;
 import com.lumina.backend.donation.model.response.GetDonationResponse;
@@ -12,7 +11,7 @@ import com.lumina.backend.donation.repository.DonationRepository;
 import com.lumina.backend.donation.repository.UserDonationRepository;
 import com.lumina.backend.donation.service.DonationService;
 import com.lumina.backend.user.model.entity.User;
-import com.lumina.backend.user.model.response.SearchUserResponse;
+import com.lumina.backend.donation.model.request.DoDonationRequest;
 import com.lumina.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,6 +33,8 @@ public class DonationServiceImpl implements DonationService {
     private final DonationRepository donationRepository;
     private final UserDonationRepository userDonationRepository;
     private final UserRepository userRepository;
+
+    private final RedisUtil redisUtil;
 
 
     @Override
@@ -59,6 +60,41 @@ public class DonationServiceImpl implements DonationService {
         result.put("donations", donationList);
 
         return result;
+    }
+
+
+    @Override
+    @Transactional
+    public void doDonation(
+            Long userId, DoDonationRequest request) {
+
+        if (request.getDonationName() == null || request.getDonationName().trim().isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "기부처는 필수 입력값입니다.");
+        }
+
+        if (request.getPoint() == null) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "point는 필수 입력값입니다.");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
+
+        Donation donation = donationRepository.findByDonationName(request.getDonationName())
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "기부처를 찾을 수 없음: " + request.getDonationName()));
+
+        if (user.getPoint() < request.getPoint()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "보유 point가 부족합니다.");
+        }
+
+        user.updatePoint(-request.getPoint());
+        user.updateSumPoint(request.getPoint());
+        user.updatePositiveness(request.getPoint() / 100);
+        User savedUser = userRepository.save(user);
+
+        String rankKey = "sum-point:rank";
+        String userKey = "user:" + userId;
+
+        redisUtil.addSumPointToZSetWithTTL(rankKey, userKey, savedUser.getSumPoint());
     }
 
 

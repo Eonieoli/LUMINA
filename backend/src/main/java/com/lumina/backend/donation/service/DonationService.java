@@ -1,10 +1,14 @@
 package com.lumina.backend.donation.service;
 
+import com.lumina.backend.donation.model.request.DoDonationRequest;
+
 import java.util.Map;
 
 public interface DonationService {
 
     Map<String, Object> getDonation(Long userId, int pageNum);
+
+    void doDonation(Long userId, DoDonationRequest request);
 
     /**
      * 기부처에 대한 구독 토글 메서드
