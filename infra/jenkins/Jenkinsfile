@@ -22,6 +22,9 @@ pipeline {
         AUTHOR_EMAIL = ''
         CHANGE_INFO = ''
         ENVIRONMENT = '개발'
+        
+        // Jenkins 빌드 URL
+        BUILD_URL = "${env.JENKINS_URL}job/${env.JOB_NAME}/${env.BUILD_NUMBER}"
     }
 
     stages {
@@ -37,7 +40,7 @@ pipeline {
                         env.ENVIRONMENT = '운영'
                     }
                     
-                    // GitLab 정보 수집
+                    // GitLab 정보 수집 - 개선된 방식
                     if (env.gitlabActionType) {
                         echo "GitLab 이벤트: ${env.gitlabActionType}"
                         
@@ -51,20 +54,38 @@ pipeline {
                         else if (env.gitlabBefore && env.gitlabAfter) {
                             env.AUTHOR_NAME = env.gitlabUserName ?: 'Unknown'
                             env.AUTHOR_EMAIL = env.gitlabUserEmail ?: ''
-                            env.CHANGE_INFO = "Branch: ${env.gitlabSourceBranch}"
+                            env.CHANGE_INFO = "Branch: ${env.gitlabSourceBranch ?: env.BRANCH_NAME}"
                         }
                     }
-                    // GitLab 정보가 없는 경우 Git 명령어로 정보 가져오기
+                    // GitLab 정보가 없는 경우 Git 명령어로 정보 가져오기 (Windows/Linux 호환)
                     else {
                         try {
-                            env.AUTHOR_NAME = sh(script: 'git log -1 --pretty=%an', returnStdout: true).trim()
-                            env.AUTHOR_EMAIL = sh(script: 'git log -1 --pretty=%ae', returnStdout: true).trim()
-                            env.CHANGE_INFO = sh(script: 'git log -1 --pretty=%s', returnStdout: true).trim()
+                            // Windows와 Linux 환경 모두 지원하는 방식
+                            if (isUnix()) {
+                                env.AUTHOR_NAME = sh(script: 'git log -1 --pretty=%an', returnStdout: true).trim()
+                                env.AUTHOR_EMAIL = sh(script: 'git log -1 --pretty=%ae', returnStdout: true).trim()
+                                env.CHANGE_INFO = sh(script: 'git log -1 --pretty=%s', returnStdout: true).trim()
+                            } else {
+                                env.AUTHOR_NAME = bat(script: '@git log -1 --pretty=%an', returnStdout: true).trim()
+                                env.AUTHOR_EMAIL = bat(script: '@git log -1 --pretty=%ae', returnStdout: true).trim()
+                                env.CHANGE_INFO = bat(script: '@git log -1 --pretty=%s', returnStdout: true).trim()
+                            }
+                            
+                            // 값이 비어있는 경우 기본값 설정
+                            if (!env.AUTHOR_NAME || env.AUTHOR_NAME.trim() == '') {
+                                env.AUTHOR_NAME = 'Unknown'
+                            }
+                            if (!env.AUTHOR_EMAIL || env.AUTHOR_EMAIL.trim() == '') {
+                                env.AUTHOR_EMAIL = ''
+                            }
+                            if (!env.CHANGE_INFO || env.CHANGE_INFO.trim() == '') {
+                                env.CHANGE_INFO = '코드 변경'
+                            }
                         } catch (Exception e) {
                             echo "Git 정보를 가져오는 중 오류 발생: ${e.message}"
                             env.AUTHOR_NAME = 'Unknown'
                             env.AUTHOR_EMAIL = ''
-                            env.CHANGE_INFO = '설정 변경'
+                            env.CHANGE_INFO = '코드 변경'
                         }
                     }
                     
@@ -374,9 +395,9 @@ pipeline {
                     message: """
 ✅ 배포 성공: ${env.BRANCH_NAME} #${env.BUILD_NUMBER}
 👤 작성자: ${env.AUTHOR_NAME} ${env.AUTHOR_EMAIL ? '(' + env.AUTHOR_EMAIL + ')' : ''}
-🔄 변경사항: ${env.CHANGE_INFO}
 🌐 환경: ${deployEnv} (${deployType})
-📝 ${deployInfo}
+📝 상세 정보: ${deployInfo}
+🔗 빌드 링크: ${env.BUILD_URL}
 """,
                     channel: 's306-alarm',
                     endpoint: 'https://meeting.ssafy.com/hooks/7qa9fbgsbtb3fyak3sao9n887e'
@@ -386,24 +407,27 @@ pipeline {
             script {
                 def deployEnv = ''
                 def deployType = ''
+                def deployInfo = ''
                 
                 if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
                     echo '개발 환경 배포 실패'
                     deployEnv = '개발'
                     deployType = 'GCP'
+                    deployInfo = '개발 서버에 배포가 실패했습니다.'
                 } else if (env.BRANCH_NAME == 'master') {
                     echo '운영 환경 배포 실패'
                     deployEnv = '운영'
                     deployType = 'AWS'
+                    deployInfo = '운영 서버에 배포가 실패했습니다.'
                 }
                 
                 mattermostSend color: 'danger', 
                     message: """
 ❌ 배포 실패: ${env.BRANCH_NAME} #${env.BUILD_NUMBER}
 👤 작성자: ${env.AUTHOR_NAME} ${env.AUTHOR_EMAIL ? '(' + env.AUTHOR_EMAIL + ')' : ''}
-🔄 변경사항: ${env.CHANGE_INFO}
 🌐 환경: ${deployEnv} (${deployType})
-⚠️ Jenkins 콘솔에서 자세한 오류를 확인하세요.
+⚠️ 상세 정보: ${deployInfo}
+🔗 빌드 링크: ${env.BUILD_URL}
 """,
                     channel: 's306-alarm',
                     endpoint: 'https://meeting.ssafy.com/hooks/7qa9fbgsbtb3fyak3sao9n887e'
