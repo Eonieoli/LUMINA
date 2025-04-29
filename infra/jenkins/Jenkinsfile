@@ -1,5 +1,14 @@
 pipeline {
     agent any
+    
+    // GitLab 플러그인 트리거 설정
+    triggers {
+        gitlab(
+            triggerOnPush: true,
+            triggerOnMergeRequest: true,
+            branchFilterType: 'All'
+        )
+    }
 
     environment {
         // 공통 환경 변수
@@ -7,6 +16,12 @@ pipeline {
         GCP_DEPLOY_PATH = "/home/rublin322/lumina"
         AWS_DEPLOY_HOST = "ubuntu@k12s306.p.ssafy.io"
         AWS_DEPLOY_PATH = "/home/ubuntu/lumina"
+        
+        // GitLab 정보 저장 변수
+        AUTHOR_NAME = ''
+        AUTHOR_EMAIL = ''
+        CHANGE_INFO = ''
+        ENVIRONMENT = '개발'
     }
 
     stages {
@@ -16,6 +31,45 @@ pipeline {
                 script {
                     echo "현재 브랜치: ${env.BRANCH_NAME}"
                     echo "현재 워크스페이스: ${env.WORKSPACE}"
+                    
+                    // 환경 설정
+                    if (env.BRANCH_NAME == 'master') {
+                        env.ENVIRONMENT = '운영'
+                    }
+                    
+                    // GitLab 정보 수집
+                    if (env.gitlabActionType) {
+                        echo "GitLab 이벤트: ${env.gitlabActionType}"
+                        
+                        // MR 관련 이벤트인 경우
+                        if (env.gitlabMergeRequestIid) {
+                            env.AUTHOR_NAME = env.gitlabUserName ?: 'Unknown'
+                            env.AUTHOR_EMAIL = env.gitlabUserEmail ?: ''
+                            env.CHANGE_INFO = "MR: ${env.gitlabMergeRequestTitle ?: env.gitlabSourceBranch + ' → ' + env.gitlabTargetBranch}"
+                        }
+                        // 일반 Push 이벤트인 경우
+                        else if (env.gitlabBefore && env.gitlabAfter) {
+                            env.AUTHOR_NAME = env.gitlabUserName ?: 'Unknown'
+                            env.AUTHOR_EMAIL = env.gitlabUserEmail ?: ''
+                            env.CHANGE_INFO = "Branch: ${env.gitlabSourceBranch}"
+                        }
+                    }
+                    // GitLab 정보가 없는 경우 Git 명령어로 정보 가져오기
+                    else {
+                        try {
+                            env.AUTHOR_NAME = sh(script: 'git log -1 --pretty=%an', returnStdout: true).trim()
+                            env.AUTHOR_EMAIL = sh(script: 'git log -1 --pretty=%ae', returnStdout: true).trim()
+                            env.CHANGE_INFO = sh(script: 'git log -1 --pretty=%s', returnStdout: true).trim()
+                        } catch (Exception e) {
+                            echo "Git 정보를 가져오는 중 오류 발생: ${e.message}"
+                            env.AUTHOR_NAME = 'Unknown'
+                            env.AUTHOR_EMAIL = ''
+                            env.CHANGE_INFO = '설정 변경'
+                        }
+                    }
+                    
+                    echo "작성자: ${env.AUTHOR_NAME} (${env.AUTHOR_EMAIL})"
+                    echo "변경사항: ${env.CHANGE_INFO}"
                 }
             }
         }
@@ -300,20 +354,59 @@ pipeline {
     post {
         success {
             script {
+                def deployEnv = ''
+                def deployType = ''
+                def deployInfo = ''
+                
                 if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
                     echo '개발 환경 배포 성공'
+                    deployEnv = '개발'
+                    deployType = 'GCP'
+                    deployInfo = 'DevOps 팀에서 배포를 완료했습니다.'
                 } else if (env.BRANCH_NAME == 'master') {
                     echo '운영 환경 배포 성공'
+                    deployEnv = '운영'
+                    deployType = 'AWS'
+                    deployInfo = '운영 서버에 배포가 완료되었습니다.'
                 }
+                
+                mattermostSend color: 'good', 
+                    message: """
+✅ 배포 성공: ${deployEnv} #${env.BUILD_NUMBER}
+👤 작성자: ${env.AUTHOR_NAME} ${env.AUTHOR_EMAIL ? '(' + env.AUTHOR_EMAIL + ')' : ''}
+🔄 변경사항: ${env.CHANGE_INFO}
+🌐 환경: ${deployEnv} (${deployType})
+📝 ${deployInfo}
+""",
+                    channel: 's306-alarm',
+                    endpoint: 'https://meeting.ssafy.com/hooks/7qa9fbgsbtb3fyak3sao9n887e'
             }
         }
         failure {
             script {
+                def deployEnv = ''
+                def deployType = ''
+                
                 if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
                     echo '개발 환경 배포 실패'
+                    deployEnv = '개발'
+                    deployType = 'GCP'
                 } else if (env.BRANCH_NAME == 'master') {
                     echo '운영 환경 배포 실패'
+                    deployEnv = '운영'
+                    deployType = 'AWS'
                 }
+                
+                mattermostSend color: 'danger', 
+                    message: """
+❌ 배포 실패: ${deployEnv} #${env.BUILD_NUMBER}
+👤 작성자: ${env.AUTHOR_NAME} ${env.AUTHOR_EMAIL ? '(' + env.AUTHOR_EMAIL + ')' : ''}
+🔄 변경사항: ${env.CHANGE_INFO}
+🌐 환경: ${deployEnv} (${deployType})
+⚠️ Jenkins 콘솔에서 자세한 오류를 확인하세요.
+""",
+                    channel: 's306-alarm',
+                    endpoint: 'https://meeting.ssafy.com/hooks/7qa9fbgsbtb3fyak3sao9n887e'
             }
         }
         always {
