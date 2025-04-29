@@ -56,7 +56,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // OAuth2User 정보 가져오기
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
-
+        System.out.println("customUserDetails = " + customUserDetails);
         String socialId = customUserDetails.getSocialId();
         String nickname = userRepository.findNicknameBySocialId(socialId);
         String role = userRepository.findRoleBySocialId(socialId);
@@ -76,7 +76,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 클라이언트에 Access Token 및 Refresh Token 쿠키로 설정
         response.addCookie(oAuthService.createCookie("access", access));
         response.addCookie(oAuthService.createCookie("refresh", refresh));
-
+        System.out.println("userKey = " + userKey);
         //인증 성공 후 리다이렉트
         response.sendRedirect(successURL);
     }
