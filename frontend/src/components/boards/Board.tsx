@@ -1,5 +1,5 @@
 import { postLike } from "@/apis/board";
-import { ChatIcon, HeartDefaultIcon, HeartFilledIcon } from "@/assets/images";
+import { ChatIcon, DefaultProfile, HeartDefaultIcon, HeartFilledIcon } from "@/assets/images";
 import { useEffect, useRef, useState } from "react";
 import { Comments } from "./Comments";
 
@@ -58,7 +58,7 @@ export const Board = ({postId, nickname, profileImage, postImage, categoryName, 
             <div className="w-full flex flex-col gap-y-2 px-5 py-2 border-y-3 border-gray-200">
                 {/* 사용자 프로필 */}
                 <div className="flex items-center gap-x-4">
-                    <img src={profileImage} alt="프로필 이미지" className="w-7 h-7 rounded-full"/>
+                    <img src={profileImage ? profileImage : DefaultProfile} alt="프로필 이미지" className="w-7 h-7 rounded-full"/>
                     <span className="font-bold">{nickname}</span>
                 </div>
                 {/* 게시물 카테고리 */}

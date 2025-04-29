@@ -65,7 +65,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="w-full">
+    <>
       {posts.map((post, index) => (
         <div key={post.postId} ref={index === posts.length - 1 ? lastPostRef : undefined}>
           <Board
@@ -84,6 +84,6 @@ export default function HomePage() {
       {isLoading && (
         <div className="text-center py-4 text-gray-400">불러오는 중...</div>
       )}
-    </div>
+    </>
   );
 }
