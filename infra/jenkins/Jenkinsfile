@@ -367,17 +367,18 @@ pipeline {
                     deployType = 'AWS'
                     deployInfo = '운영 서버에 배포가 완료되었습니다.'
                 }
-                
-                mattermostSend color: 'good', 
-                    message: """
+                if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
+                    mattermostSend color: 'good', 
+                        message: """
 ✅ 배포 성공: ${env.BRANCH_NAME} #${env.BUILD_NUMBER}
 👤 작성자: ${env.AUTHOR_NAME} ${env.AUTHOR_EMAIL ? '(' + env.AUTHOR_EMAIL + ')' : ''}
 🌐 환경: ${deployEnv} (${deployType})
 📝 상세 정보: ${deployInfo}
 🔗 빌드 링크: ${env.BUILD_URL}
 """,
-                    channel: 's306-alarm',
-                    endpoint: 'https://meeting.ssafy.com/hooks/7qa9fbgsbtb3fyak3sao9n887e'
+                        channel: 's306-alarm',
+                        endpoint: 'https://meeting.ssafy.com/hooks/7qa9fbgsbtb3fyak3sao9n887e'
+                }
             }
         }
         failure {
@@ -397,17 +398,19 @@ pipeline {
                     deployType = 'AWS'
                     deployInfo = '운영 서버에 배포가 실패했습니다.'
                 }
+                if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
                 
-                mattermostSend color: 'danger', 
-                    message: """
+                    mattermostSend color: 'danger', 
+                        message: """
 ❌ 배포 실패: ${env.BRANCH_NAME} #${env.BUILD_NUMBER}
 👤 작성자: ${env.AUTHOR_NAME} ${env.AUTHOR_EMAIL ? '(' + env.AUTHOR_EMAIL + ')' : ''}
 🌐 환경: ${deployEnv} (${deployType})
 ⚠️ 상세 정보: ${deployInfo}
 🔗 빌드 링크: ${env.BUILD_URL}
 """,
-                    channel: 's306-alarm',
-                    endpoint: 'https://meeting.ssafy.com/hooks/7qa9fbgsbtb3fyak3sao9n887e'
+                        channel: 's306-alarm',
+                        endpoint: 'https://meeting.ssafy.com/hooks/7qa9fbgsbtb3fyak3sao9n887e'
+                }
             }
         }
         always {
