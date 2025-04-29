@@ -65,15 +65,18 @@ pipeline {
                         branch 'develop'
                     }
                     steps {
-                        nodejs('Node22') {
+                        nodejs('Node18') {
                             withSonarQubeEnv('SonarQube') {
                                 dir('frontend') {
                                     // Yarn 의존성 설치
                                     sh 'yarn install'
+                                    // package.json의 스크립트를 사용해 SonarScanner 실행
+                                    sh 'yarn sonar'
+
                                     // SonarScanner 설치 및 실행
-                                    sh 'yarn global add sonar-scanner'
+                                    // sh 'yarn global add sonar-scanner'
                                     // SonarScanner 실행 (yarn으로 실행)
-                                    sh 'yarn sonar-scanner -Dsonar.projectKey=lumina-frontend'
+                                    // sh 'yarn sonar-scanner -Dsonar.projectKey=lumina-frontend'
                                 }
                             }
                             // Quality Gate 확인
