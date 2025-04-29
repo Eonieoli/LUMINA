@@ -1,69 +1,54 @@
-import { Board } from "@/components/boards/Board"
+import { useEffect, useState } from "react";
+import { getPosts } from "@/apis/board";
+import { Board } from "@/components/boards/Board";
 
-const posts = [
-    {
-        "postId": 11,
-        "userId":3,
-        "nickname":"박우배",
-        "profileImage": "http://dummyimage.com/112x100.png/dddddd/000000",
-        "postImage": "http://dummyimage.com/112x100.png/dddddd/000000",
-        "postContent": "다같이 선행해요",
-        "postViews": 3,
-        "categoryName": "사람",
-        "hashtagList": ["행복", "사랑"],
-        "likeCnt": 4,
-        "commentCnt":15,
-        "isLike": true
-    },
-    {
-        "postId": 1,
-        "userId":2,
-        "nickname":"박우배",
-        "profileImage": "http://dummyimage.com/112x100.png/dddddd/000000",
-        "postImage": "http://dummyimage.com/112x100.png/dddddd/000000",
-        "postContent": "다같이 선행해요",
-        "postViews": 3,
-        "categoryName": "사람",
-        "hashtagList": ["행복", "사랑"],
-        "likeCnt": 4,
-        "commentCnt":15,
-        "isLike": true
-    },
-    {
-        "postId": 2,
-        "userId":1,
-        "nickname":"박우배",
-        "profileImage": "http://dummyimage.com/112x100.png/dddddd/000000",
-        "postImage": "http://dummyimage.com/225x100.png/dddddd/000000",
-        "postContent": "다같이 선행해요",
-        "postViews": 3,
-        "categoryName": "사람",
-        "hashtagList": ["행복", "사랑"],
-        "likeCnt": 4,
-        "commentCnt":15,
-        "isLike": true
-    },
-]
+interface Post {
+  postId: number;
+  userId: number;
+  nickname: string;
+  profileImage?: string;
+  postImage?: string;
+  postContent: string;
+  postViews: number;
+  categoryName: string;
+  hashtagList: string[];
+  likeCnt: number;
+  commentCnt: number;
+  isLike: boolean;
+}
 
 export default function HomePage() {
-    return (
-        <div className="w-full">
-            {posts.map((post) => (
-                <Board
-                    key={post.postId}
-                    postId={post.postId}
-                    nickname={post.nickname}
-                    profileImage={post.profileImage}
-                    postImage={post.postImage}
-                    categoryName={post.categoryName}
-                    postContent={post.postContent}
-                    likeCnt={post.likeCnt}
-                    commentCnt={post.commentCnt}
-                    isLike={post.isLike}
-                />
-            ))}
-        </div>
-    );
-};
+  const [posts, setPosts] = useState<Post[]>([]);
 
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const data = await getPosts(1); // 1페이지부터 시작
+        setPosts(data);
+      } catch (error) {
+        console.error("게시물 불러오기 실패:", error);
+      }
+    };
 
+    fetchPosts();
+  }, []);
+
+  return (
+    <div className="w-full">
+      {posts.length > 0 ? posts.map((post) => (
+        <Board
+          key={post.postId}
+          postId={post.postId}
+          nickname={post.nickname}
+          profileImage={post.profileImage}
+          postImage={post.postImage}
+          categoryName={post.categoryName}
+          postContent={post.postContent}
+          likeCnt={post.likeCnt}
+          commentCnt={post.commentCnt}
+          isLike={post.isLike}
+        />
+      )) : null}
+    </div>
+  );
+}
