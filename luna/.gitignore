@@ -2,6 +2,7 @@
 dist
 !index.ts
 !character.ts
+!luna-client.ts
 .env
 node_modules
 dist/
