@@ -19,7 +19,7 @@ export class LunaClientInterface {
   constructor(runtime: IAgentRuntime) {
     this.runtime = runtime;
     this.app = express();
-    this.port = parseInt(process.env.LUNA_PLATFORM_PORT || "3001");
+    this.port = parseInt(process.env.LUNA_PLATFORM_PORT || "4000");
 
     // Express 미들웨어 설정
     this.app.use(cors());
@@ -86,6 +86,10 @@ export class LunaClientInterface {
     this.app.get("/api/v1/health", (req, res) => {
       res.json({ status: "ok", agent: this.runtime.character.name });
     });
+
+    this.app.get("/", (req, res) => {
+      res.send("Luna API 서버가 작동 중입니다.");
+    });
   }
 
   // 선한 행동에 대한 평가 및 리워드 생성
@@ -107,7 +111,7 @@ export class LunaClientInterface {
 
     // Eliza 에이전트에 메시지 전달
     // 메시지 처리를 위해 직접 API 요청 사용
-    const serverPort = parseInt(process.env.LUNA_PLATFORM_PORT || "3001");
+    const serverPort = parseInt(process.env.LUNA_PLATFORM_PORT || "4000");
     const response = await fetch(
       `http://localhost:${serverPort}/${this.runtime.character.name}/message`,
       {
@@ -139,7 +143,7 @@ ${question}
 질문이 다른 주제라면, SNS의 방향에 맞게 친절하게 답변해주세요.`;
 
     // Eliza 에이전트에 메시지 전달
-    const serverPort = parseInt(process.env.LUNA_PLATFORM_PORT || "3001");
+    const serverPort = parseInt(process.env.LUNA_PLATFORM_PORT || "4000");
     const response = await fetch(
       `http://localhost:${serverPort}/${this.runtime.character.name}/message`,
       {
