@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import DonateSearchBar from "@/components/donate/SearchBar"
 import FavoriteDonationList from "@/components/donate/FavoriteDonationList"
 import RecommendDonationList from "@/components/donate/RecommendDonationList"

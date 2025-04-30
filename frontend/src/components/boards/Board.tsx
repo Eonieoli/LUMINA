@@ -1,7 +1,7 @@
 import { postLike, deletePost } from "@/apis/board";
 import { ChatIcon, DefaultProfile, HeartDefaultIcon, HeartFilledIcon } from "@/assets/images";
 import { useEffect, useRef, useState } from "react";
-import { Comments } from "@/components";
+import { BottomSheet, Comments } from "@/components";
 import { useAuthStore } from "@/stores/auth";
 
 interface BoardProps {
@@ -26,12 +26,7 @@ export const Board = ({postId, nickname, profileImage, postImage, categoryName, 
     const contentRef = useRef<HTMLDivElement>(null);
     const [showComments, setShowComments] = useState(false);
   
-    const openComments = () => setShowComments(true);
-    const closeComments = () => setShowComments(false);
-
-    const toggleContent = () => {
-        setIsExpanded(!isExpanded);
-    }
+    const toggleContent = () => setIsExpanded(!isExpanded);
 
     const heartClick = async (postId: number) => {
         try {
@@ -111,24 +106,18 @@ export const Board = ({postId, nickname, profileImage, postImage, categoryName, 
                         <img src={isLiked ? HeartFilledIcon : HeartDefaultIcon} alt="좋아요" />
                         <span>{likes}</span>
                     </div>
-                    <div onClick={openComments} className="flex gap-x-1">
+                    <div onClick={() => setShowComments(true)} className="flex gap-x-1">
                         <img src={ChatIcon} alt="댓글" />
                         <span>{commentCnt}</span>
                     </div>
                 </div>
             </div>
 
-            {/* 액션시트 댓글창 */}
+            {/* 바텀시트 댓글창 */}
             {showComments && (
-                <div className="fixed inset-0 z-50 flex justify-center items-end bg-black/30" onClick={closeComments}>
-                {/* 클릭해도 모달 닫히지 않게 이벤트 버블링 막기 */}
-                <div
-                    className="bg-white w-full rounded-t-2xl p-4 max-h-[80%] overflow-y-auto transition-transform duration-300"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <Comments />
-                </div>
-                </div>
+                <BottomSheet onClose={() => setShowComments(false)}>
+                    <Comments postId={postId} />
+                </BottomSheet>
             )}
         </>
     )

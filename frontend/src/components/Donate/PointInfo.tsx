@@ -13,6 +13,7 @@ export default function PointInfo() {
         setPoint(response.data.point)
       }
       catch(error) {
+        console.error(error)
       }
     }
     fetchPointInfo()

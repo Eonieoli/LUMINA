@@ -32,11 +32,9 @@ export const getComments = async (pageNum: number, postId: number) => {
 };
 
 // 게시물 대댓글 조회
-export const getReplies = async (pageNum: number, postId: number, commentId: number) => {
+export const getReplies = async (postId: number, commentId: number) => {
     try {
-        const response = await apiClient.get("/post/" + postId + "/comment" + commentId, {
-            params: { pageNum },
-        });
+        const response = await apiClient.get("/post/" + postId + "/comment/" + commentId);
 
         return response.data;
     } catch (error) {

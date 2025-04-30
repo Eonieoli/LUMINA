@@ -26,14 +26,8 @@ export default function HomePage() {
   // const fetchedOnce = useRef(false);
 
   const handleDelete = (postId: number) => {
-    console.log('함수에 왔다!')
     setPosts(prevPosts => prevPosts.filter(post => post.postId !== postId));
   };
-
-  useEffect(() => {
-    console.log('이제 좀 가라!')
-    console.log(posts);
-  }, [posts])
   
   useEffect(() => {
     const fetchPosts = async () => {
