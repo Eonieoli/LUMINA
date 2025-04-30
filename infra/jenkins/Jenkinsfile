@@ -54,9 +54,9 @@ pipeline {
                             }
                         }
                         // Quality Gate 확인
-                        timeout(time: 3, unit: 'MINUTES') {
-                            waitForQualityGate abortPipeline: false
-                        }
+                        // timeout(time: 3, unit: 'MINUTES') {
+                        //     waitForQualityGate abortPipeline: false
+                        // }
                     }
                 }
                 
@@ -65,14 +65,19 @@ pipeline {
                         branch 'develop'
                     }
                     steps {
-                        withSonarQubeEnv('SonarQube') {
-                            dir('frontend') {
-                                sh 'sonar-scanner -Dsonar.projectKey=lumina-frontend'
+                        nodejs('Node22') {
+                            withSonarQubeEnv('SonarQube') {
+                                dir('frontend') {
+                                    // Yarn 의존성 설치
+                                    sh 'yarn install'
+                                    // SonarScanner 실행 (package.json에 이미 설정된 sonar 스크립트 사용)
+                                    sh 'yarn sonar'
+                                }
                             }
-                        }
-                        // Quality Gate 확인
-                        timeout(time: 3, unit: 'MINUTES') {
-                            waitForQualityGate abortPipeline: false
+                            // Quality Gate 확인
+                            // timeout(time: 3, unit: 'MINUTES') {
+                            //     waitForQualityGate abortPipeline: false
+                            // }
                         }
                     }
                 }
