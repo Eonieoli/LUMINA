@@ -5,6 +5,7 @@ import DefaultProfile from './auth/default.svg';
 import HeartDefaultIcon from './board/heart_default.svg';
 import HeartFilledIcon from './board/heart_filled.svg';
 import ChatIcon from './board/chat.svg';
+import SendIcon from './board/send.svg';
 
 // 헤더 관련 에셋
 import BellIcon from './header/bell.svg';
@@ -29,6 +30,7 @@ export {
     HeartDefaultIcon,
     HeartFilledIcon,
     ChatIcon,
+    SendIcon,
     CoinIcon, 
     SmileLuna,
     PokerLuna,
