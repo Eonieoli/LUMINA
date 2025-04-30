@@ -65,7 +65,8 @@ public class SecurityConfig {
                         configuration.setAllowedOrigins(List.of(
                                 "http://localhost:5173",
                                 "https://k12s306.p.ssafy.io",
-                                "https://picscore.net"
+                                "https://picscore.net",
+                                "http://localhost:3001"
                         ));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
