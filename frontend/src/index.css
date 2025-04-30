@@ -65,4 +65,9 @@
 
 body {
     font-family: 'Pretendard', sans-serif;
+	-ms-overflow-style: none;
+}
+
+::-webkit-scrollbar {
+	display: none;
 }
