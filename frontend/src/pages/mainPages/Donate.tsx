@@ -21,7 +21,7 @@ export default function DonatePage() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   return (
-    <div className="relative flex flex-col w-full px-6 py-6 bg-red-100">
+    <div className="relative flex flex-col w-full px-6 py-6">
 
       {/* 검색 모달창 */}
       {isSearchOpen && <SearchModal onClose={() => setIsSearchOpen(false)} />}

@@ -27,7 +27,7 @@ export default function SearchModal({onClose}: SearchModalProps){
   }
 
   return (
-    <div className="absolute top-0 left-0 w-full h-full z-40 px-6 py-6 bg-amber-200">
+    <div className="absolute top-0 left-0 w-full h-full z-40 px-6 py-6 bg-white">
       <div className="flex justify-start items-center mb-6 h-6">
         <img 
           src={BackIcon} 

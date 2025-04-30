@@ -1,6 +1,6 @@
 import { donationImageMap, defaultDonationThumbnail } from "./DonationImageMap"
 
-interface DonationProps {
+export interface DonationProps {
   donationId: number
   donationName: string
 }
