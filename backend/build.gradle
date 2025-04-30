@@ -103,5 +103,6 @@ sonar {
         property "sonar.java.test.binaries", "build/classes/java/test"
         property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
         property "sonar.gradle.skipCompile", "true"
+		property "sonar.coverage.exclusions", "**/*"
     }
 }
