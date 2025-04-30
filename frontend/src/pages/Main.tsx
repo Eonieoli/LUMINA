@@ -4,6 +4,7 @@ import { Navbar } from "@/components"
 import { useEffect } from "react"
 import { useAuthStore } from "@/stores/auth"
 import { getMyProfile } from "@/apis/auth"
+import DonationSearchResultPage from "./mainPages/DonateChild/DonationSearchResult"
 
 export default function Main() {
   const authData = useAuthStore();
@@ -36,6 +37,8 @@ export default function Main() {
             <Route path="donate" element={<DonatePage/>} />        
             <Route path="ranking" element={<RankingPage/>} />        
             <Route path="mypage" element={<MyPage/>} />
+
+            <Route path="donate/research/:keyword" element={<DonationSearchResultPage/>}/>
           </Routes>
         </div>
       </div>
