@@ -4,6 +4,7 @@ import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.lumina.service.LuminaService;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.service.PostService;
+import com.lumina.backend.user.repository.UserRepository;
 import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LuminaController {
 
+    private final UserRepository userRepository;
+
     private final OAuthService oAuthService;
     private final LuminaService luminaService;
     private final PostService postService;
@@ -29,8 +32,9 @@ public class LuminaController {
             @PathVariable Long postId) {
 
         Long userId = oAuthService.findIdByToken(request);
+        Long luminaId = userRepository.findIdByNickname("Luna");
         UploadCommentRequest uploadCommentRequest = luminaService.getPostLumina(userId, postId);
-        postService.uploadComment(userId, postId, uploadCommentRequest);
+        postService.uploadComment(luminaId, postId, uploadCommentRequest);
 
         return ResponseEntity.ok(BaseResponse.withMessage("게시물에 대한 Lumina 댓글 성성 완료"));
     }
@@ -43,8 +47,9 @@ public class LuminaController {
             @PathVariable Long commentId) {
 
         Long userId = oAuthService.findIdByToken(request);
+        Long luminaId = userRepository.findIdByNickname("Luna");
         UploadCommentRequest uploadCommentRequest = luminaService.getCommentLumina(userId, commentId);
-        postService.uploadComment(userId, postId, uploadCommentRequest);
+        postService.uploadComment(luminaId, postId, uploadCommentRequest);
 
         return ResponseEntity.ok(BaseResponse.withMessage("댓글에 대한 Lumina 댓글 성성 완료"));
     }
