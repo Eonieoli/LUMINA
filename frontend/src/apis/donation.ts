@@ -4,6 +4,7 @@ import { apiClient } from "./axios";
 export const getPointInfo = async() => {
   try{
     const response = await apiClient.get("/user/point")
+    console.log("유저 포인트 가져오기 성공!", response)
     return response.data
   }
   catch(error){
@@ -16,7 +17,8 @@ export const getPointInfo = async() => {
 export const getFavoriteDonations = async() => {
   try {
     const response = await apiClient.get("/donation/me")
-    return response.data;
+    console.log("관심 기부처 가져오기 성공! ", response)
+    return response.data
   }
   catch(error){
     console.log("관심 기부처 가져오기 실패! ", error)
@@ -24,3 +26,15 @@ export const getFavoriteDonations = async() => {
   }
 }
 
+// 기부처 검색하기 
+export const getSearchDonations = async(keyword: string, pageNum: number) => {
+  try {
+    const response = await apiClient.get("/donation/search", {params: {keyword, pageNum}})
+    console.log("기부처 검색하기 성공!", response.data.data.donations)
+    return response.data.data.donations
+  }
+  catch (error) {
+    console.log("기부처 검색 실패!", error)
+    throw error
+  }
+}

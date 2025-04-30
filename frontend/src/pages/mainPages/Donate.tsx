@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react"
-import DonateSearchBar from "@/components/Donate/SearchBar"
-import FavoriteDonationList from "@/components/Donate/FavoriteDonationList"
-import RecommendDonationList from "@/components/Donate/RecommendDonationList"
-import PointInfo from "@/components/Donate/PointInfo"
+import DonateSearchBar from "@/components/donate/SearchBar"
+import FavoriteDonationList from "@/components/donate/FavoriteDonationList"
+import RecommendDonationList from "@/components/donate/RecommendDonationList"
+import PointInfo from "@/components/donate/PointInfo"
+import SearchModal from "@/components/donationSearch/SearchModal"
+
 
 export default function DonatePage() {
 
+  // 추천 기부페이지 임시 데이터
   const mockData = [
     { donationId: 101, donationName: "기부처 A" },
     { donationId: 102, donationName: "기부처 B" },
@@ -14,15 +17,25 @@ export default function DonatePage() {
     { donationId: 105, donationName: "기부처 F"}
   ]
 
+  // 검색창 버튼 클릭시 보일 검색 모달창 상태 관리
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+
   return (
-    <div className="flex flex-col w-full px-6 py-6">
+    <div className="relative flex flex-col w-full px-6 py-6 bg-red-100">
+
+      {/* 검색 모달창 */}
+      {isSearchOpen && <SearchModal onClose={() => setIsSearchOpen(false)} />}
 
       {/* 코인 조회 */}
-        <PointInfo />
+      <PointInfo />
 
       {/* 검색창 */}
-      <div className="w-full mb-8">
-        <DonateSearchBar/>
+      <div className="w-full mb-8" onClick={() => setIsSearchOpen(true)}>
+        <DonateSearchBar
+          keyword=""
+          setKeyword={() => {}}
+          onSearchClick={()=>{}}
+        />
       </div>
 
       {/* 추천 기부처 */}

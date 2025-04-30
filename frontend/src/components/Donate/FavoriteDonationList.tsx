@@ -23,6 +23,7 @@ export default function FavoriteDonationList() {
       try {
         const response = await getFavoriteDonations()
         setDonations(response.data.data.donations)
+        console.log("관심 기부처 가져오기 성공!", response)
       }
       catch (error) {
         console.log("관심 기부처 가져오기 실패!", error)

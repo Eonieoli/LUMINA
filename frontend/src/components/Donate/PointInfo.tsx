@@ -13,14 +13,13 @@ export default function PointInfo() {
         setPoint(response.data.point)
       }
       catch(error) {
-        console.log("포인트 조회 실패!", error)
       }
     }
     fetchPointInfo()
   },[])
 
   return (
-    <div className="flex justify-end items-center mb-6">
+    <div className="flex justify-end items-center mb-6 h-6">
       <img src={CoinIcon} alt="coinImg" className="w-5 mr-2"/>
       <p className="text-[15px] font-bold">
         {point}
