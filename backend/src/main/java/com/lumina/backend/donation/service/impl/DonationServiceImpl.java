@@ -39,13 +39,12 @@ public class DonationServiceImpl implements DonationService {
 
 
     @Override
-    public Map<String, Object> getDonation(
-            Long userId, int pageNum) {
+    public List<GetDonationResponse> getDonation(
+            Long userId) {
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Donation> donationPage = donationRepository.findByStatusTrue(pageRequest);
+        List<Donation> donations = donationRepository.findByStatusTrue();
 
-        List<GetDonationResponse> donationList = donationPage.getContent().stream()
+        List<GetDonationResponse> donationList = donations.stream()
                 .map(donation -> {
                     Boolean isSubscribe = userDonationRepository.existsByUserIdAndDonationIdAndRegistration(
                             userId, donation.getId(), "USER");
@@ -55,12 +54,7 @@ public class DonationServiceImpl implements DonationService {
                 })
                 .collect(Collectors.toList());
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("totalPages", donationPage.getTotalPages());
-        result.put("currentPage", pageNum);
-        result.put("donations", donationList);
-
-        return result;
+        return donationList;
     }
 
 

@@ -1,6 +1,7 @@
 package com.lumina.backend.donation.service;
 
 import com.lumina.backend.donation.model.request.DoDonationRequest;
+import com.lumina.backend.donation.model.response.GetDonationResponse;
 import com.lumina.backend.donation.model.response.GetSubscribeDonationResponse;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.Map;
 
 public interface DonationService {
 
-    Map<String, Object> getDonation(Long userId, int pageNum);
+    List<GetDonationResponse> getDonation(Long userId);
 
     void doDonation(Long userId, DoDonationRequest request);
 

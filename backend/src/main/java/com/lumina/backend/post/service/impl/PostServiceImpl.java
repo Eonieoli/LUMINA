@@ -129,7 +129,7 @@ public class PostServiceImpl implements PostService {
                     Category category = post.getCategory();
                     List<String> hashtagList = postHashtagRepository.findHashtagNamesByPostId(post.getId());
                     int likeCnt = postLikeRepository.countByPostId(post.getId());
-                    int commentCnt = commentRepository.countByPostId(post.getId());
+                    int commentCnt = commentRepository.countByPostIdAndParentCommentIdIsNull(post.getId());
                     Boolean isLike = postLikeRepository.existsByUserIdAndPostId(myId, post.getId());
                     post.plusViews(1);
                     postRepository.save(post);
@@ -279,17 +279,12 @@ public class PostServiceImpl implements PostService {
 
 
     @Override
-    public Map<String, Object> getChildComment(
-            Long userId, Long postId, Long ParentCommentId,  int pageNum) {
+    public List<GetChildCommentResponse> getChildComment(
+            Long userId, Long postId, Long ParentCommentId) {
 
-        if (pageNum < 1) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
-        }
+        List<Comment> comments = commentRepository.findByPostIdAndParentCommentId(postId, ParentCommentId);
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Comment> commentPage = commentRepository.findByPostIdAndParentCommentId(postId, ParentCommentId, pageRequest);
-
-        List<GetChildCommentResponse> comments = commentPage.getContent().stream()
+        List<GetChildCommentResponse> commentResponseList = comments.stream()
                 .map(comment -> {
                     User user = comment.getUser();
                     int likeCnt = commentLikeRepository.countByCommentId(comment.getId());
@@ -302,12 +297,7 @@ public class PostServiceImpl implements PostService {
                 })
                 .collect(Collectors.toList());
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("totalPages", commentPage.getTotalPages());
-        result.put("currentPage", pageNum);
-        result.put("comments", comments);
-
-        return result;
+        return commentResponseList;
     }
 
 
@@ -413,7 +403,7 @@ public class PostServiceImpl implements PostService {
                     Category category = post.getCategory();
                     List<String> hashtagList = postHashtagRepository.findHashtagNamesByPostId(post.getId());
                     int likeCnt = postLikeRepository.countByPostId(post.getId());
-                    int commentCnt = commentRepository.countByPostId(post.getId());
+                    int commentCnt = commentRepository.countByPostIdAndParentCommentIdIsNull(post.getId());
                     Boolean isLike = postLikeRepository.existsByUserIdAndPostId(userId, post.getId());
                     post.plusViews(1);
                     postRepository.save(post);
@@ -454,7 +444,7 @@ public class PostServiceImpl implements PostService {
                     Category category = post.getCategory();
                     List<String> hashtagList = postHashtagRepository.findHashtagNamesByPostId(post.getId());
                     int likeCnt = postLikeRepository.countByPostId(post.getId());
-                    int commentCnt = commentRepository.countByPostId(post.getId());
+                    int commentCnt = commentRepository.countByPostIdAndParentCommentIdIsNull(post.getId());
                     Boolean isLike = postLikeRepository.existsByUserIdAndPostId(userId, post.getId());
                     post.plusViews(1);
                     postRepository.save(post);

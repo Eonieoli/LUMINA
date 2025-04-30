@@ -2,8 +2,10 @@ package com.lumina.backend.post.service;
 
 import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.request.UploadPostRequest;
+import com.lumina.backend.post.model.response.GetChildCommentResponse;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,7 +34,7 @@ public interface PostService {
 
     Map<String, Object> getComment(Long userId, Long postId, int pageNum);
 
-    Map<String, Object> getChildComment(Long userId, Long postId, Long ParentCommentId, int pageNum);
+    List<GetChildCommentResponse> getChildComment(Long userId, Long postId, Long ParentCommentId);
 
     /**
      * 특정 댓글을 삭제하는 메서드
