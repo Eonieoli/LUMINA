@@ -1,6 +1,7 @@
 package com.lumina.backend.donation.controller;
 
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.donation.model.response.GetSubscribeDonationResponse;
 import com.lumina.backend.donation.service.DonationService;
 import com.lumina.backend.donation.model.request.DoDonationRequest;
 import com.lumina.backend.user.service.OAuthService;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -67,11 +69,11 @@ public class DonationController {
 
 
     @GetMapping("/me")
-    public ResponseEntity<BaseResponse<Map<String, Object>>> getSubscribeDonation(
-            HttpServletRequest request, @RequestParam int pageNum) {
+    public ResponseEntity<BaseResponse<List<GetSubscribeDonationResponse>>> getSubscribeDonation(
+            HttpServletRequest request) {
 
         Long userId = oAuthService.findIdByToken(request);
-        Map<String, Object> response = donationService.getSubscribeDonation(userId, pageNum);
+        List<GetSubscribeDonationResponse> response = donationService.getSubscribeDonation(userId);
 
         return ResponseEntity.ok(BaseResponse.success("관심 기부처 조회 성공", response));
     }
