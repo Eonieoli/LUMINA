@@ -7,9 +7,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    int countByPostId(Long postId);
+    int countByPostIdAndParentCommentIdIsNull(Long postId);
+
 
     @EntityGraph(attributePaths = {"user", "parentComment"})
     Page<Comment> findByPostIdAndParentCommentIsNull(Long postId, Pageable pageable);
@@ -17,7 +20,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     int countByParentCommentId(Long commentId);
 
     @EntityGraph(attributePaths = {"user"})
-    Page<Comment> findByPostIdAndParentCommentId(Long postId, Long parentCommentId, Pageable pageable);
+    List<Comment> findByPostIdAndParentCommentId(Long postId, Long parentCommentId);
 
     @EntityGraph(attributePaths = {"post"})
     Page<Comment> findByUserId(Long userId, Pageable pageable);

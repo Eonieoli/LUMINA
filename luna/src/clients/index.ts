@@ -29,10 +29,10 @@ export async function initializeClients(
   if (clientTypes.includes("twitter")) {
     const twitterClients = await TwitterClientInterface.start(runtime);
     clients.push(twitterClients);
-  }~
+  }
 
   // Luna LLM
-  if (clientTypes.includes("auto") && runtime.character.name === "luna") {
+  if (runtime.character.name === "luna") {
     console.log("Luna 에이전트용 커스텀 클라이언트 시작...");
     const lunaClient = await LunaClientInterface.start(runtime);
     if (lunaClient) clients.push(lunaClient);
