@@ -3,6 +3,7 @@ package com.lumina.backend.post.controller;
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.request.UploadPostRequest;
+import com.lumina.backend.post.model.response.GetChildCommentResponse;
 import com.lumina.backend.post.model.response.GetPostResponse;
 import com.lumina.backend.post.service.PostService;
 import com.lumina.backend.user.service.OAuthService;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -119,14 +121,13 @@ public class PostController {
 
 
     @GetMapping("/{postId}/comment/{commentId}")
-    public ResponseEntity<BaseResponse<Map<String, Object>>> getChildComment(
+    public ResponseEntity<BaseResponse<List<GetChildCommentResponse>>> getChildComment(
             HttpServletRequest request,
             @PathVariable Long postId,
-            @PathVariable Long commentId,
-            @RequestParam int pageNum) {
+            @PathVariable Long commentId) {
 
         Long userId = oAuthService.findIdByToken(request);
-        Map<String, Object> response = postService.getChildComment(userId, postId, commentId, pageNum);
+        List<GetChildCommentResponse> response = postService.getChildComment(userId, postId, commentId);
 
         return ResponseEntity.ok(BaseResponse.success("대댓글 조회 성공", response));
     }
