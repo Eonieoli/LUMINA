@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,13 +136,11 @@ public class DonationServiceImpl implements DonationService {
 
 
     @Override
-    public Map<String, Object> getSubscribeDonation(
-            Long userId, int pageNum) {
+    public List<GetSubscribeDonationResponse> getSubscribeDonation(Long userId) {
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<UserDonation> userDonationPage = userDonationRepository.findByUserIdAndRegistration(userId, "USER", pageRequest);
+        List<UserDonation> userDonations = userDonationRepository.findByUserIdAndRegistration(userId, "USER");
 
-        List<GetSubscribeDonationResponse> donationList = userDonationPage.getContent().stream()
+        return userDonations.stream()
                 .map(userDonation -> {
                     Donation donation = userDonation.getDonation();
                     return new GetSubscribeDonationResponse(
@@ -149,13 +148,6 @@ public class DonationServiceImpl implements DonationService {
                     );
                 })
                 .collect(Collectors.toList());
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("totalPages", userDonationPage.getTotalPages());
-        result.put("currentPage", pageNum);
-        result.put("donations", donationList);
-
-        return result;
     }
 
 
