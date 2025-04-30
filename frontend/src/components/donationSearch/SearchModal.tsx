@@ -1,8 +1,7 @@
 // 기부처 페이지에서 검색창을 누르면 보일 검색 모달창
 import { useState } from "react"
 import DonateSearchBar from "../donate/SearchBar"
-import { getSearchDonations } from "@/apis/donation"
-getSearchDonations
+// import { getSearchDonations } from "@/apis/donation"
 import BackIcon from '@/assets/images/donate/Ic_back.svg'
 import { useNavigate } from "react-router-dom"
 
@@ -12,7 +11,6 @@ interface SearchModalProps {
 export default function SearchModal({onClose}: SearchModalProps){
 
   const [keyword, setKeyword] = useState("")
-  const [donations, setDonations] = useState([])
   const navigate = useNavigate()
 
   // 돋보기 버튼을 클릭했을 때 기부처 검색 결과 페이지로 이동
@@ -25,7 +23,6 @@ export default function SearchModal({onClose}: SearchModalProps){
   // 뒤로가기 버튼 클릭했을 때 검색창 초기화하기
   const handleClose = () => {
     setKeyword("")
-    setDonations([])
     onClose()
   }
 
