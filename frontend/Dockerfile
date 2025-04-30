@@ -14,7 +14,8 @@ RUN yarn --version
 COPY package.json yarn.lock ./
 
 # 의존성 설치
-RUN yarn install --frozen-lockfile
+RUN yarn cache clean
+RUN yarn install
 
 # 전체 소스 복사
 COPY . .
