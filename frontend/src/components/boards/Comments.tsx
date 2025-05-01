@@ -98,7 +98,7 @@ export const Comments = ({ postId }: CommentsProps) => {
         )
       );
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 

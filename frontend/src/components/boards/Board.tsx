@@ -36,7 +36,7 @@ export const Board = ({postId, nickname, profileImage, postImage, categoryName, 
             setLikes(prev => prev + (isLiked ? -1 : 1));
             return;
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }
 
@@ -45,7 +45,7 @@ export const Board = ({postId, nickname, profileImage, postImage, categoryName, 
             await deletePost(postId);
             onDelete(postId);
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }
 

@@ -43,7 +43,7 @@ export const Replies = ({postId, commentId, childCommentCnt}: {postId: number, c
             )
             );
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }
 
