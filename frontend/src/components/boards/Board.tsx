@@ -60,6 +60,22 @@ export const Board = ({postId, nickname, profileImage, postImage, categoryName, 
       }
     }, [postContent]);
 
+    useEffect(() => {
+        const scrollContainer = document.getElementById("scrollable-container");
+      
+        if (!scrollContainer) return;
+      
+        if (showComments) {
+          scrollContainer.style.overflow = "hidden";
+        } else {
+          scrollContainer.style.overflow = "auto";
+        }
+      
+        return () => {
+          scrollContainer.style.overflow = "auto";
+        };
+      }, [showComments]);
+
     return (
         <>
             <div className="w-full flex flex-col gap-y-2 px-5 py-2 border-y-3 border-gray-200">

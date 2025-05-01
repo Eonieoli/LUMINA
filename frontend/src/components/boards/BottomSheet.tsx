@@ -15,7 +15,7 @@ export const BottomSheet = ({ onClose, children }: BottomSheetProps) => {
 
   return (
     <div
-      className="absolute inset-0 z-50 flex justify-center items-end bg-[#00000050] bg-opacity-50"
+      className="fixed inset-0 z-50 flex justify-center items-end bg-[#00000050] bg-opacity-50"
       onClick={onClose}
     >
       <div
