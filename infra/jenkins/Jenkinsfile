@@ -215,11 +215,15 @@ pipeline {
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/nginx.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/nginx.conf"
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/proxy-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/proxy-compose.yml"
                                     
-                                    // Blue-Green 설정 파일 전송
-                                    sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/blue-green/frontend/upstream.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/upstream.conf"
+                                    // Blue-Green 설정 파일 전송 - location.conf만 전송 (upstream.conf는 서버에서 관리)
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/blue-green/frontend/location.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/location.conf"
-                                    sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/blue-green/backend/upstream.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/upstream.conf"
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/blue-green/backend/location.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/location.conf"
+                                    
+                                    // upstream.conf 디렉토리 생성 및 초기화 파일 체크
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'if [ ! -f ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/upstream.conf ]; then echo upstream frontend \\{\\} > ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/upstream.conf; fi'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'if [ ! -f ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/upstream.conf ]; then echo upstream backend \\{\\} > ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/upstream.conf; fi'"
                                     
                                     // 배포 스크립트 전송
                                     sh "scp -o StrictHostKeyChecking=no infra/scripts/blue-green-deploy.sh ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/scripts/blue-green-deploy.sh"
@@ -317,11 +321,15 @@ pipeline {
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/nginx.conf ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/nginx.conf"
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/proxy-compose.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/proxy-compose.yml"
                                     
-                                    // Blue-Green 설정 파일 전송
-                                    sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/blue-green/frontend/upstream.conf ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/upstream.conf"
+                                    // Blue-Green 설정 파일 전송 - location.conf만 전송 (upstream.conf는 서버에서 관리)
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/blue-green/frontend/location.conf ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/location.conf"
-                                    sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/blue-green/backend/upstream.conf ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/upstream.conf"
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/blue-green/backend/location.conf ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/location.conf"
+                                    
+                                    // upstream.conf 디렉토리 생성 및 초기화 파일 체크
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'if [ ! -f ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/upstream.conf ]; then echo upstream frontend \\{\\} > ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/upstream.conf; fi'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'if [ ! -f ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/upstream.conf ]; then echo upstream backend \\{\\} > ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/upstream.conf; fi'"
                                     
                                     // 배포 스크립트 전송
                                     sh "scp -o StrictHostKeyChecking=no infra/scripts/blue-green-deploy.sh ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/scripts/blue-green-deploy.sh"
