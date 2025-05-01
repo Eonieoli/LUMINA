@@ -35,7 +35,7 @@ fi
 
 # 환경에 따른 경로 설정
 if [ "$ENV" == "dev" ]; then
-    DEPLOY_PATH="./infra/dev"
+    DEPLOY_PATH="/home/rublin322/lumina/infra/dev"
     if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
         FRONTEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/frontend"
     fi
@@ -43,7 +43,7 @@ if [ "$ENV" == "dev" ]; then
         BACKEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/backend"
     fi
 else
-    DEPLOY_PATH="./infra/prod"
+    DEPLOY_PATH="/home/ubuntu/lumina/infra/prod"
     if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
         FRONTEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/frontend"
     fi
@@ -266,13 +266,13 @@ health_check() {
 initialize_environment() {
     echo "Initializing environment..."
     
-    # 전역 변수로 저장
+    # 전역 변수로 저장 - 절대 경로 사용
     if [ "$ENV" == "dev" ]; then
-        DEPLOY_PATH="./infra/dev"
+        DEPLOY_PATH="/home/rublin322/lumina/infra/dev"
         FRONTEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/frontend"
         BACKEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/backend"
     else
-        DEPLOY_PATH="./infra/prod"
+        DEPLOY_PATH="/home/ubuntu/lumina/infra/prod"
         FRONTEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/frontend"
         BACKEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/backend"
     fi
@@ -348,4 +348,12 @@ main() {
 }
 
 # 스크립트 실행
+echo "Starting blue-green deployment with ENV=$ENV, TARGET=$TARGET"
+echo "DEPLOY_PATH=$DEPLOY_PATH"
+if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
+    echo "FRONTEND_NGINX_CONF_PATH=$FRONTEND_NGINX_CONF_PATH"
+fi
+if [ "$TARGET" == "backend" ] || [ "$TARGET" == "all" ]; then
+    echo "BACKEND_NGINX_CONF_PATH=$BACKEND_NGINX_CONF_PATH"
+fi
 main
