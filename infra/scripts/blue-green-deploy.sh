@@ -162,9 +162,9 @@ update_nginx_config() {
     fi
     
     # Nginx 설정 테스트 및 reload
-    docker exec -it proxy nginx -t
+    docker exec proxy nginx -t
     if [ $? -eq 0 ]; then
-        docker exec -it proxy nginx -s reload
+        docker exec proxy nginx -s reload
         echo "Nginx successfully reloaded to use $service-$target_color"
     else
         echo "Error: Nginx configuration test failed"
