@@ -145,6 +145,13 @@ update_nginx_config() {
     
     echo "Updating Nginx configuration for $service to use $target_color..."
     
+    # 디렉토리 존재 확인 및 생성
+    if [ "$service" == "frontend" ]; then
+        mkdir -p "$FRONTEND_NGINX_CONF_PATH"
+    elif [ "$service" == "backend" ]; then
+        mkdir -p "$BACKEND_NGINX_CONF_PATH"
+    fi
+    
     if [ "$service" == "frontend" ]; then
         # frontend upstream 설정 업데이트
         if [ "$target_color" == "blue" ]; then
@@ -153,14 +160,14 @@ update_nginx_config() {
                 echo "Error: frontend-blue container is not running"
                 exit 1
             fi
-            echo "upstream frontend {\n    server frontend-blue:80;    # active\n    server frontend-green:80 backup;    # backup\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
+            echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n    server frontend-green:80 backup;    # backup\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
         else
             # 현재 frontend-green 컨테이너가 있는지 확인
             if ! docker ps -q -f name=frontend-green &> /dev/null; then
                 echo "Error: frontend-green container is not running"
                 exit 1
             fi
-            echo "upstream frontend {\n    server frontend-green:80;    # active\n    server frontend-blue:80 backup;    # backup\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
+            echo -e "upstream frontend {\n    server frontend-green:80;    # active\n    server frontend-blue:80 backup;    # backup\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
         fi
     elif [ "$service" == "backend" ]; then
         # backend upstream 설정 업데이트
@@ -170,14 +177,14 @@ update_nginx_config() {
                 echo "Error: backend-blue container is not running"
                 exit 1
             fi
-            echo "upstream backend {\n    server backend-blue:8080;    # active\n    server backend-green:8080 backup;    # backup\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
+            echo -e "upstream backend {\n    server backend-blue:8080;    # active\n    server backend-green:8080 backup;    # backup\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
         else
             # 현재 backend-green 컨테이너가 있는지 확인
             if ! docker ps -q -f name=backend-green &> /dev/null; then
                 echo "Error: backend-green container is not running"
                 exit 1
             fi
-            echo "upstream backend {\n    server backend-green:8080;    # active\n    server backend-blue:8080 backup;    # backup\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
+            echo -e "upstream backend {\n    server backend-green:8080;    # active\n    server backend-blue:8080 backup;    # backup\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
         fi
     fi
     
@@ -259,6 +266,21 @@ health_check() {
 initialize_environment() {
     echo "Initializing environment..."
     
+    # 전역 변수로 저장
+    if [ "$ENV" == "dev" ]; then
+        DEPLOY_PATH="./infra/dev"
+        FRONTEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/frontend"
+        BACKEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/backend"
+    else
+        DEPLOY_PATH="./infra/prod"
+        FRONTEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/frontend"
+        BACKEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/backend"
+    fi
+    
+    # 필요한 디렉토리 생성
+    mkdir -p "$FRONTEND_NGINX_CONF_PATH"
+    mkdir -p "$BACKEND_NGINX_CONF_PATH"
+    
     # DB, Redis 설정
     cd "$DEPLOY_PATH"
     docker compose up -d mysql redis
@@ -267,8 +289,8 @@ initialize_environment() {
     docker compose up -d frontend-blue backend-blue
     
     # 초기 upstream.conf 설정
-    echo "upstream frontend {\n    server frontend-blue:80;    # active\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
-    echo "upstream backend {\n    server backend-blue:8080;    # active\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
+    echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
+    echo -e "upstream backend {\n    server backend-blue:8080;    # active\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
     
     # proxy 설정
     cd "$DEPLOY_PATH/proxy"
