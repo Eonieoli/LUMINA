@@ -81,6 +81,20 @@ public class DonationServiceImpl implements DonationService {
             throw new CustomException(HttpStatus.BAD_REQUEST, "보유 point가 부족합니다.");
         }
 
+        UserDonation existUserDonation = userDonationRepository.findByUserIdAndDonationIdAndRegistration(userId, donation.getId(), "DONATION")
+                .orElse(null);
+
+        if (existUserDonation != null) {
+            existUserDonation.updateUserDonation(request.getPoint());
+        } else {
+            UserDonation userDonation = new UserDonation();
+            userDonation.registerDonation(user, donation);
+            userDonationRepository.save(userDonation);
+        }
+
+        donation.updateDonation(request.getPoint());
+        donationRepository.save(donation);
+
         user.updatePoint(-request.getPoint());
         user.updateSumPoint(request.getPoint());
         user.updatePositiveness(request.getPoint() / 100);
@@ -114,7 +128,7 @@ public class DonationServiceImpl implements DonationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
 
-        UserDonation existUserDonation = userDonationRepository.findByUserIdAndDonationId(userId, donationId)
+        UserDonation existUserDonation = userDonationRepository.findByUserIdAndDonationIdAndRegistration(userId, donationId, "USER")
                 .orElse(null);
 
         if (existUserDonation != null) {

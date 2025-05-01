@@ -109,11 +109,18 @@ export class LunaClientInterface {
 2. 이 행동이 사회에 미치는 영향
 3. 격려와 응원의 메시지`;
 
-    // Eliza 에이전트에 메시지 전달
-    // 메시지 처리를 위해 직접 API 요청 사용
-    const serverPort = parseInt(process.env.LUNA_PLATFORM_PORT || "4000");
+    // ElizaOS 메인 서버는 3001 포트에서 실행 중
+    const elizaServerPort = 3001;
+
+    elizaLogger.info("게시글 내용:", postContent);
+    elizaLogger.info("사용자 ID:", userId);
+    elizaLogger.info(
+      "요청 URL:",
+      `http://localhost:${elizaServerPort}/${this.runtime.character.name}/message`
+    );
+
     const response = await fetch(
-      `http://localhost:${serverPort}/${this.runtime.character.name}/message`,
+      `http://localhost:${elizaServerPort}/${this.runtime.character.name}/message`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -142,10 +149,12 @@ ${question}
 질문이 선한 행동에 관한 것이라면, 도움이 되는 정보와 격려를 제공해주세요.
 질문이 다른 주제라면, SNS의 방향에 맞게 친절하게 답변해주세요.`;
 
+    const elizaServerPort = 3001;
+
     // Eliza 에이전트에 메시지 전달
-    const serverPort = parseInt(process.env.LUNA_PLATFORM_PORT || "4000");
+    // const serverPort = parseInt(process.env.LUNA_PLATFORM_PORT || "4000");
     const response = await fetch(
-      `http://localhost:${serverPort}/${this.runtime.character.name}/message`,
+      `http://localhost:${elizaServerPort}/${this.runtime.character.name}/message`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

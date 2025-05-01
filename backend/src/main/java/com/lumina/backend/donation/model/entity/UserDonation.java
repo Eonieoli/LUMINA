@@ -31,9 +31,28 @@ public class UserDonation extends BaseEntity {
     @Column(name = "registration", nullable = false)
     private String registration;
 
+    @Column(name = "donation_cnt")
+    private Integer donationCnt;
+
+    @Column(name = "donation_sum")
+    private Integer donationSum;
+
     public UserDonation(User user, Donation donation, String registration) {
         this.user = user;
         this.donation = donation;
         this.registration = registration;
+    }
+
+    public void registerDonation(User user, Donation donation) {
+        this.user = user;
+        this.donation = donation;
+        this.registration = "DONATION";
+        this.donationCnt = 0;
+        this.donationSum = 0;
+    }
+
+    public void updateUserDonation(Integer point) {
+        this.donationCnt += 1;
+        this.donationSum += point;
     }
 }
