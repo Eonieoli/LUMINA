@@ -148,16 +148,36 @@ update_nginx_config() {
     if [ "$service" == "frontend" ]; then
         # frontend upstream 설정 업데이트
         if [ "$target_color" == "blue" ]; then
-            sed -i 's/upstream frontend {/upstream frontend {\n    server frontend-blue:80;    # active\n    server frontend-green:80 backup;    # backup/' "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
+            # 현재 frontend-blue 컨테이너가 있는지 확인
+            if ! docker ps -q -f name=frontend-blue &> /dev/null; then
+                echo "Error: frontend-blue container is not running"
+                exit 1
+            fi
+            echo "upstream frontend {\n    server frontend-blue:80;    # active\n    server frontend-green:80 backup;    # backup\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
         else
-            sed -i 's/upstream frontend {/upstream frontend {\n    server frontend-green:80;    # active\n    server frontend-blue:80 backup;    # backup/' "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
+            # 현재 frontend-green 컨테이너가 있는지 확인
+            if ! docker ps -q -f name=frontend-green &> /dev/null; then
+                echo "Error: frontend-green container is not running"
+                exit 1
+            fi
+            echo "upstream frontend {\n    server frontend-green:80;    # active\n    server frontend-blue:80 backup;    # backup\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
         fi
     elif [ "$service" == "backend" ]; then
         # backend upstream 설정 업데이트
         if [ "$target_color" == "blue" ]; then
-            sed -i 's/upstream backend {/upstream backend {\n    server backend-blue:8080;    # active\n    server backend-green:8080 backup;    # backup/' "$BACKEND_NGINX_CONF_PATH/upstream.conf"
+            # 현재 backend-blue 컨테이너가 있는지 확인
+            if ! docker ps -q -f name=backend-blue &> /dev/null; then
+                echo "Error: backend-blue container is not running"
+                exit 1
+            fi
+            echo "upstream backend {\n    server backend-blue:8080;    # active\n    server backend-green:8080 backup;    # backup\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
         else
-            sed -i 's/upstream backend {/upstream backend {\n    server backend-green:8080;    # active\n    server backend-blue:8080 backup;    # backup/' "$BACKEND_NGINX_CONF_PATH/upstream.conf"
+            # 현재 backend-green 컨테이너가 있는지 확인
+            if ! docker ps -q -f name=backend-green &> /dev/null; then
+                echo "Error: backend-green container is not running"
+                exit 1
+            fi
+            echo "upstream backend {\n    server backend-green:8080;    # active\n    server backend-blue:8080 backup;    # backup\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
         fi
     fi
     
@@ -235,8 +255,55 @@ health_check() {
     exit 1
 }
 
+# 초기 환경 설정 함수
+initialize_environment() {
+    echo "Initializing environment..."
+    
+    # DB, Redis 설정
+    cd "$DEPLOY_PATH"
+    docker compose up -d mysql redis
+    
+    # frontend-blue와 backend-blue 한쉬번에 배포
+    docker compose up -d frontend-blue backend-blue
+    
+    # 초기 upstream.conf 설정
+    echo "upstream frontend {\n    server frontend-blue:80;    # active\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
+    echo "upstream backend {\n    server backend-blue:8080;    # active\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
+    
+    # proxy 설정
+    cd "$DEPLOY_PATH/proxy"
+    docker compose -f proxy-compose.yml -p proxy up -d
+    
+    # monitoring 설정
+    cd "$DEPLOY_PATH/monitoring"
+    docker compose -f monitoring-compose.yml -p monitoring up -d
+    
+    # 초기 배포 표시 파일 생성
+    if [ "$ENV" == "dev" ]; then
+        touch /home/rublin322/lumina/.initial_deploy_done
+    else
+        touch /home/ubuntu/lumina/.initial_deploy_done
+    fi
+    
+    echo "Initial environment setup completed"
+}
+
 # 메인 배포 프로세스
 main() {
+    # 초기 배포인지 확인
+    if [ "$ENV" == "dev" ]; then
+        if [ ! -f /home/rublin322/lumina/.initial_deploy_done ]; then
+            initialize_environment
+            # 초기 배포인 경우 여기서 종료
+            return
+        fi
+    else
+        if [ ! -f /home/ubuntu/lumina/.initial_deploy_done ]; then
+            initialize_environment
+            # 초기 배포인 경우 여기서 종료
+            return
+        fi
+    fi
     if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
         echo "=== Deploying Frontend ==="
         check_current_service "frontend"
