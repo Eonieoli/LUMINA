@@ -144,6 +144,16 @@ check_current_service() {
     echo "Current $service: $CURRENT_COLOR, Target $service: $TARGET_COLOR"
 }
 
+# 컨테이너가 직접 확인 가능한지 확인
+check_container_available() {
+    local container_name=$1
+    if docker ps -q -f name=$container_name &> /dev/null; then
+        return 0  # 컨테이너 정상 실행 중
+    else
+        return 1  # 컨테이너 없음
+    fi
+}
+
 # 도커 컨테이너 배포
 deploy_container() {
     local service=$1
@@ -200,16 +210,6 @@ deploy_container() {
     fi
     
     echo "$service-$color deployed on port $PORT"
-}
-
-# 컨테이너가 직접 확인 가능한지 확인
-check_container_available() {
-    local container_name=$1
-    if docker ps -q -f name=$container_name &> /dev/null; then
-        return 0  # 컨테이너 정상 실행 중
-    else
-        return 1  # 컨테이너 없음
-    fi
 }
 
 # Nginx 설정 업데이트 및 reload (개선된 버전)
@@ -520,6 +520,51 @@ sync_service_config() {
     return 0
 }
 
+# 시작 전 모든 컨테이너 존재 여부 확인
+ensure_all_containers_exist() {
+    # 배포 시작 전에 필요한 모든 컨테이너가 있는지 확인
+    local missing_containers=0
+    
+    if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
+        # frontend 배포에는 frontend-blue와 frontend-green 가 모두 필요 
+        # frontend-blue 확인
+        if ! check_container_available "frontend-blue"; then
+            echo "Warning: frontend-blue container does not exist. Creating it..."
+            deploy_container "frontend" "blue"
+            missing_containers=1
+        fi
+        
+        # frontend-green 확인
+        if ! check_container_available "frontend-green"; then
+            echo "Warning: frontend-green container does not exist. Creating it..."
+            deploy_container "frontend" "green"
+            missing_containers=1
+        fi
+    fi
+    
+    if [ "$TARGET" == "backend" ] || [ "$TARGET" == "all" ]; then
+        # backend 배포에는 backend-blue와 backend-green 가 모두 필요
+        # backend-blue 확인
+        if ! check_container_available "backend-blue"; then
+            echo "Warning: backend-blue container does not exist. Creating it..."
+            deploy_container "backend" "blue"
+            missing_containers=1
+        fi
+        
+        # backend-green 확인
+        if ! check_container_available "backend-green"; then
+            echo "Warning: backend-green container does not exist. Creating it..."
+            deploy_container "backend" "green"
+            missing_containers=1
+        fi
+    fi
+    
+    if [ $missing_containers -eq 1 ]; then
+        echo "Some containers were missing and were created. Waiting 10 seconds for them to start up..."
+        sleep 10
+    fi
+}
+
 # 메인 배포 프로세스
 main() {
     # 초기 배포인지 확인
@@ -545,6 +590,9 @@ main() {
     if [ "$TARGET" == "backend" ] || [ "$TARGET" == "all" ]; then
         sync_service_config "backend" || echo "Warning: Backend sync failed but continuing..."
     fi
+    
+    # 중요: 배포 전에 백업 컨테이너가 존재하는지 확인
+    ensure_all_containers_exist
     
     # 실제 배포 시작
     if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
