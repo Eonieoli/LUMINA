@@ -38,7 +38,11 @@ export const Comments = ({ postId }: CommentsProps) => {
       if (response.data.comments.length < 10) {
         setHasMore(false);
       }
-      setComments(prev => [...prev, ...response.data.comments]);
+      setComments(prev => {
+        const existingIds = new Set(prev.map(comment => comment.commentId));
+        const newComments = response.data.comments.filter((comment: { commentId: number; }) => !existingIds.has(comment.commentId));
+        return [...prev, ...newComments];
+      });
       setPageNum(prev => prev + 1);
     } catch (err) {
       console.error("댓글 불러오기 실패", err);
@@ -48,17 +52,16 @@ export const Comments = ({ postId }: CommentsProps) => {
   }, [pageNum, postId, loading, hasMore]);
 
   useEffect(() => {
+    console.log('댓글 호출1!');
     fetchComments();
   }, []);
 
   useEffect(() => {
-    console.log(comments)
-  }, [comments])
-
-  useEffect(() => {
+    if (comments.length == 0) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
+          console.log('댓글 호출2!');
           fetchComments();
         }
       },
