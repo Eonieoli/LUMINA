@@ -1,5 +1,6 @@
 // 사용자 관련 에셋
 import DefaultProfile from './auth/default.svg';
+import KakaoAuthButton from './auth/kakao_login_medium_wide.png';
 
 // 게시물 관련 에셋
 import HeartDefaultIcon from './board/heart_default.svg';
@@ -9,6 +10,7 @@ import SendIcon from './board/send.svg';
 
 // 헤더 관련 에셋
 import BellIcon from './header/bell.svg';
+import PlusIcon from './header/plus.svg';
 import LuminaLogo from './header/lumina_logo.svg';
 
 // 기부 페이지 
@@ -27,6 +29,7 @@ import SearchIcon from './navbar/Ic_search.png'
 
 export {
     DefaultProfile,
+    KakaoAuthButton,
     HeartDefaultIcon,
     HeartFilledIcon,
     ChatIcon,
@@ -40,5 +43,6 @@ export {
     SearchIcon,
     SearchIconGray,
     BellIcon,
+    PlusIcon,
     LuminaLogo,
 }

@@ -21,44 +21,47 @@ interface CommentsProps {
 
 export const Comments = ({ postId }: CommentsProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
-  const [pageNum, setPageNum] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [target, setTarget] = useState({commentId: -1, nickname: ''});
-  const [content, setContent] = useState('')
+  const [target, setTarget] = useState({ commentId: -1, nickname: '' });
+  const [content, setContent] = useState('');
   const observerRef = useRef<HTMLDivElement | null>(null);
   const authStore = useAuthStore();
 
+  const pageNumRef = useRef(1);
+  const loadingRef = useRef(false);
+
   const fetchComments = useCallback(async () => {
-    if (loading || !hasMore) return;
-    
-    setLoading(true);
+    if (loadingRef.current || !hasMore) return;
+
+    loadingRef.current = true;
+
     try {
-      const response = await getComments(pageNum, postId); // API에서 10개씩 리턴 가정
+      const response = await getComments(pageNumRef.current, postId);
+
       if (response.data.comments.length < 10) {
         setHasMore(false);
       }
-      setComments(prev => [...prev, ...response.data.comments]);
-      setPageNum(prev => prev + 1);
+
+      setComments(prev => {
+        const existingIds = new Set(prev.map(comment => comment.commentId));
+        const newComments = response.data.comments.filter(
+          (comment: { commentId: number }) => !existingIds.has(comment.commentId)
+        );
+        return [...prev, ...newComments];
+      });
+
+      pageNumRef.current += 1;
     } catch (err) {
       console.error("댓글 불러오기 실패", err);
     } finally {
-      setLoading(false);
+      loadingRef.current = false;
     }
-  }, [pageNum, postId, loading, hasMore]);
-
-  useEffect(() => {
-    fetchComments();
-  }, []);
-
-  useEffect(() => {
-    console.log(comments)
-  }, [comments])
+  }, [postId, hasMore]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        if (entries[0].isIntersecting && !loadingRef.current && hasMore) {
           fetchComments();
         }
       },
@@ -78,35 +81,35 @@ export const Comments = ({ postId }: CommentsProps) => {
         observer.unobserve(observerRef.current);
       }
     };
-  }, [fetchComments]);
+  }, [fetchComments, hasMore]);
 
   const heartClick = async (postId: number, commentId: number) => {
-      try {
-          await commentLike(postId, commentId);
-          setComments((prevComments) =>
-            prevComments.map((comment) =>
-              comment.commentId === commentId
-                ? {
-                    ...comment,
-                    isLike: !comment.isLike,
-                    likeCnt: comment.isLike ? comment.likeCnt - 1 : comment.likeCnt + 1,
-                  }
-                : comment
-            )
-          );
-      } catch (error) {
-          console.log(error);
-      }
-  }
+    try {
+      await commentLike(postId, commentId);
+      setComments((prevComments) =>
+        prevComments.map((comment) =>
+          comment.commentId === commentId
+            ? {
+                ...comment,
+                isLike: !comment.isLike,
+                likeCnt: comment.isLike ? comment.likeCnt - 1 : comment.likeCnt + 1,
+              }
+            : comment
+        )
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const onPostComment = async () => {
     try {
-      // 답글인 경우
-      if (target.commentId != -1) {
+      if (target.commentId !== -1) {
         await postComment(postId, content, target.commentId);
       } else {
         await postComment(postId, content);
       }
+
       const newComment = {
         commentId: -1,
         userId: authStore.data.userId,
@@ -118,13 +121,13 @@ export const Comments = ({ postId }: CommentsProps) => {
         isLike: false,
       };
       setComments((prev) => [newComment, ...prev]);
-
       setContent('');
       setTarget({ commentId: -1, nickname: '' });
     } catch (error) {
       console.error(error);
     }
-  }
+  };
+
 
   return (
     <div className="flex flex-col gap-y-2">

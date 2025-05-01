@@ -1,5 +1,42 @@
 import { apiClient } from "./axios";
 
+// 게시물 등록
+interface CreatePostParams {
+  postImageFile?: File | null;
+  categoryName: string;
+  hashtag: string[];
+  postContent: string;
+}
+
+export const createPost = async ({
+  postImageFile,
+  categoryName,
+  hashtag,
+  postContent,
+}: CreatePostParams) => {
+  try {
+    const formData = new FormData();
+
+    if (postImageFile) {
+      formData.append("postImageFile", postImageFile);
+    }
+    formData.append("categoryName", categoryName);
+    formData.append("hashtag", JSON.stringify(hashtag));
+    formData.append("postContent", postContent);
+
+    const response = await apiClient.post("/post", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("게시물 생성 API 요청 에러:", error);
+    throw error;
+  }
+};
+
 
 // 게시물 전체 조회 페이지네이션
 export const getPosts = async (pageNum: number) => {
@@ -10,7 +47,7 @@ export const getPosts = async (pageNum: number) => {
 
         return response.data;
     } catch (error) {
-        console.log("게시물 전체 조회 API 요청 에러 : ", error);
+        console.error("게시물 전체 조회 API 요청 에러 : ", error);
         throw error;
     }
 };
@@ -26,7 +63,7 @@ export const getComments = async (pageNum: number, postId: number) => {
 
         return response.data;
     } catch (error) {
-        console.log("댓글 조회 API 요청 에러 : ", error);
+        console.error("댓글 조회 API 요청 에러 : ", error);
         throw error;
     }
 };
@@ -38,7 +75,7 @@ export const getReplies = async (postId: number, commentId: number) => {
 
         return response.data;
     } catch (error) {
-        console.log("대댓글 조회 API 요청 에러 : ", error);
+        console.error("대댓글 조회 API 요청 에러 : ", error);
         throw error;
     }
 };
@@ -50,7 +87,7 @@ export const deletePost = async (postId: number) => {
 
         return response.data;
     } catch (error) {
-        console.log("게시물 삭제 API 요청 에러 : ", error);
+        console.error("게시물 삭제 API 요청 에러 : ", error);
         throw error;
     }
 };
@@ -62,7 +99,7 @@ export const postLike = async (postId: number) => {
 
         return response.data;
     } catch (error) {
-        console.log("게시물 좋아요 API 요청 에러 : ", error);
+        console.error("게시물 좋아요 API 요청 에러 : ", error);
         throw error;
     }
 }
@@ -82,7 +119,7 @@ export const postComment = async (postId: number, content: string, commentId?: n
         const response = await apiClient.post(`/post/${postId}/comment`, data);
         return response.data;
     } catch (error) {
-        console.log("게시물 댓글 등록 API 요청 에러: ", error);
+        console.error("게시물 댓글 등록 API 요청 에러: ", error);
         throw error;
     }
 };
@@ -94,7 +131,7 @@ export const deleteComment = async (postId: number, commentId: number) => {
 
         return response.data;
     } catch (error) {
-        console.log("게시물 댓글 삭제 API 요청 에러: ", error);
+        console.error("게시물 댓글 삭제 API 요청 에러: ", error);
         throw error;
     }
 };
@@ -106,7 +143,7 @@ export const commentLike = async (postId: number, commentId: number) => {
 
         return response.data;
     } catch (error) {
-        console.log("게시물 댓글 삭제 API 요청 에러: ", error);
+        console.error("게시물 댓글 삭제 API 요청 에러: ", error);
         throw error;
     }
 }
