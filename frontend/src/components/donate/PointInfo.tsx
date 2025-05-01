@@ -10,7 +10,7 @@ export default function PointInfo() {
     const fetchPointInfo = async () => {
       try{
         const response = await getPointInfo()
-        setPoint(response.data.point)
+        setPoint(response)
       }
       catch(error) {
         console.error(error)

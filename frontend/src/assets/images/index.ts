@@ -16,6 +16,7 @@ import LuminaLogo from './header/lumina_logo.svg';
 // 기부 페이지 
 import CoinIcon from './donate/coin.png'
 import SearchIconGray from './navbar/Ic_search.svg'
+import DownIcon from './donate/Ic_down.svg'
 
 // 루나 이미지
 import SmileLuna from './donate/smileLuna.png'
@@ -45,4 +46,5 @@ export {
     BellIcon,
     PlusIcon,
     LuminaLogo,
+    DownIcon
 }
