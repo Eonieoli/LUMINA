@@ -9,6 +9,7 @@ import SendIcon from './board/send.svg';
 
 // 헤더 관련 에셋
 import BellIcon from './header/bell.svg';
+import PlusIcon from './header/plus.svg';
 import LuminaLogo from './header/lumina_logo.svg';
 
 // 기부 페이지 
@@ -40,5 +41,6 @@ export {
     SearchIcon,
     SearchIconGray,
     BellIcon,
+    PlusIcon,
     LuminaLogo,
 }

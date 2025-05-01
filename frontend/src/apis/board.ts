@@ -1,5 +1,42 @@
 import { apiClient } from "./axios";
 
+// 게시물 등록
+interface CreatePostParams {
+  postImageFile?: File | null;
+  categoryName: string;
+  hashtag: string[];
+  postContent: string;
+}
+
+export const createPost = async ({
+  postImageFile,
+  categoryName,
+  hashtag,
+  postContent,
+}: CreatePostParams) => {
+  try {
+    const formData = new FormData();
+
+    if (postImageFile) {
+      formData.append("postImageFile", postImageFile);
+    }
+    formData.append("categoryName", categoryName);
+    formData.append("hashtag", JSON.stringify(hashtag));
+    formData.append("postContent", postContent);
+
+    const response = await apiClient.post("/post", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("게시물 생성 API 요청 에러:", error);
+    throw error;
+  }
+};
+
 
 // 게시물 전체 조회 페이지네이션
 export const getPosts = async (pageNum: number) => {
