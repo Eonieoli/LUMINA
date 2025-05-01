@@ -1,6 +1,6 @@
 services:
-  frontend:
-    container_name: frontend
+  frontend-blue:
+    container_name: frontend-blue
     build:
       context: ../../frontend
       dockerfile: Dockerfile
@@ -8,15 +8,35 @@ services:
         - ENV_FILE=.env.front
     image: rublin322/lumina-frontend:latest
     restart: always
+    ports:
+      - "3001:80"
     networks:
       - lumina-network
     labels:
-      com.docker.compose.service: "frontend"
+      com.docker.compose.service: "frontend-blue"
       com.docker.compose.project: "lumina"
       environment: "production"
 
-  backend:
-    container_name: backend
+  frontend-green:
+    container_name: frontend-green
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+      args:
+        - ENV_FILE=.env.front
+    image: rublin322/lumina-frontend:latest
+    restart: always
+    ports:
+      - "3002:80"
+    networks:
+      - lumina-network
+    labels:
+      com.docker.compose.service: "frontend-green"
+      com.docker.compose.project: "lumina"
+      environment: "production"
+
+  backend-blue:
+    container_name: backend-blue
     build:
       context: ../../backend
       dockerfile: Dockerfile
@@ -25,7 +45,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
       mysql:
         condition: service_healthy
@@ -39,7 +59,35 @@ services:
     networks:
       - lumina-network
     labels:
-      com.docker.compose.service: "backend"
+      com.docker.compose.service: "backend-blue"
+      com.docker.compose.project: "lumina"
+      environment: "production"
+
+  backend-green:
+    container_name: backend-green
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    image: rublin322/lumina-backend:latest
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8082:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lumina-network
+    labels:
+      com.docker.compose.service: "backend-green"
       com.docker.compose.project: "lumina"
       environment: "production"
 
