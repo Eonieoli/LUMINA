@@ -12,7 +12,14 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
     static_configs:
-      - targets: ['backend:8080']
+      - targets: ['proxy:80']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: proxy:80 # Nginx가 activ 인스턴스로 프록시
 
   - job_name: 'node-exporter'
     static_configs:
