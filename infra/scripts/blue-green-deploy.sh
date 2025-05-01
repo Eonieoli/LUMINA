@@ -52,28 +52,92 @@ else
     fi
 fi
 
-# 현재 서비스 상태 확인
+# 현재 서비스 상태 확인 (개선된 버전)
 check_current_service() {
     local service=$1
     
+    # 기본값 설정
+    CURRENT_COLOR="blue"
+    TARGET_COLOR="green"
+    
     # 현재 사용 중인 색상(blue/green) 확인
     if [ "$service" == "frontend" ]; then
-        # upstream.conf 파일에서 현재 사용 중인 frontend 확인
-        if grep -q "frontend-blue" "$FRONTEND_NGINX_CONF_PATH/upstream.conf" && ! grep -q "frontend-blue.*#" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
-            CURRENT_COLOR="blue"
-            TARGET_COLOR="green"
+        # upstream.conf 파일이 존재하는지 확인
+        if [ -f "$FRONTEND_NGINX_CONF_PATH/upstream.conf" ]; then
+            # 'active' 주석이 있는 서버가 어떤 색상인지 확인
+            if grep -q "frontend-blue.*active" "$FRONTEND_NGINX_CONF_PATH/upstream.conf" && ! grep -q "frontend-blue.*backup" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
+                CURRENT_COLOR="blue"
+                TARGET_COLOR="green"
+            elif grep -q "frontend-green.*active" "$FRONTEND_NGINX_CONF_PATH/upstream.conf" && ! grep -q "frontend-green.*backup" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
+                CURRENT_COLOR="green"
+                TARGET_COLOR="blue"
+            # backup 키워드로 구분
+            elif grep -q "frontend-green.*backup" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
+                CURRENT_COLOR="blue"
+                TARGET_COLOR="green"
+            elif grep -q "frontend-blue.*backup" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
+                CURRENT_COLOR="green"
+                TARGET_COLOR="blue"
+            # 순서로 구분 (첫 번째 서버가 active)
+            elif grep -q "frontend-blue" "$FRONTEND_NGINX_CONF_PATH/upstream.conf" && grep -q "frontend-green" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
+                if grep -n "frontend-blue" "$FRONTEND_NGINX_CONF_PATH/upstream.conf" | cut -d: -f1 < grep -n "frontend-green" "$FRONTEND_NGINX_CONF_PATH/upstream.conf" | cut -d: -f1; then
+                    CURRENT_COLOR="blue"
+                    TARGET_COLOR="green"
+                else
+                    CURRENT_COLOR="green"
+                    TARGET_COLOR="blue"
+                fi
+            # 하나만 있는 경우
+            elif grep -q "frontend-blue" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
+                CURRENT_COLOR="blue"
+                TARGET_COLOR="green"
+            elif grep -q "frontend-green" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
+                CURRENT_COLOR="green"
+                TARGET_COLOR="blue"
+            else
+                echo "Warning: Could not determine current frontend color from upstream.conf, defaulting to blue->green deployment"
+            fi
         else
-            CURRENT_COLOR="green"
-            TARGET_COLOR="blue"
+            echo "Warning: No upstream.conf file found for frontend. Assuming blue is active."
         fi
     elif [ "$service" == "backend" ]; then
-        # upstream.conf 파일에서 현재 사용 중인 backend 확인
-        if grep -q "backend-blue" "$BACKEND_NGINX_CONF_PATH/upstream.conf" && ! grep -q "backend-blue.*#" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
-            CURRENT_COLOR="blue"
-            TARGET_COLOR="green"
+        # upstream.conf 파일이 존재하는지 확인
+        if [ -f "$BACKEND_NGINX_CONF_PATH/upstream.conf" ]; then
+            # 'active' 주석이 있는 서버가 어떤 색상인지 확인
+            if grep -q "backend-blue.*active" "$BACKEND_NGINX_CONF_PATH/upstream.conf" && ! grep -q "backend-blue.*backup" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
+                CURRENT_COLOR="blue"
+                TARGET_COLOR="green"
+            elif grep -q "backend-green.*active" "$BACKEND_NGINX_CONF_PATH/upstream.conf" && ! grep -q "backend-green.*backup" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
+                CURRENT_COLOR="green"
+                TARGET_COLOR="blue"
+            # backup 키워드로 구분
+            elif grep -q "backend-green.*backup" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
+                CURRENT_COLOR="blue"
+                TARGET_COLOR="green"
+            elif grep -q "backend-blue.*backup" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
+                CURRENT_COLOR="green"
+                TARGET_COLOR="blue"
+            # 순서로 구분 (첫 번째 서버가 active)
+            elif grep -q "backend-blue" "$BACKEND_NGINX_CONF_PATH/upstream.conf" && grep -q "backend-green" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
+                if grep -n "backend-blue" "$BACKEND_NGINX_CONF_PATH/upstream.conf" | cut -d: -f1 < grep -n "backend-green" "$BACKEND_NGINX_CONF_PATH/upstream.conf" | cut -d: -f1; then
+                    CURRENT_COLOR="blue"
+                    TARGET_COLOR="green"
+                else
+                    CURRENT_COLOR="green"
+                    TARGET_COLOR="blue"
+                fi
+            # 하나만 있는 경우
+            elif grep -q "backend-blue" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
+                CURRENT_COLOR="blue"
+                TARGET_COLOR="green"
+            elif grep -q "backend-green" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
+                CURRENT_COLOR="green"
+                TARGET_COLOR="blue"
+            else
+                echo "Warning: Could not determine current backend color from upstream.conf, defaulting to blue->green deployment"
+            fi
         else
-            CURRENT_COLOR="green"
-            TARGET_COLOR="blue"
+            echo "Warning: No upstream.conf file found for backend. Assuming blue is active."
         fi
     fi
     
@@ -98,8 +162,8 @@ deploy_container() {
     local image_name="rublin322/lumina-$service:$TAG"
     
     # 컨테이너 실행 (기존 컨테이너가 있으면 중지하고 삭제)
-    docker stop $service-$color || true
-    docker rm $service-$color || true
+    docker stop $service-$color 2>/dev/null || true
+    docker rm $service-$color 2>/dev/null || true
     
     # 서비스별 실행 명령
     if [ "$service" == "frontend" ]; then
@@ -138,10 +202,28 @@ deploy_container() {
     echo "$service-$color deployed on port $PORT"
 }
 
-# Nginx 설정 업데이트 및 reload
+# 컨테이너가 직접 확인 가능한지 확인
+check_container_available() {
+    local container_name=$1
+    if docker ps -q -f name=$container_name &> /dev/null; then
+        return 0  # 컨테이너 정상 실행 중
+    else
+        return 1  # 컨테이너 없음
+    fi
+}
+
+# Nginx 설정 업데이트 및 reload (개선된 버전)
 update_nginx_config() {
     local service=$1
     local target_color=$2
+    local other_color=""
+    
+    # 다른 색상 결정
+    if [ "$target_color" == "blue" ]; then
+        other_color="green"
+    else
+        other_color="blue"
+    fi
     
     echo "Updating Nginx configuration for $service to use $target_color..."
     
@@ -152,49 +234,56 @@ update_nginx_config() {
         mkdir -p "$BACKEND_NGINX_CONF_PATH"
     fi
     
+    # 타겟 컨테이너 존재 여부 확인
+    if ! check_container_available "$service-$target_color"; then
+        echo "Error: $service-$target_color container is not running"
+        exit 1
+    fi
+    
+    # 백업 컨테이너 존재 여부 확인
+    local backup_available=0
+    if check_container_available "$service-$other_color"; then
+        backup_available=1
+    fi
+    
+    # Nginx 설정 파일 생성
     if [ "$service" == "frontend" ]; then
-        # frontend upstream 설정 업데이트
         if [ "$target_color" == "blue" ]; then
-            # 현재 frontend-blue 컨테이너가 있는지 확인
-            if ! docker ps -q -f name=frontend-blue &> /dev/null; then
-                echo "Error: frontend-blue container is not running"
-                exit 1
+            if [ $backup_available -eq 1 ]; then
+                echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n    server frontend-green:80 backup;    # backup\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
+            else
+                echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
             fi
-            echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n    server frontend-green:80 backup;    # backup\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
         else
-            # 현재 frontend-green 컨테이너가 있는지 확인
-            if ! docker ps -q -f name=frontend-green &> /dev/null; then
-                echo "Error: frontend-green container is not running"
-                exit 1
+            if [ $backup_available -eq 1 ]; then
+                echo -e "upstream frontend {\n    server frontend-green:80;    # active\n    server frontend-blue:80 backup;    # backup\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
+            else
+                echo -e "upstream frontend {\n    server frontend-green:80;    # active\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
             fi
-            echo -e "upstream frontend {\n    server frontend-green:80;    # active\n    server frontend-blue:80 backup;    # backup\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
         fi
     elif [ "$service" == "backend" ]; then
-        # backend upstream 설정 업데이트
         if [ "$target_color" == "blue" ]; then
-            # 현재 backend-blue 컨테이너가 있는지 확인
-            if ! docker ps -q -f name=backend-blue &> /dev/null; then
-                echo "Error: backend-blue container is not running"
-                exit 1
+            if [ $backup_available -eq 1 ]; then
+                echo -e "upstream backend {\n    server backend-blue:8080;    # active\n    server backend-green:8080 backup;    # backup\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
+            else
+                echo -e "upstream backend {\n    server backend-blue:8080;    # active\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
             fi
-            echo -e "upstream backend {\n    server backend-blue:8080;    # active\n    server backend-green:8080 backup;    # backup\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
         else
-            # 현재 backend-green 컨테이너가 있는지 확인
-            if ! docker ps -q -f name=backend-green &> /dev/null; then
-                echo "Error: backend-green container is not running"
-                exit 1
+            if [ $backup_available -eq 1 ]; then
+                echo -e "upstream backend {\n    server backend-green:8080;    # active\n    server backend-blue:8080 backup;    # backup\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
+            else
+                echo -e "upstream backend {\n    server backend-green:8080;    # active\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
             fi
-            echo -e "upstream backend {\n    server backend-green:8080;    # active\n    server backend-blue:8080 backup;    # backup\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
         fi
     fi
     
     # Nginx 설정 테스트 및 reload
-    docker exec proxy nginx -t
-    if [ $? -eq 0 ]; then
+    if docker exec proxy nginx -t; then
         docker exec proxy nginx -s reload
         echo "Nginx successfully reloaded to use $service-$target_color"
     else
         echo "Error: Nginx configuration test failed"
+        # 설정 파일 백업 복원 (개선 가능)
         exit 1
     fi
 }
@@ -208,13 +297,13 @@ cleanup_old_container() {
     sleep 30  # 트래픽이 완전히 새 버전으로 전환될 때까지 대기
     
     # 이전 컨테이너 중지 및 삭제
-    docker stop $service-$color || true
-    docker rm $service-$color || true
+    docker stop $service-$color 2>/dev/null || true
+    docker rm $service-$color 2>/dev/null || true
     
     echo "Old container $service-$color stopped and removed"
 }
 
-# 상태 확인 함수
+# 상태 확인 함수 (개선된 버전)
 health_check() {
     local service=$1
     local color=$2
@@ -225,6 +314,12 @@ health_check() {
     
     for i in $(seq 1 $max_attempts); do
         echo "Health check attempt $i/$max_attempts..."
+        
+        # 컨테이너가 여전히 실행 중인지 확인
+        if ! check_container_available "$service-$color"; then
+            echo "Error: $service-$color container is not running"
+            exit 1
+        fi
         
         if [ "$service" == "frontend" ]; then
             # Frontend 상태 확인 (포트는 컨테이너 내부 포트 사용)
@@ -259,6 +354,9 @@ health_check() {
     done
     
     echo "Error: Health check failed after $max_attempts attempts"
+    # 실패한 컨테이너 로그 출력
+    echo "Container logs for $service-$color:"
+    docker logs --tail 50 $service-$color
     exit 1
 }
 
@@ -285,7 +383,7 @@ initialize_environment() {
     cd "$DEPLOY_PATH"
     docker compose up -d mysql redis
     
-    # frontend-blue와 backend-blue 한쉬번에 배포
+    # frontend-blue와 backend-blue 한번에 배포
     docker compose up -d frontend-blue backend-blue
     
     # 초기 upstream.conf 설정
@@ -310,6 +408,73 @@ initialize_environment() {
     echo "Initial environment setup completed"
 }
 
+# 서비스 구성 동기화 (실제 상태와 설정 일치시키기)
+sync_service_config() {
+    local service=$1
+    
+    echo "Syncing $service configuration with actual state..."
+    
+    # 양쪽 컨테이너 모두 실행 중인지 확인
+    local blue_running=0
+    local green_running=0
+    
+    if check_container_available "$service-blue"; then
+        blue_running=1
+    fi
+    
+    if check_container_available "$service-green"; then
+        green_running=1
+    fi
+    
+    # 어느 쪽도 실행 중이지 않은 경우
+    if [ $blue_running -eq 0 ] && [ $green_running -eq 0 ]; then
+        echo "Warning: Neither $service-blue nor $service-green is running!"
+        return 1
+    fi
+    
+    # 설정 파일 존재 여부 확인
+    local conf_path=""
+    if [ "$service" == "frontend" ]; then
+        conf_path="$FRONTEND_NGINX_CONF_PATH/upstream.conf"
+    else
+        conf_path="$BACKEND_NGINX_CONF_PATH/upstream.conf"
+    fi
+    
+    # 설정 파일 없는 경우 생성
+    if [ ! -f "$conf_path" ]; then
+        mkdir -p "$(dirname "$conf_path")"
+        
+        if [ $blue_running -eq 1 ]; then
+            if [ "$service" == "frontend" ]; then
+                echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n}" > "$conf_path"
+            else
+                echo -e "upstream backend {\n    server backend-blue:8080;    # active\n}" > "$conf_path"
+            fi
+            echo "Created new $service configuration with blue as active"
+        else
+            if [ "$service" == "frontend" ]; then
+                echo -e "upstream frontend {\n    server frontend-green:80;    # active\n}" > "$conf_path"
+            else
+                echo -e "upstream backend {\n    server backend-green:8080;    # active\n}" > "$conf_path"
+            fi
+            echo "Created new $service configuration with green as active"
+        fi
+        
+        # Nginx 설정 적용
+        if docker exec proxy nginx -t; then
+            docker exec proxy nginx -s reload
+            echo "Nginx configuration applied."
+        else
+            echo "Error: Nginx configuration test failed"
+            # 문제 해결을 위한 로그 출력
+            cat "$conf_path"
+            return 1
+        fi
+    fi
+    
+    return 0
+}
+
 # 메인 배포 프로세스
 main() {
     # 초기 배포인지 확인
@@ -326,6 +491,17 @@ main() {
             return
         fi
     fi
+    
+    # 기존 서비스 구성 동기화 (설정 파일과 실제 상태 일치 확인)
+    if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
+        sync_service_config "frontend" || echo "Warning: Frontend sync failed but continuing..."
+    fi
+    
+    if [ "$TARGET" == "backend" ] || [ "$TARGET" == "all" ]; then
+        sync_service_config "backend" || echo "Warning: Backend sync failed but continuing..."
+    fi
+    
+    # 실제 배포 시작
     if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
         echo "=== Deploying Frontend ==="
         check_current_service "frontend"

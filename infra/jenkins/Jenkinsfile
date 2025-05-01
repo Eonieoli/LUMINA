@@ -219,9 +219,7 @@ pipeline {
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/blue-green/frontend/location.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/location.conf"
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/blue-green/backend/location.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/location.conf"
                                     
-                                    // upstream.conf 디렉토리 생성 및 초기화 파일 체크
-                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend'"
-                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend'"
+                                    // upstream.conf 초기화 파일 체크
                                     sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'if [ ! -f ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/upstream.conf ]; then echo upstream frontend \\{\\} > ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/upstream.conf; fi'"
                                     sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'if [ ! -f ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/upstream.conf ]; then echo upstream backend \\{\\} > ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/upstream.conf; fi'"
                                     
@@ -325,9 +323,7 @@ pipeline {
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/blue-green/frontend/location.conf ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/location.conf"
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/blue-green/backend/location.conf ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/location.conf"
                                     
-                                    // upstream.conf 디렉토리 생성 및 초기화 파일 체크
-                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend'"
-                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend'"
+                                    // upstream.conf 초기화 파일 체크
                                     sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'if [ ! -f ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/upstream.conf ]; then echo upstream frontend \\{\\} > ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/upstream.conf; fi'"
                                     sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'if [ ! -f ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/upstream.conf ]; then echo upstream backend \\{\\} > ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/upstream.conf; fi'"
                                     
