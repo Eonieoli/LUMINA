@@ -279,8 +279,19 @@ update_nginx_config() {
     
     # Nginx 설정 테스트 및 reload
     if docker exec proxy nginx -t; then
-        docker exec proxy nginx -s reload
-        echo "Nginx successfully reloaded to use $service-$target_color"
+        # 일반적인 리로드 시도
+        if docker exec proxy nginx -s reload; then
+            echo "Nginx successfully reloaded to use $service-$target_color"
+        else
+            echo "Warning: Nginx reload failed, trying full restart..."
+            # 리로드 실패 시 컨테이너 재시작
+            cd "$DEPLOY_PATH/proxy"
+            docker compose -f proxy-compose.yml -p proxy down
+            docker compose -f proxy-compose.yml -p proxy up -d
+            echo "Nginx restarted to use $service-$target_color"
+            # 재시작 후 5초 대기 (서비스 안정화)
+            sleep 5
+        fi
     else
         echo "Error: Nginx configuration test failed"
         # 설정 파일 백업 복원 (개선 가능)
@@ -301,6 +312,29 @@ cleanup_old_container() {
     docker rm $service-$color 2>/dev/null || true
     
     echo "Old container $service-$color stopped and removed"
+    
+    # 배포가 완료된 후 Docker 시스템 정리
+    # 사용하지 않는 이미지, 네트워크, 벨륨 등을 정리
+    if [ "$TARGET" == "all" ] || [ "$service" == "backend" -a "$TARGET" == "backend" ]; then
+        echo "Cleaning up Docker system..."
+        # 이미지 정리 (현재 실행 중인 컨테이너에서 사용하지 않는 이미지 제거)
+        docker image prune -f
+        # 중지된 컨테이너 정리
+        docker container prune -f
+        # 사용하지 않는 네트워크 정리
+        docker network prune -f
+        # 빌드 캐시 정리
+        docker builder prune -f
+        
+        # 경고: 다음 명령어는 모든 사용하지 않는 이미지를 삭제합니다.
+        # 이는 일반적으로 자주 실행하는 것은 좋지 않지만, 디스크 공간이 매우 부족한 경우 사용합니다.
+        if [ "$ENV" == "dev" ] && [ $(df -h | grep /dev/sda1 | awk '{print $5}' | sed 's/%//') -gt 80 ]; then
+            echo "Disk usage is high (>80%). Removing all unused images..."
+            docker image prune -af
+        fi
+        
+        echo "Docker system cleanup completed"
+    fi
 }
 
 # 상태 확인 함수 (개선된 버전)
@@ -462,8 +496,19 @@ sync_service_config() {
         
         # Nginx 설정 적용
         if docker exec proxy nginx -t; then
-            docker exec proxy nginx -s reload
-            echo "Nginx configuration applied."
+            # 일반적인 리로드 시도
+            if docker exec proxy nginx -s reload; then
+                echo "Nginx configuration applied."
+            else
+                echo "Warning: Nginx reload failed, trying full restart..."
+                # 리로드 실패 시 컨테이너 재시작
+                cd "$DEPLOY_PATH/proxy"
+                docker compose -f proxy-compose.yml -p proxy down
+                docker compose -f proxy-compose.yml -p proxy up -d
+                echo "Nginx restarted with new configuration"
+                # 재시작 후 5초 대기 (서비스 안정화)
+                sleep 5
+            fi
         else
             echo "Error: Nginx configuration test failed"
             # 문제 해결을 위한 로그 출력
