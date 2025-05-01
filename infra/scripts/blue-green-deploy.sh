@@ -193,9 +193,15 @@ deploy_service() {
     
     mkdir -p "$conf_dir"
     
-    # 설정 파일 업데이트 (백업 서버 제외)
+    # 설정 파일 업데이트 (백업 서버 포함)
     echo "upstream $service {" > "$conf_dir/upstream.conf"
     echo "    server $service-$target_color:$container_port;    # active" >> "$conf_dir/upstream.conf"
+    
+    # 백업 서버가 존재하는 경우에만 추가
+    if container_running "$service-$current_color"; then
+        echo "    server $service-$current_color:$container_port backup;    # backup" >> "$conf_dir/upstream.conf"
+    fi
+    
     echo "}" >> "$conf_dir/upstream.conf"
     
     # Nginx 설정 적용
@@ -206,6 +212,12 @@ deploy_service() {
         # 설정 복원 (기존 구성으로)
         echo "upstream $service {" > "$conf_dir/upstream.conf"
         echo "    server $service-$current_color:$container_port;    # active" >> "$conf_dir/upstream.conf"
+        
+        # 이전 타겟이 존재하는 경우 백업으로 추가
+        if container_running "$service-$target_color"; then
+            echo "    server $service-$target_color:$container_port backup;    # backup" >> "$conf_dir/upstream.conf"
+        fi
+        
         echo "}" >> "$conf_dir/upstream.conf"
         
         # 새 컨테이너 정리
@@ -248,7 +260,7 @@ initialize_environment() {
     # frontend-blue와 backend-blue 배포
     docker-compose up -d frontend-blue backend-blue
     
-    # 초기 upstream.conf 설정
+    # 초기 upstream.conf 설정 (백업 서버 포함 후 기동)
     echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
     echo -e "upstream backend {\n    server backend-blue:8080;    # active\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
     
