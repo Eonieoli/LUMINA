@@ -4,6 +4,7 @@ import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.donation.model.entity.Donation;
 import com.lumina.backend.donation.model.entity.UserDonation;
+import com.lumina.backend.donation.model.response.GetDetailDonationResponse;
 import com.lumina.backend.donation.model.response.GetDonationResponse;
 import com.lumina.backend.donation.model.response.GetSubscribeDonationResponse;
 import com.lumina.backend.donation.model.response.SearchDonationResponse;
@@ -86,13 +87,13 @@ public class DonationServiceImpl implements DonationService {
 
         if (existUserDonation != null) {
             existUserDonation.updateUserDonation(request.getPoint());
+            donation.updateDonation(request.getPoint(), 0);
         } else {
             UserDonation userDonation = new UserDonation();
-            userDonation.registerDonation(user, donation);
+            userDonation.registerDonation(user, donation, request.getPoint());
             userDonationRepository.save(userDonation);
+            donation.updateDonation(request.getPoint(), 1);
         }
-
-        donation.updateDonation(request.getPoint());
         donationRepository.save(donation);
 
         user.updatePoint(-request.getPoint());
@@ -189,5 +190,38 @@ public class DonationServiceImpl implements DonationService {
 
         // 3. 성공 응답 생성 및 반환
         return result;
+    }
+
+
+    @Override
+    public GetDetailDonationResponse getDetailDonation(
+            Long userId, Long donationId) {
+
+        if (donationId == null || donationId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 기부처 ID입니다.");
+        }
+
+        Donation donation = donationRepository.findById(donationId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 기부처를 찾을 수 없습니다. 기부처 ID: " + donationId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
+
+        UserDonation existUserDonation = userDonationRepository.findByUserIdAndDonationIdAndRegistration(userId, donationId, "DONATION")
+                .orElse(null);
+
+        int myDonationCnt = 0;
+        int mySumDonation = 0;
+        if (existUserDonation != null) {
+            myDonationCnt = existUserDonation.getDonationCnt();
+            mySumDonation = existUserDonation.getDonationSum();
+        }
+
+        Boolean isSubscribe = userDonationRepository.existsByUserIdAndDonationIdAndRegistration(
+                userId, donationId, "USER");
+
+        return new GetDetailDonationResponse(
+                donationId, donation.getDonationName(), donation.getSumPoint(),
+                donation.getSumUser(), myDonationCnt, mySumDonation, isSubscribe);
     }
 }

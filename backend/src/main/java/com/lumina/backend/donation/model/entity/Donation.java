@@ -48,8 +48,8 @@ public class Donation extends BaseEntity {
         this.status = status;
     }
 
-    public void updateDonation(Integer sumPoint) {
+    public void updateDonation(Integer sumPoint, Integer user) {
         this.sumPoint += sumPoint;
-        this.sumUser += 1;
+        this.sumUser += user;
     }
 }

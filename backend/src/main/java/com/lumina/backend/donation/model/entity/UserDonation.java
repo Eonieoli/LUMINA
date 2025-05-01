@@ -43,12 +43,12 @@ public class UserDonation extends BaseEntity {
         this.registration = registration;
     }
 
-    public void registerDonation(User user, Donation donation) {
+    public void registerDonation(User user, Donation donation, Integer point) {
         this.user = user;
         this.donation = donation;
         this.registration = "DONATION";
-        this.donationCnt = 0;
-        this.donationSum = 0;
+        this.donationCnt = 1;
+        this.donationSum = point;
     }
 
     public void updateUserDonation(Integer point) {
