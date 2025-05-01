@@ -3,31 +3,19 @@
 # Blue-Green 무중단 배포 스크립트
 # 사용법: ./blue-green-deploy.sh [dev|prod] [frontend|backend|all]
 
-# 오류 발생 시 스크립트 중단
-set -e
-
 # 변수 초기화
-ENV=""
-TARGET=""
+ENV=$1
+TARGET=$2
 DEPLOY_PATH=""
-CURRENT_COLOR=""
-TARGET_COLOR=""
-BLUE_PORT=""
-GREEN_PORT=""
-NGINX_CONF_PATH=""
 
-# 인자 파싱
-if [ "$1" == "dev" ] || [ "$1" == "prod" ]; then
-    ENV="$1"
-else
+# 인자 검증
+if [[ "$ENV" != "dev" && "$ENV" != "prod" ]]; then
     echo "Error: First argument must be 'dev' or 'prod'"
     echo "Usage: ./blue-green-deploy.sh [dev|prod] [frontend|backend|all]"
     exit 1
 fi
 
-if [ "$2" == "frontend" ] || [ "$2" == "backend" ] || [ "$2" == "all" ]; then
-    TARGET="$2"
-else
+if [[ "$TARGET" != "frontend" && "$TARGET" != "backend" && "$TARGET" != "all" ]]; then
     echo "Error: Second argument must be 'frontend', 'backend', or 'all'"
     echo "Usage: ./blue-green-deploy.sh [dev|prod] [frontend|backend|all]"
     exit 1
@@ -36,593 +24,334 @@ fi
 # 환경에 따른 경로 설정
 if [ "$ENV" == "dev" ]; then
     DEPLOY_PATH="/home/rublin322/lumina/infra/dev"
-    if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
-        FRONTEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/frontend"
-    fi
-    if [ "$TARGET" == "backend" ] || [ "$TARGET" == "all" ]; then
-        BACKEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/backend"
-    fi
 else
     DEPLOY_PATH="/home/ubuntu/lumina/infra/prod"
-    if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
-        FRONTEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/frontend"
-    fi
-    if [ "$TARGET" == "backend" ] || [ "$TARGET" == "all" ]; then
-        BACKEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/backend"
-    fi
 fi
 
-# 현재 서비스 상태 확인 (개선된 버전)
-check_current_service() {
+FRONTEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/frontend"
+BACKEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/backend"
+
+# 시작 로그
+echo "=============================="
+echo "Blue-Green Deployment Started"
+echo "Environment: $ENV"
+echo "Target: $TARGET"
+echo "Deploy Path: $DEPLOY_PATH"
+echo "=============================="
+
+# 컨테이너 존재 확인
+container_exists() {
+    docker ps -a -q -f name=$1 2>/dev/null | grep -q .
+    return $?
+}
+
+# 컨테이너 실행 중인지 확인
+container_running() {
+    docker ps -q -f name=$1 2>/dev/null | grep -q .
+    return $?
+}
+
+# 현재 서비스 색상 확인
+get_current_color() {
     local service=$1
-    
-    # 기본값 설정
-    CURRENT_COLOR="blue"
-    TARGET_COLOR="green"
-    
-    # 현재 사용 중인 색상(blue/green) 확인
-    if [ "$service" == "frontend" ]; then
-        # upstream.conf 파일이 존재하는지 확인
-        if [ -f "$FRONTEND_NGINX_CONF_PATH/upstream.conf" ]; then
-            # 'active' 주석이 있는 서버가 어떤 색상인지 확인
-            if grep -q "frontend-blue.*active" "$FRONTEND_NGINX_CONF_PATH/upstream.conf" && ! grep -q "frontend-blue.*backup" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
-                CURRENT_COLOR="blue"
-                TARGET_COLOR="green"
-            elif grep -q "frontend-green.*active" "$FRONTEND_NGINX_CONF_PATH/upstream.conf" && ! grep -q "frontend-green.*backup" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
-                CURRENT_COLOR="green"
-                TARGET_COLOR="blue"
-            # backup 키워드로 구분
-            elif grep -q "frontend-green.*backup" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
-                CURRENT_COLOR="blue"
-                TARGET_COLOR="green"
-            elif grep -q "frontend-blue.*backup" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
-                CURRENT_COLOR="green"
-                TARGET_COLOR="blue"
-            # 순서로 구분 (첫 번째 서버가 active)
-            elif grep -q "frontend-blue" "$FRONTEND_NGINX_CONF_PATH/upstream.conf" && grep -q "frontend-green" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
-                if grep -n "frontend-blue" "$FRONTEND_NGINX_CONF_PATH/upstream.conf" | cut -d: -f1 < grep -n "frontend-green" "$FRONTEND_NGINX_CONF_PATH/upstream.conf" | cut -d: -f1; then
-                    CURRENT_COLOR="blue"
-                    TARGET_COLOR="green"
-                else
-                    CURRENT_COLOR="green"
-                    TARGET_COLOR="blue"
-                fi
-            # 하나만 있는 경우
-            elif grep -q "frontend-blue" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
-                CURRENT_COLOR="blue"
-                TARGET_COLOR="green"
-            elif grep -q "frontend-green" "$FRONTEND_NGINX_CONF_PATH/upstream.conf"; then
-                CURRENT_COLOR="green"
-                TARGET_COLOR="blue"
-            else
-                echo "Warning: Could not determine current frontend color from upstream.conf, defaulting to blue->green deployment"
-            fi
-        else
-            echo "Warning: No upstream.conf file found for frontend. Assuming blue is active."
-        fi
-    elif [ "$service" == "backend" ]; then
-        # upstream.conf 파일이 존재하는지 확인
-        if [ -f "$BACKEND_NGINX_CONF_PATH/upstream.conf" ]; then
-            # 'active' 주석이 있는 서버가 어떤 색상인지 확인
-            if grep -q "backend-blue.*active" "$BACKEND_NGINX_CONF_PATH/upstream.conf" && ! grep -q "backend-blue.*backup" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
-                CURRENT_COLOR="blue"
-                TARGET_COLOR="green"
-            elif grep -q "backend-green.*active" "$BACKEND_NGINX_CONF_PATH/upstream.conf" && ! grep -q "backend-green.*backup" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
-                CURRENT_COLOR="green"
-                TARGET_COLOR="blue"
-            # backup 키워드로 구분
-            elif grep -q "backend-green.*backup" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
-                CURRENT_COLOR="blue"
-                TARGET_COLOR="green"
-            elif grep -q "backend-blue.*backup" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
-                CURRENT_COLOR="green"
-                TARGET_COLOR="blue"
-            # 순서로 구분 (첫 번째 서버가 active)
-            elif grep -q "backend-blue" "$BACKEND_NGINX_CONF_PATH/upstream.conf" && grep -q "backend-green" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
-                if grep -n "backend-blue" "$BACKEND_NGINX_CONF_PATH/upstream.conf" | cut -d: -f1 < grep -n "backend-green" "$BACKEND_NGINX_CONF_PATH/upstream.conf" | cut -d: -f1; then
-                    CURRENT_COLOR="blue"
-                    TARGET_COLOR="green"
-                else
-                    CURRENT_COLOR="green"
-                    TARGET_COLOR="blue"
-                fi
-            # 하나만 있는 경우
-            elif grep -q "backend-blue" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
-                CURRENT_COLOR="blue"
-                TARGET_COLOR="green"
-            elif grep -q "backend-green" "$BACKEND_NGINX_CONF_PATH/upstream.conf"; then
-                CURRENT_COLOR="green"
-                TARGET_COLOR="blue"
-            else
-                echo "Warning: Could not determine current backend color from upstream.conf, defaulting to blue->green deployment"
-            fi
-        else
-            echo "Warning: No upstream.conf file found for backend. Assuming blue is active."
-        fi
-    fi
-    
-    echo "Current $service: $CURRENT_COLOR, Target $service: $TARGET_COLOR"
-}
-
-# 컨테이너가 직접 확인 가능한지 확인
-check_container_available() {
-    local container_name=$1
-    if docker ps -q -f name=$container_name &> /dev/null; then
-        return 0  # 컨테이너 정상 실행 중
-    else
-        return 1  # 컨테이너 없음
-    fi
-}
-
-# 도커 컨테이너 배포
-deploy_container() {
-    local service=$1
-    local color=$2
-    
-    echo "Deploying $service-$color..."
-    
-    # 환경 변수 설정
-    if [ "$ENV" == "dev" ]; then
-        TAG="develop"
-    else
-        TAG="latest"
-    fi
-    
-    # 이미지 이름 설정
-    local image_name="rublin322/lumina-$service:$TAG"
-    
-    # 컨테이너 실행 (기존 컨테이너가 있으면 중지하고 삭제)
-    docker stop $service-$color 2>/dev/null || true
-    docker rm $service-$color 2>/dev/null || true
-    
-    # 서비스별 실행 명령
-    if [ "$service" == "frontend" ]; then
-        if [ "$color" == "blue" ]; then
-            PORT=3001
-        else
-            PORT=3002
-        fi
-        
-        docker run -d --name $service-$color \
-            --network lumina-network \
-            -p $PORT:80 \
-            --restart always \
-            --label environment=$ENV \
-            $image_name
-            
-    elif [ "$service" == "backend" ]; then
-        if [ "$color" == "blue" ]; then
-            PORT=8081
-        else
-            PORT=8082
-        fi
-        
-        # 백엔드 환경 변수 파일 경로
-        local env_file="$DEPLOY_PATH/.env"
-        
-        docker run -d --name $service-$color \
-            --network lumina-network \
-            -p $PORT:8080 \
-            --env-file $env_file \
-            --restart always \
-            --label environment=$ENV \
-            $image_name
-    fi
-    
-    echo "$service-$color deployed on port $PORT"
-}
-
-# Nginx 설정 업데이트 및 reload (개선된 버전)
-update_nginx_config() {
-    local service=$1
-    local target_color=$2
-    local other_color=""
-    
-    # 다른 색상 결정
-    if [ "$target_color" == "blue" ]; then
-        other_color="green"
-    else
-        other_color="blue"
-    fi
-    
-    echo "Updating Nginx configuration for $service to use $target_color..."
-    
-    # 디렉토리 존재 확인 및 생성
-    if [ "$service" == "frontend" ]; then
-        mkdir -p "$FRONTEND_NGINX_CONF_PATH"
-    elif [ "$service" == "backend" ]; then
-        mkdir -p "$BACKEND_NGINX_CONF_PATH"
-    fi
-    
-    # 타겟 컨테이너 존재 여부 확인
-    if ! check_container_available "$service-$target_color"; then
-        echo "Error: $service-$target_color container is not running"
-        exit 1
-    fi
-    
-    # 백업 컨테이너 존재 여부 확인
-    local backup_available=0
-    if check_container_available "$service-$other_color"; then
-        backup_available=1
-    fi
-    
-    # Nginx 설정 파일 생성
-    if [ "$service" == "frontend" ]; then
-        if [ "$target_color" == "blue" ]; then
-            if [ $backup_available -eq 1 ]; then
-                echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n    server frontend-green:80 backup;    # backup\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
-            else
-                echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
-            fi
-        else
-            if [ $backup_available -eq 1 ]; then
-                echo -e "upstream frontend {\n    server frontend-green:80;    # active\n    server frontend-blue:80 backup;    # backup\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
-            else
-                echo -e "upstream frontend {\n    server frontend-green:80;    # active\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
-            fi
-        fi
-    elif [ "$service" == "backend" ]; then
-        if [ "$target_color" == "blue" ]; then
-            if [ $backup_available -eq 1 ]; then
-                echo -e "upstream backend {\n    server backend-blue:8080;    # active\n    server backend-green:8080 backup;    # backup\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
-            else
-                echo -e "upstream backend {\n    server backend-blue:8080;    # active\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
-            fi
-        else
-            if [ $backup_available -eq 1 ]; then
-                echo -e "upstream backend {\n    server backend-green:8080;    # active\n    server backend-blue:8080 backup;    # backup\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
-            else
-                echo -e "upstream backend {\n    server backend-green:8080;    # active\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
-            fi
-        fi
-    fi
-    
-    # Nginx 설정 테스트 및 reload
-    if docker exec proxy nginx -t; then
-        # 일반적인 리로드 시도
-        if docker exec proxy nginx -s reload; then
-            echo "Nginx successfully reloaded to use $service-$target_color"
-        else
-            echo "Warning: Nginx reload failed, trying full restart..."
-            # 리로드 실패 시 컨테이너 재시작
-            cd "$DEPLOY_PATH/proxy"
-            docker compose -f proxy-compose.yml -p proxy down
-            docker compose -f proxy-compose.yml -p proxy up -d
-            echo "Nginx restarted to use $service-$target_color"
-            # 재시작 후 5초 대기 (서비스 안정화)
-            sleep 5
-        fi
-    else
-        echo "Error: Nginx configuration test failed"
-        # 설정 파일 백업 복원 (개선 가능)
-        exit 1
-    fi
-}
-
-# 이전 버전 컨테이너 정리 (유예 시간 후)
-cleanup_old_container() {
-    local service=$1
-    local color=$2
-    
-    echo "Old container $service-$color will be stopped in 30 seconds..."
-    sleep 30  # 트래픽이 완전히 새 버전으로 전환될 때까지 대기
-    
-    # 이전 컨테이너 중지 및 삭제
-    docker stop $service-$color 2>/dev/null || true
-    docker rm $service-$color 2>/dev/null || true
-    
-    echo "Old container $service-$color stopped and removed"
-    
-    # 배포가 완료된 후 Docker 시스템 정리
-    # 사용하지 않는 이미지, 네트워크, 벨륨 등을 정리
-    if [ "$TARGET" == "all" ] || [ "$service" == "backend" -a "$TARGET" == "backend" ]; then
-        echo "Cleaning up Docker system..."
-        # 이미지 정리 (현재 실행 중인 컨테이너에서 사용하지 않는 이미지 제거)
-        docker image prune -f
-        # 중지된 컨테이너 정리
-        docker container prune -f
-        # 사용하지 않는 네트워크 정리
-        docker network prune -f
-        # 빌드 캐시 정리
-        docker builder prune -f
-        
-        # 경고: 다음 명령어는 모든 사용하지 않는 이미지를 삭제합니다.
-        # 이는 일반적으로 자주 실행하는 것은 좋지 않지만, 디스크 공간이 매우 부족한 경우 사용합니다.
-        if [ "$ENV" == "dev" ] && [ $(df -h | grep /dev/sda1 | awk '{print $5}' | sed 's/%//') -gt 80 ]; then
-            echo "Disk usage is high (>80%). Removing all unused images..."
-            docker image prune -af
-        fi
-        
-        echo "Docker system cleanup completed"
-    fi
-}
-
-# 상태 확인 함수 (개선된 버전)
-health_check() {
-    local service=$1
-    local color=$2
-    local max_attempts=10
-    local wait_time=5
-    
-    echo "Performing health check for $service-$color..."
-    
-    for i in $(seq 1 $max_attempts); do
-        echo "Health check attempt $i/$max_attempts..."
-        
-        # 컨테이너가 여전히 실행 중인지 확인
-        if ! check_container_available "$service-$color"; then
-            echo "Error: $service-$color container is not running"
-            exit 1
-        fi
-        
-        if [ "$service" == "frontend" ]; then
-            # Frontend 상태 확인 (포트는 컨테이너 내부 포트 사용)
-            if [ "$color" == "blue" ]; then
-                PORT=3001
-            else
-                PORT=3002
-            fi
-            
-            # curl을 통한 상태 확인
-            if curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/ | grep -q "200"; then
-                echo "$service-$color is healthy"
-                return 0
-            fi
-        elif [ "$service" == "backend" ]; then
-            # Backend 상태 확인 (Spring Boot Actuator 활용)
-            if [ "$color" == "blue" ]; then
-                PORT=8081
-            else
-                PORT=8082
-            fi
-            
-            # Actuator 헬스 체크
-            if curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/actuator/health | grep -q "200"; then
-                echo "$service-$color is healthy"
-                return 0
-            fi
-        fi
-        
-        echo "Health check failed, waiting $wait_time seconds before next attempt..."
-        sleep $wait_time
-    done
-    
-    echo "Error: Health check failed after $max_attempts attempts"
-    # 실패한 컨테이너 로그 출력
-    echo "Container logs for $service-$color:"
-    docker logs --tail 50 $service-$color
-    exit 1
-}
-
-# 초기 환경 설정 함수
-initialize_environment() {
-    echo "Initializing environment..."
-    
-    # 전역 변수로 저장 - 절대 경로 사용
-    if [ "$ENV" == "dev" ]; then
-        DEPLOY_PATH="/home/rublin322/lumina/infra/dev"
-        FRONTEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/frontend"
-        BACKEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/backend"
-    else
-        DEPLOY_PATH="/home/ubuntu/lumina/infra/prod"
-        FRONTEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/frontend"
-        BACKEND_NGINX_CONF_PATH="$DEPLOY_PATH/proxy/blue-green/backend"
-    fi
-    
-    # 필요한 디렉토리 생성
-    mkdir -p "$FRONTEND_NGINX_CONF_PATH"
-    mkdir -p "$BACKEND_NGINX_CONF_PATH"
-    
-    # DB, Redis 설정
-    cd "$DEPLOY_PATH"
-    docker compose up -d mysql redis
-    
-    # frontend-blue와 backend-blue 한번에 배포
-    docker compose up -d frontend-blue backend-blue
-    
-    # 초기 upstream.conf 설정
-    echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
-    echo -e "upstream backend {\n    server backend-blue:8080;    # active\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
-    
-    # proxy 설정
-    cd "$DEPLOY_PATH/proxy"
-    docker compose -f proxy-compose.yml -p proxy up -d
-    
-    # monitoring 설정
-    cd "$DEPLOY_PATH/monitoring"
-    docker compose -f monitoring-compose.yml -p monitoring up -d
-    
-    # 초기 배포 표시 파일 생성
-    if [ "$ENV" == "dev" ]; then
-        touch /home/rublin322/lumina/.initial_deploy_done
-    else
-        touch /home/ubuntu/lumina/.initial_deploy_done
-    fi
-    
-    echo "Initial environment setup completed"
-}
-
-# 서비스 구성 동기화 (실제 상태와 설정 일치시키기)
-sync_service_config() {
-    local service=$1
-    
-    echo "Syncing $service configuration with actual state..."
-    
-    # 양쪽 컨테이너 모두 실행 중인지 확인
-    local blue_running=0
-    local green_running=0
-    
-    if check_container_available "$service-blue"; then
-        blue_running=1
-    fi
-    
-    if check_container_available "$service-green"; then
-        green_running=1
-    fi
-    
-    # 어느 쪽도 실행 중이지 않은 경우
-    if [ $blue_running -eq 0 ] && [ $green_running -eq 0 ]; then
-        echo "Warning: Neither $service-blue nor $service-green is running!"
-        return 1
-    fi
-    
-    # 설정 파일 존재 여부 확인
     local conf_path=""
+    
     if [ "$service" == "frontend" ]; then
         conf_path="$FRONTEND_NGINX_CONF_PATH/upstream.conf"
     else
         conf_path="$BACKEND_NGINX_CONF_PATH/upstream.conf"
     fi
     
-    # 설정 파일 없는 경우 생성
+    # 설정 파일이 없으면 blue로 가정
     if [ ! -f "$conf_path" ]; then
-        mkdir -p "$(dirname "$conf_path")"
-        
-        if [ $blue_running -eq 1 ]; then
-            if [ "$service" == "frontend" ]; then
-                echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n}" > "$conf_path"
-            else
-                echo -e "upstream backend {\n    server backend-blue:8080;    # active\n}" > "$conf_path"
-            fi
-            echo "Created new $service configuration with blue as active"
+        echo "blue"
+        return
+    fi
+    
+    # 설정 파일에서 현재 색상 확인
+    if grep -q "$service-blue" "$conf_path" && ! grep -q "$service-blue.*backup" "$conf_path"; then
+        echo "blue"
+    else
+        echo "green"
+    fi
+}
+
+# 서비스 배포 함수
+deploy_service() {
+    local service=$1
+    
+    # 현재 색상 확인 및 타겟 색상 결정
+    local current_color=$(get_current_color "$service")
+    local target_color=""
+    
+    if [ "$current_color" == "blue" ]; then
+        target_color="green"
+    else
+        target_color="blue"
+    fi
+    
+    echo "Deploying $service: $current_color -> $target_color"
+    
+    # 포트 설정
+    local port=""
+    local container_port=""
+    local image_tag=""
+    
+    if [ "$ENV" == "dev" ]; then
+        image_tag="develop"
+    else
+        image_tag="latest"
+    fi
+    
+    if [ "$service" == "frontend" ]; then
+        container_port="80"
+        if [ "$target_color" == "blue" ]; then
+            port="3001"
         else
-            if [ "$service" == "frontend" ]; then
-                echo -e "upstream frontend {\n    server frontend-green:80;    # active\n}" > "$conf_path"
-            else
-                echo -e "upstream backend {\n    server backend-green:8080;    # active\n}" > "$conf_path"
-            fi
-            echo "Created new $service configuration with green as active"
+            port="3002"
         fi
-        
-        # Nginx 설정 적용
-        if docker exec proxy nginx -t; then
-            # 일반적인 리로드 시도
-            if docker exec proxy nginx -s reload; then
-                echo "Nginx configuration applied."
-            else
-                echo "Warning: Nginx reload failed, trying full restart..."
-                # 리로드 실패 시 컨테이너 재시작
-                cd "$DEPLOY_PATH/proxy"
-                docker compose -f proxy-compose.yml -p proxy down
-                docker compose -f proxy-compose.yml -p proxy up -d
-                echo "Nginx restarted with new configuration"
-                # 재시작 후 5초 대기 (서비스 안정화)
-                sleep 5
-            fi
+    else  # backend
+        container_port="8080"
+        if [ "$target_color" == "blue" ]; then
+            port="8081"
         else
-            echo "Error: Nginx configuration test failed"
-            # 문제 해결을 위한 로그 출력
-            cat "$conf_path"
-            return 1
+            port="8082"
         fi
     fi
     
+    # 기존 컨테이너 정리
+    if container_exists "$service-$target_color"; then
+        echo "Removing existing $service-$target_color container..."
+        docker stop "$service-$target_color" >/dev/null 2>&1 || true
+        docker rm "$service-$target_color" >/dev/null 2>&1 || true
+    fi
+    
+    # 새 컨테이너 배포
+    echo "Starting new $service-$target_color container..."
+    
+    if [ "$service" == "frontend" ]; then
+        docker run -d --name "$service-$target_color" \
+            --network lumina-network \
+            -p $port:$container_port \
+            --restart always \
+            --label environment=$ENV \
+            "rublin322/lumina-$service:$image_tag"
+    else
+        docker run -d --name "$service-$target_color" \
+            --network lumina-network \
+            -p $port:$container_port \
+            --env-file "$DEPLOY_PATH/.env" \
+            --restart always \
+            --label environment=$ENV \
+            "rublin322/lumina-$service:$image_tag"
+    fi
+    
+    # 건강 상태 확인
+    echo "Performing health check for $service-$target_color..."
+    local max_attempts=10
+    local wait_time=5
+    local endpoint="/"
+    
+    if [ "$service" == "backend" ]; then
+        endpoint="/actuator/health"
+    fi
+    
+    for i in $(seq 1 $max_attempts); do
+        echo "Health check attempt $i/$max_attempts..."
+        
+        if ! container_running "$service-$target_color"; then
+            echo "Error: Container $service-$target_color is not running anymore!"
+            docker logs --tail 50 "$service-$target_color" || true
+            exit 1
+        fi
+        
+        # 2초 타임아웃으로 헬스 체크
+        if curl -s -m 2 -o /dev/null -w "%{http_code}" "http://localhost:$port$endpoint" | grep -q "200"; then
+            echo "$service-$target_color is healthy!"
+            break
+        fi
+        
+        if [ $i -eq $max_attempts ]; then
+            echo "Error: Health check failed after $max_attempts attempts"
+            docker logs --tail 50 "$service-$target_color"
+            exit 1
+        fi
+        
+        echo "Health check failed, waiting $wait_time seconds before next attempt..."
+        sleep $wait_time
+    done
+    
+    # Nginx 설정 변경
+    echo "Updating Nginx configuration for $service..."
+    local conf_dir=""
+    
+    if [ "$service" == "frontend" ]; then
+        conf_dir="$FRONTEND_NGINX_CONF_PATH"
+    else
+        conf_dir="$BACKEND_NGINX_CONF_PATH"
+    fi
+    
+    mkdir -p "$conf_dir"
+    
+    # 설정 파일 업데이트 (백업 서버 포함)
+    echo "upstream $service {" > "$conf_dir/upstream.conf"
+    echo "    server $service-$target_color:$container_port;    # active" >> "$conf_dir/upstream.conf"
+    
+    # 백업 서버가 존재하는 경우에만 추가
+    if container_running "$service-$current_color"; then
+        echo "    server $service-$current_color:$container_port backup;    # backup" >> "$conf_dir/upstream.conf"
+    fi
+    
+    echo "}" >> "$conf_dir/upstream.conf"
+    
+    # Nginx 설정 적용
+    echo "Testing and applying Nginx configuration..."
+    if ! docker exec proxy nginx -t; then
+        echo "Nginx configuration test failed, reverting changes..."
+        
+        # 설정 복원 (기존 구성으로)
+        echo "upstream $service {" > "$conf_dir/upstream.conf"
+        echo "    server $service-$current_color:$container_port;    # active" >> "$conf_dir/upstream.conf"
+        
+        # 이전 타겟이 존재하는 경우 백업으로 추가
+        if container_running "$service-$target_color"; then
+            echo "    server $service-$target_color:$container_port backup;    # backup" >> "$conf_dir/upstream.conf"
+        fi
+        
+        echo "}" >> "$conf_dir/upstream.conf"
+        
+        # 새 컨테이너 정리
+        docker stop "$service-$target_color" >/dev/null 2>&1 || true
+        docker rm "$service-$target_color" >/dev/null 2>&1 || true
+        
+        echo "Deployment of $service failed!"
+        exit 1
+    fi
+    
+    # 설정 변경 적용
+    if ! docker exec proxy nginx -s reload; then
+        echo "Nginx reload failed, trying full restart..."
+        (cd "$DEPLOY_PATH/proxy" && docker-compose -f proxy-compose.yml -p proxy restart)
+        sleep 3
+    fi
+    
+    echo "$service successfully switched to $target_color"
+    
+    # 이전 컨테이너는 유지하되 추후 정리를 위해 태그
+    echo "Marking old $service-$current_color for later cleanup"
+    docker update --label "pending-cleanup=true" "$service-$current_color" >/dev/null 2>&1 || true
+    
+    # 배포 성공
+    echo "$service deployment completed successfully!"
     return 0
 }
 
-# 시작 전 모든 컨테이너 존재 여부 확인
-ensure_all_containers_exist() {
-    # 배포 시작 전에 필요한 모든 컨테이너가 있는지 확인
-    local missing_containers=0
+# 초기 환경 설정
+initialize_environment() {
+    echo "Initializing environment..."
     
-    if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
-        # frontend 배포에는 frontend-blue와 frontend-green 가 모두 필요 
-        # frontend-blue 확인
-        if ! check_container_available "frontend-blue"; then
-            echo "Warning: frontend-blue container does not exist. Creating it..."
-            deploy_container "frontend" "blue"
-            missing_containers=1
-        fi
-        
-        # frontend-green 확인
-        if ! check_container_available "frontend-green"; then
-            echo "Warning: frontend-green container does not exist. Creating it..."
-            deploy_container "frontend" "green"
-            missing_containers=1
-        fi
+    # 필요한 디렉토리 생성
+    mkdir -p "$FRONTEND_NGINX_CONF_PATH" "$BACKEND_NGINX_CONF_PATH"
+    
+    # 기본 인프라 시작
+    cd "$DEPLOY_PATH"
+    docker-compose up -d mysql redis
+    
+    # frontend-blue와 backend-blue 배포
+    docker-compose up -d frontend-blue backend-blue
+    
+    # 초기 upstream.conf 설정 (백업 서버 포함 후 기동)
+    echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
+    echo -e "upstream backend {\n    server backend-blue:8080;    # active\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
+    
+    # proxy 설정
+    cd "$DEPLOY_PATH/proxy"
+    docker-compose -f proxy-compose.yml -p proxy up -d
+    
+    # monitoring 설정
+    cd "$DEPLOY_PATH/monitoring"
+    docker-compose -f monitoring-compose.yml -p monitoring up -d
+    
+    # 초기 배포 표시 파일 생성
+    local init_flag=""
+    if [ "$ENV" == "dev" ]; then
+        init_flag="/home/rublin322/lumina/.initial_deploy_done"
+    else
+        init_flag="/home/ubuntu/lumina/.initial_deploy_done"
     fi
     
-    if [ "$TARGET" == "backend" ] || [ "$TARGET" == "all" ]; then
-        # backend 배포에는 backend-blue와 backend-green 가 모두 필요
-        # backend-blue 확인
-        if ! check_container_available "backend-blue"; then
-            echo "Warning: backend-blue container does not exist. Creating it..."
-            deploy_container "backend" "blue"
-            missing_containers=1
-        fi
-        
-        # backend-green 확인
-        if ! check_container_available "backend-green"; then
-            echo "Warning: backend-green container does not exist. Creating it..."
-            deploy_container "backend" "green"
-            missing_containers=1
-        fi
-    fi
-    
-    if [ $missing_containers -eq 1 ]; then
-        echo "Some containers were missing and were created. Waiting 10 seconds for them to start up..."
-        sleep 10
-    fi
+    touch "$init_flag"
+    echo "Initial environment setup completed"
 }
 
-# 메인 배포 프로세스
-main() {
-    # 초기 배포인지 확인
+# 정리 작업
+cleanup() {
+    echo "Performing cleanup tasks..."
+    
+    # 필요한 경우에만 Docker 시스템 정리
     if [ "$ENV" == "dev" ]; then
-        if [ ! -f /home/rublin322/lumina/.initial_deploy_done ]; then
-            initialize_environment
-            # 초기 배포인 경우 여기서 종료
-            return
+        # 디스크 사용량이 70% 이상인 경우에만 정리
+        disk_usage=$(df -h | grep /dev/sda1 | awk '{print $5}' | sed 's/%//')
+        if [ "$disk_usage" -gt 70 ]; then
+            echo "Disk usage is high ($disk_usage%), cleaning up Docker resources..."
+            docker image prune -f
+            docker container prune -f
+            docker network prune -f
+            
+            # 매우 심각한 경우 (90% 이상) 모든 미사용 이미지 제거
+            if [ "$disk_usage" -gt 90 ]; then
+                echo "Critical disk usage! Removing all unused images..."
+                docker image prune -a -f
+            fi
         fi
+    fi
+    
+    echo "Cleanup completed!"
+}
+
+# 메인 함수
+main() {
+    # 초기 배포 확인
+    local init_flag=""
+    if [ "$ENV" == "dev" ]; then
+        init_flag="/home/rublin322/lumina/.initial_deploy_done"
     else
-        if [ ! -f /home/ubuntu/lumina/.initial_deploy_done ]; then
-            initialize_environment
-            # 초기 배포인 경우 여기서 종료
-            return
+        init_flag="/home/ubuntu/lumina/.initial_deploy_done"
+    fi
+    
+    if [ ! -f "$init_flag" ]; then
+        initialize_environment
+        return
+    fi
+    
+    # 해당 서비스 배포
+    local result=0
+    
+    if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
+        deploy_service "frontend"
+        result=$?
+        if [ $result -ne 0 ]; then
+            echo "Frontend deployment failed!"
+            exit $result
         fi
     fi
     
-    # 기존 서비스 구성 동기화 (설정 파일과 실제 상태 일치 확인)
-    if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
-        sync_service_config "frontend" || echo "Warning: Frontend sync failed but continuing..."
-    fi
-    
     if [ "$TARGET" == "backend" ] || [ "$TARGET" == "all" ]; then
-        sync_service_config "backend" || echo "Warning: Backend sync failed but continuing..."
+        deploy_service "backend"
+        result=$?
+        if [ $result -ne 0 ]; then
+            echo "Backend deployment failed!"
+            exit $result
+        fi
     fi
     
-    # 중요: 배포 전에 백업 컨테이너가 존재하는지 확인
-    ensure_all_containers_exist
+    # 성공적으로 배포 완료 후 정리
+    cleanup
     
-    # 실제 배포 시작
-    if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
-        echo "=== Deploying Frontend ==="
-        check_current_service "frontend"
-        deploy_container "frontend" "$TARGET_COLOR"
-        health_check "frontend" "$TARGET_COLOR"
-        update_nginx_config "frontend" "$TARGET_COLOR"
-        cleanup_old_container "frontend" "$CURRENT_COLOR"
-    fi
-    
-    if [ "$TARGET" == "backend" ] || [ "$TARGET" == "all" ]; then
-        echo "=== Deploying Backend ==="
-        check_current_service "backend"
-        deploy_container "backend" "$TARGET_COLOR"
-        health_check "backend" "$TARGET_COLOR"
-        update_nginx_config "backend" "$TARGET_COLOR"
-        cleanup_old_container "backend" "$CURRENT_COLOR"
-    fi
-    
-    echo "Blue-Green deployment completed successfully!"
+    echo "==============================="
+    echo "Blue-Green Deployment Completed"
+    echo "==============================="
 }
 
 # 스크립트 실행
-echo "Starting blue-green deployment with ENV=$ENV, TARGET=$TARGET"
-echo "DEPLOY_PATH=$DEPLOY_PATH"
-if [ "$TARGET" == "frontend" ] || [ "$TARGET" == "all" ]; then
-    echo "FRONTEND_NGINX_CONF_PATH=$FRONTEND_NGINX_CONF_PATH"
-fi
-if [ "$TARGET" == "backend" ] || [ "$TARGET" == "all" ]; then
-    echo "BACKEND_NGINX_CONF_PATH=$BACKEND_NGINX_CONF_PATH"
-fi
 main
