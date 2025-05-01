@@ -27,7 +27,7 @@ export default function DonationSearchResultPage() {
   useEffect(() => {
     const fetchDonations = async() => {
       if(!keyword || keyword === "donations") 
-        console.log("빈칸 검색 -> 전체 목록 조회 예정")
+        console.log("빈칸 검색 -> 전체 목록 조회")
       try {
         const { donations: newDonations, totalPages} = await getSearchDonations(decodedKeyword, pageNum)
         if (pageNum === 1) {
