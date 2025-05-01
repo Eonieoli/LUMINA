@@ -23,29 +23,29 @@ export default function HomePage() {
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const observer = useRef<IntersectionObserver | null>(null);
-  // const fetchedOnce = useRef(false);
+  const fetchedOnce = useRef(false);
 
   const handleDelete = (postId: number) => {
     setPosts(prevPosts => prevPosts.filter(post => post.postId !== postId));
   };
-  
+
   useEffect(() => {
     const fetchPosts = async () => {
-      if (isLoading || !hasMore) return;
-      // if (isLoading || !hasMore || fetchedOnce.current) return;
+      if (isLoading || !hasMore || fetchedOnce.current) return;
 
-      // fetchedOnce.current = true;
+      fetchedOnce.current = true;
       setIsLoading(true);
       try {
         const data = await getPosts(pageNum);
         if (data.data.posts.length < 10) {
-          setHasMore(false); // 10개 미만이면 마지막 페이지로 간주
+          setHasMore(false);
         }
         setPosts(prev => [...prev, ...data.data.posts]);
       } catch (error) {
         console.error("게시물 불러오기 실패:", error);
       }
       setIsLoading(false);
+      fetchedOnce.current = false;
     };
 
     fetchPosts();
