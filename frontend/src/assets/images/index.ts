@@ -1,5 +1,6 @@
 // 사용자 관련 에셋
 import DefaultProfile from './auth/default.svg';
+import KakaoAuthButton from './auth/kakao_login_medium_wide.png';
 
 // 게시물 관련 에셋
 import HeartDefaultIcon from './board/heart_default.svg';
@@ -28,6 +29,7 @@ import SearchIcon from './navbar/Ic_search.png'
 
 export {
     DefaultProfile,
+    KakaoAuthButton,
     HeartDefaultIcon,
     HeartFilledIcon,
     ChatIcon,
