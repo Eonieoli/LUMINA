@@ -78,7 +78,7 @@ export default function SearchModal({onClose}: SearchModalProps){
             onClick={() => {
               onClose()
               // 상세페이지로 이동하도록 추후 수정 예정
-              navigate(`/donate/research/${encodeURIComponent(donation.donationName)}`)
+              navigate(`/donate/${donation.donationId}`)
             }} 
           >
             {donation.donationName}

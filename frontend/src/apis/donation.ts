@@ -39,3 +39,16 @@ export const getSearchDonations = async(keyword: string, pageNum: number) => {
     throw error
   }
 }
+
+// 기부처 상세페이지
+export const getDonationDetail = async(donationId:string) => {
+  try {
+    const response = await apiClient.get(`/donation/${donationId}`)
+    console.log("기부처 상세 정보 가져오기 성공!", response.data.data)
+    return response.data.data
+  }
+  catch(error) {
+    console.log("기부처 상세 정보 가져오기 실패!", error)
+    throw error
+  }
+}

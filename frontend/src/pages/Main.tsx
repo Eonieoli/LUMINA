@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom"
-import { HomePage, SearchPage, DonatePage, RankingPage, MyPage, PostCreatePage} from "@/pages/mainPages"
+import { HomePage, SearchPage, DonatePage, RankingPage, MyPage, PostCreatePage, DonationDetailPage} from "@/pages/mainPages"
 import { Navbar } from "@/components"
 import DonationSearchResultPage from "./mainPages/DonateChild/DonationSearchResult"
 
@@ -20,6 +20,7 @@ export default function Main() {
             <Route path="mypage" element={<MyPage/>} />
 
             <Route path="donate/research/:keyword" element={<DonationSearchResultPage/>}/>
+            <Route path="donate/:donationId" element={<DonationDetailPage/>} />
           </Routes>
         </div>
       </div>
