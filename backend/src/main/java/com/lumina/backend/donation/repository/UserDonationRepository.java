@@ -13,7 +13,7 @@ public interface UserDonationRepository extends JpaRepository<UserDonation, Long
 
     boolean existsByUserIdAndDonationIdAndRegistration(Long userId, Long donationId, String registration);
 
-    Optional<UserDonation> findByUserIdAndDonationId(Long userId, Long donationId);
+    Optional<UserDonation> findByUserIdAndDonationIdAndRegistration(Long userId, Long donationId, String registration);
 
     @EntityGraph(attributePaths = {"donation"})
     List<UserDonation> findByUserIdAndRegistration(Long userId, String registration);

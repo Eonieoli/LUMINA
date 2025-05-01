@@ -30,13 +30,26 @@ public class Donation extends BaseEntity {
     @Column(name = "status", nullable = false)
     private Boolean status;
 
-    public Donation(Category category, String donationName, Boolean status) {
+    @Column(name = "sum_point", nullable = false)
+    private Integer sumPoint;
+
+    @Column(name = "sum_user", nullable = false)
+    private Integer sumUser;
+
+    public Donation(Category category, String donationName, Boolean status, Integer sumPoint, Integer sumUser) {
         this.category = category;
         this.donationName = donationName;
         this.status = status;
+        this.sumPoint = sumPoint;
+        this.sumUser = sumUser;
     }
 
     public void changeStatus(Boolean status) {
         this.status = status;
+    }
+
+    public void updateDonation(Integer sumPoint, Integer user) {
+        this.sumPoint += sumPoint;
+        this.sumUser += user;
     }
 }
