@@ -2,6 +2,7 @@ import { createPost } from '@/apis/board';
 import { elizaBoard } from '@/apis/eliza';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+// import { Toaster, toast } from 'sonner';
 
 export default function PostCreate() {
     const [image, setImage] = useState<File | null>(null);
@@ -26,6 +27,11 @@ export default function PostCreate() {
                 postContent: content,
             }).then(async (res) => {
                 await elizaBoard(res.data.postId);
+                // toast.promise(elizaBoard(res.data.postId), {
+                //     loading: '게시물 생성 중 입니다...',
+                //     success: '게시물이 생성되었습니다.',
+                //     error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
+                // })
             });
 
             navigate('/');
@@ -59,6 +65,7 @@ export default function PostCreate() {
 
     return (
         <div className="flex h-full w-full flex-col gap-4 p-4">
+            {/* <Toaster /> */}
             {/* 헤더 */}
             <div className="flex items-center justify-between">
                 <Link to="/">x</Link>

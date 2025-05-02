@@ -15,6 +15,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Replies } from './Replies';
 import { useAuthStore } from '@/stores/auth';
 import { elizaComment } from '@/apis/eliza';
+// import { Toaster, toast } from 'sonner';
 
 interface Comment {
     commentId: number;
@@ -29,9 +30,10 @@ interface Comment {
 
 interface CommentsProps {
     postId: number;
+    children?: string;
 }
 
-export const Comments = ({ postId }: CommentsProps) => {
+export const Comments = ({ postId, children }: CommentsProps) => {
     const [comments, setComments] = useState<Comment[]>([]);
     const [hasMore, setHasMore] = useState(true);
     const [target, setTarget] = useState({ commentId: -1, nickname: '' });
@@ -154,12 +156,17 @@ export const Comments = ({ postId }: CommentsProps) => {
                             : comment
                     )
                 );
-
-                setReplyRefreshKey((prev) => prev + 1);
                 if (luna) {
                     await elizaComment(postId, response.data.commentId);
+                    // toast.promise(elizaComment(postId, response.data.commentId), {
+                    //     loading: '루나가 댓글 작성 중 입니다...',
+                    //     success: '댓글이 생성되었습니다.',
+                    //     error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
+                    // })
                     fetchComments();
                 }
+
+                setReplyRefreshKey((prev) => prev + 1);
             } else {
                 // 일반 댓글인 경우
                 const response = await postComment(postId, content);
@@ -175,11 +182,16 @@ export const Comments = ({ postId }: CommentsProps) => {
                     isLike: false,
                 };
 
-                setComments((prev) => [newComment, ...prev]);
                 if (luna) {
                     await elizaComment(postId, response.data.commentId);
+                    // toast.promise(elizaComment(postId, response.data.commentId), {
+                    //     loading: '루나가 댓글 작성 중 입니다...',
+                    //     success: '댓글이 생성되었습니다.',
+                    //     error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
+                    // })
                     fetchComments();
                 }
+                setComments((prev) => [newComment, ...prev]);
             }
 
             setContent('');
@@ -207,26 +219,29 @@ export const Comments = ({ postId }: CommentsProps) => {
     }
 
     return (
-        <div className="flex flex-col gap-y-2">
+        <div className={`flex h-full flex-col gap-y-2 p-2 ${children}`}>
             <h2 className="flex items-center justify-center text-lg font-semibold">
                 댓글
             </h2>
-            <div className="flex max-h-90 flex-col gap-y-2 overflow-y-auto px-2">
+            <div className="flex max-h-100 md:h-100 flex-col gap-y-2 overflow-y-auto px-2">
+                {/* <Toaster /> */}
                 {comments.map((comment) => (
                     <div
                         key={comment.commentId}
                         className="grid grid-cols-[auto_1fr] items-center gap-2 border-b border-gray-200 pb-2"
                     >
-                        <div className="flex items-start overflow-hidden rounded-full">
-                            <img
-                                className="h-12 w-auto"
-                                src={
-                                    comment.profileImage
-                                        ? comment.profileImage
-                                        : DefaultProfile
-                                }
-                                alt="댓글프로필"
-                            />
+                        <div className="flex h-full items-start overflow-hidden rounded-full">
+                            <div className='w-12 h-12 rounded-full overflow-hidden'>
+                                <img
+                                    className="h-12 w-auto"
+                                    src={
+                                        comment.profileImage
+                                            ? comment.profileImage
+                                            : DefaultProfile
+                                    }
+                                    alt="댓글프로필"
+                                />
+                            </div>
                         </div>
                         <div className="grid grid-cols-[1fr_auto] items-center justify-between">
                             <div>
@@ -297,23 +312,21 @@ export const Comments = ({ postId }: CommentsProps) => {
             </div>
 
             <div>
-                <div className="mt-3 rounded-t-3xl bg-gray-200">
-                    {target.commentId != -1 ? (
-                        <div className="flex items-center justify-between">
-                            <span className="px-3 py-2">
-                                {target.nickname}님에게 답글 달기
-                            </span>
-                            <span
-                                onClick={() =>
-                                    setTarget({ commentId: -1, nickname: '' })
-                                }
-                                className="px-3 py-2"
-                            >
-                                X
-                            </span>
-                        </div>
-                    ) : null}
-                </div>
+                {target.commentId != -1 ? (
+                    <div className="flex items-center justify-between">
+                        <span className="px-3 py-2">
+                            {target.nickname}님에게 답글 달기
+                        </span>
+                        <span
+                            onClick={() =>
+                                setTarget({ commentId: -1, nickname: '' })
+                            }
+                            className="px-3 py-2"
+                        >
+                            X
+                        </span>
+                    </div>
+                ) : null}
                 <div className="flex items-center gap-x-2">
                     <div className="aspect-square overflow-hidden rounded-full">
                         <img
