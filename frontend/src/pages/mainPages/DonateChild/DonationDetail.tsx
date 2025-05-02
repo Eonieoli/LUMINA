@@ -63,6 +63,11 @@ export default function DonationDetailPage() {
     catch (error){}
   }
 
+  // 기부하기 버튼을 클릭했을 때
+  const goToDonate = () => {
+    navigate(`/donate/${donation?.donationId}/point`)
+  }
+
   if(!donation) return <div>존재하지 않는 기부처!</div>
 
   return (
@@ -127,7 +132,12 @@ export default function DonationDetailPage() {
       </div>
 
       {/* 기부하기 버튼*/}
-      <button className="bg-[#9C97FA] w-full p-3 text-white rounded-2xl text-[20px] font-normal cursor-pointer mt-5 md:mt-10 hover:bg-[#5D56F1] transition-colors duration-300 ">기부하기</button>
+      <button 
+        className="bg-[#9C97FA] w-full p-3 text-white rounded-2xl text-[20px] font-normal cursor-pointer mt-5 md:mt-10 hover:bg-[#5D56F1] transition-colors duration-300 "
+        onClick={goToDonate}        
+        >
+        기부하기
+      </button>
       
     </div>
   )
