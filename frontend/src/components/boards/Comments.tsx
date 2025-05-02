@@ -8,11 +8,14 @@ import {
     DefaultProfile,
     HeartDefaultIcon,
     HeartFilledIcon,
+    PokerLuna,
     SendIcon,
 } from '@/assets/images';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Replies } from './Replies';
 import { useAuthStore } from '@/stores/auth';
+import { elizaComment } from '@/apis/eliza';
+// import { Toaster, toast } from 'sonner';
 
 interface Comment {
     commentId: number;
@@ -27,14 +30,16 @@ interface Comment {
 
 interface CommentsProps {
     postId: number;
+    children?: string;
 }
 
-export const Comments = ({ postId }: CommentsProps) => {
+export const Comments = ({ postId, children }: CommentsProps) => {
     const [comments, setComments] = useState<Comment[]>([]);
     const [hasMore, setHasMore] = useState(true);
     const [target, setTarget] = useState({ commentId: -1, nickname: '' });
     const [content, setContent] = useState('');
     const [replyRefreshKey, setReplyRefreshKey] = useState<number>(0);
+    const [luna, setLuna] = useState<boolean>(false)
     const observerRef = useRef<HTMLDivElement | null>(null);
     const authStore = useAuthStore();
 
@@ -122,41 +127,16 @@ export const Comments = ({ postId }: CommentsProps) => {
         }
     };
 
-    // const onPostComment = async () => {
-    //   try {
-    //     if (target.commentId !== -1) {
-    //       await postComment(postId, content, target.commentId);
-    //     } else {
-    //       await postComment(postId, content);
-    //     }
-
-    //     const newComment = {
-    //       commentId: -1,
-    //       userId: authStore.data.userId,
-    //       nickname: authStore.data.nickname,
-    //       profileImage: authStore.data.profileImage,
-    //       commentContent: content,
-    //       likeCnt: 0,
-    //       childCommentCnt: 0,
-    //       isLike: false,
-    //     };
-    //     setComments((prev) => [newComment, ...prev]);
-    //     setContent('');
-    //     setTarget({ commentId: -1, nickname: '' });
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
     const onPostComment = async () => {
         try {
             let newComment: Comment;
 
             if (target.commentId !== -1) {
                 // 답글인 경우
-                await postComment(postId, content, target.commentId);
+                const response = await postComment(postId, content, target.commentId);
 
                 newComment = {
-                    commentId: Date.now(), // 일시적으로 고유 ID, 서버에서 받아오면 교체 필요
+                    commentId: response.data.commentId, // 일시적으로 고유 ID, 서버에서 받아오면 교체 필요
                     userId: authStore.data.userId,
                     nickname: authStore.data.nickname,
                     profileImage: authStore.data.profileImage,
@@ -176,14 +156,23 @@ export const Comments = ({ postId }: CommentsProps) => {
                             : comment
                     )
                 );
+                if (luna) {
+                    await elizaComment(postId, response.data.commentId);
+                    // toast.promise(elizaComment(postId, response.data.commentId), {
+                    //     loading: '루나가 댓글 작성 중 입니다...',
+                    //     success: '댓글이 생성되었습니다.',
+                    //     error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
+                    // })
+                    fetchComments();
+                }
 
                 setReplyRefreshKey((prev) => prev + 1);
             } else {
                 // 일반 댓글인 경우
-                await postComment(postId, content);
+                const response = await postComment(postId, content);
 
                 newComment = {
-                    commentId: Date.now(), // 임시 ID
+                    commentId: response.data.commentId, // 임시 ID
                     userId: authStore.data.userId,
                     nickname: authStore.data.nickname,
                     profileImage: authStore.data.profileImage,
@@ -193,6 +182,15 @@ export const Comments = ({ postId }: CommentsProps) => {
                     isLike: false,
                 };
 
+                if (luna) {
+                    await elizaComment(postId, response.data.commentId);
+                    // toast.promise(elizaComment(postId, response.data.commentId), {
+                    //     loading: '루나가 댓글 작성 중 입니다...',
+                    //     success: '댓글이 생성되었습니다.',
+                    //     error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
+                    // })
+                    fetchComments();
+                }
                 setComments((prev) => [newComment, ...prev]);
             }
 
@@ -216,27 +214,34 @@ export const Comments = ({ postId }: CommentsProps) => {
         }
     };
 
+    const toggleLuna = () => {
+        setLuna(!luna);
+    }
+
     return (
-        <div className="flex flex-col gap-y-2">
+        <div className={`flex h-full flex-col gap-y-2 p-2 ${children}`}>
             <h2 className="flex items-center justify-center text-lg font-semibold">
                 댓글
             </h2>
-            <div className="flex max-h-90 flex-col gap-y-2 overflow-y-auto px-2">
+            <div className="flex max-h-100 md:h-100 flex-col gap-y-2 overflow-y-auto px-2">
+                {/* <Toaster /> */}
                 {comments.map((comment) => (
                     <div
                         key={comment.commentId}
                         className="grid grid-cols-[auto_1fr] items-center gap-2 border-b border-gray-200 pb-2"
                     >
-                        <div className="flex h-full w-full items-start overflow-hidden rounded-full">
-                            <img
-                                className="h-auto w-12"
-                                src={
-                                    comment.profileImage
-                                        ? comment.profileImage
-                                        : DefaultProfile
-                                }
-                                alt="댓글프로필"
-                            />
+                        <div className="flex h-full items-start overflow-hidden rounded-full">
+                            <div className='w-12 h-12 rounded-full overflow-hidden'>
+                                <img
+                                    className="h-12 w-auto"
+                                    src={
+                                        comment.profileImage
+                                            ? comment.profileImage
+                                            : DefaultProfile
+                                    }
+                                    alt="댓글프로필"
+                                />
+                            </div>
                         </div>
                         <div className="grid grid-cols-[1fr_auto] items-center justify-between">
                             <div>
@@ -307,23 +312,21 @@ export const Comments = ({ postId }: CommentsProps) => {
             </div>
 
             <div>
-                <div className="mt-3 rounded-t-3xl bg-gray-200">
-                    {target.commentId != -1 ? (
-                        <div className="flex items-center justify-between">
-                            <span className="px-3 py-2">
-                                {target.nickname}님에게 답글 달기
-                            </span>
-                            <span
-                                onClick={() =>
-                                    setTarget({ commentId: -1, nickname: '' })
-                                }
-                                className="px-3 py-2"
-                            >
-                                X
-                            </span>
-                        </div>
-                    ) : null}
-                </div>
+                {target.commentId != -1 ? (
+                    <div className="flex items-center justify-between">
+                        <span className="px-3 py-2">
+                            {target.nickname}님에게 답글 달기
+                        </span>
+                        <span
+                            onClick={() =>
+                                setTarget({ commentId: -1, nickname: '' })
+                            }
+                            className="px-3 py-2"
+                        >
+                            X
+                        </span>
+                    </div>
+                ) : null}
                 <div className="flex items-center gap-x-2">
                     <div className="aspect-square overflow-hidden rounded-full">
                         <img
@@ -336,19 +339,24 @@ export const Comments = ({ postId }: CommentsProps) => {
                             alt=""
                         />
                     </div>
-                    <input
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                e.preventDefault();
-                                onPostComment();
-                            }
-                        }}
-                        type="text"
-                        placeholder="댓글을 입력하세요"
-                        className="h-12 w-full rounded-full border px-3 py-2 text-sm"
-                    />
+                    <div className='relative w-full'>
+                        <input
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    onPostComment();
+                                }
+                            }}
+                            type="text"
+                            placeholder="댓글을 입력하세요"
+                            className="h-12 w-full rounded-full border px-3 py-2 text-sm"
+                        />
+                        <div className='absolute right-4 top-1/2 -translate-y-1/2'>
+                            <img onClick={toggleLuna} className={`h-10 w-10 transition duration-300 ${luna ? "opacity-100" : "opacity-50"}`} src={PokerLuna} alt="" />
+                        </div>
+                    </div>
                     <div onClick={onPostComment}>
                         <img className="h-8 w-auto" src={SendIcon} alt="" />
                     </div>

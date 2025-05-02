@@ -12,7 +12,7 @@ export default function Navbar() {
     const authData = useAuthStore();
 
     return (
-        <nav className="/* 모바일뷰 768px까지 */ /* 웹뷰 768px부터 */ fixed bottom-0 z-40 flex h-20 w-full items-center justify-around border-t border-gray-300 bg-white p-2 md:top-0 md:left-0 md:h-full md:w-20 md:flex-col md:items-center md:justify-around md:border-r md:py-10">
+        <nav className="/* 모바일뷰 768px까지 */ /* 웹뷰 768px부터 */ absolute bottom-0 z-40 flex h-20 w-full min-w-80 items-center justify-around border-t border-gray-300 bg-white p-2 md:top-0 md:left-0 md:h-full md:w-20 md:min-w-20 md:flex-col md:items-center md:justify-around md:border-r md:py-10">
             <Link to="/">
                 <img
                     src={HomeIcon}

@@ -41,6 +41,7 @@ export const Board = ({
     const [likes, setLikes] = useState(initialLikeCnt);
     const contentRef = useRef<HTMLDivElement>(null);
     const [showComments, setShowComments] = useState(false);
+    const [isDesktop, setIsDesktop] = useState(false);
 
     const toggleContent = () => setIsExpanded(!isExpanded);
 
@@ -86,11 +87,22 @@ export const Board = ({
         } else {
             scrollContainer.style.overflow = 'auto';
         }
+        
 
         return () => {
             scrollContainer.style.overflow = 'auto';
         };
     }, [showComments]);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(min-width: 768px)"); // md 기준
+        setIsDesktop(mediaQuery.matches);
+    
+        const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+        mediaQuery.addEventListener("change", handler);
+    
+        return () => mediaQuery.removeEventListener("change", handler);
+      }, []);
 
     return (
         <>
@@ -171,10 +183,26 @@ export const Board = ({
             </div>
 
             {/* 바텀시트 댓글창 */}
-            {showComments && (
+            {/* {showComments && (
                 <BottomSheet onClose={() => setShowComments(false)}>
                     <Comments postId={postId} />
                 </BottomSheet>
+            )} */}
+            {showComments && (
+                isDesktop ? (
+                <div onClick={() => setShowComments(false)} className="fixed flex justify-center items-center right-0 top-0 h-full w-full bg-[#00000050] shadow-lg z-50">
+                    <div onClick={(e) => e.stopPropagation()} className='grid grid-cols-5 ml-20 w-2/3 h-3/4 min-w-[688px]'>
+                        <div className='flex justify-center items-center col-span-3 rounded-l-md bg-black'>
+                            <img src={postImage} className='w-full h-auto' alt="" />
+                        </div>
+                        <Comments postId={postId} children='col-span-2 bg-white rounded-r-md justify-between' />
+                    </div>
+                </div>
+                ) : (
+                <BottomSheet onClose={() => setShowComments(false)}>
+                    <Comments postId={postId} />
+                </BottomSheet>
+                )
             )}
         </>
     );
