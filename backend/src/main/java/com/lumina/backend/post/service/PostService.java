@@ -3,6 +3,8 @@ package com.lumina.backend.post.service;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.request.UploadPostRequest;
 import com.lumina.backend.post.model.response.GetChildCommentResponse;
+import com.lumina.backend.post.model.response.UploadCommentResponse;
+import com.lumina.backend.post.model.response.UploadPostResponse;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,7 +18,7 @@ public interface PostService {
     /**
      * 게시물을 업로드하는 메서드
      */
-    void uploadPost(Long userId, UploadPostRequest request) throws IOException;
+    UploadPostResponse uploadPost(Long userId, UploadPostRequest request) throws IOException;
 
     Map<String, Object> getPosts(Long myId, Long userId, String categoryName, int pageNum);
 
@@ -30,7 +32,7 @@ public interface PostService {
      */
     Boolean toggleLike(Long userId, Long photoId);
 
-    void uploadComment(Long userId, Long postId, UploadCommentRequest request);
+    UploadCommentResponse uploadComment(Long userId, Long postId, UploadCommentRequest request);
 
     Map<String, Object> getComment(Long userId, Long postId, int pageNum);
 
