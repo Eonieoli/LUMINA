@@ -8,11 +8,13 @@ import {
     DefaultProfile,
     HeartDefaultIcon,
     HeartFilledIcon,
+    PokerLuna,
     SendIcon,
 } from '@/assets/images';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Replies } from './Replies';
 import { useAuthStore } from '@/stores/auth';
+import { elizaComment } from '@/apis/eliza';
 
 interface Comment {
     commentId: number;
@@ -35,6 +37,7 @@ export const Comments = ({ postId }: CommentsProps) => {
     const [target, setTarget] = useState({ commentId: -1, nickname: '' });
     const [content, setContent] = useState('');
     const [replyRefreshKey, setReplyRefreshKey] = useState<number>(0);
+    const [luna, setLuna] = useState<boolean>(false)
     const observerRef = useRef<HTMLDivElement | null>(null);
     const authStore = useAuthStore();
 
@@ -122,41 +125,16 @@ export const Comments = ({ postId }: CommentsProps) => {
         }
     };
 
-    // const onPostComment = async () => {
-    //   try {
-    //     if (target.commentId !== -1) {
-    //       await postComment(postId, content, target.commentId);
-    //     } else {
-    //       await postComment(postId, content);
-    //     }
-
-    //     const newComment = {
-    //       commentId: -1,
-    //       userId: authStore.data.userId,
-    //       nickname: authStore.data.nickname,
-    //       profileImage: authStore.data.profileImage,
-    //       commentContent: content,
-    //       likeCnt: 0,
-    //       childCommentCnt: 0,
-    //       isLike: false,
-    //     };
-    //     setComments((prev) => [newComment, ...prev]);
-    //     setContent('');
-    //     setTarget({ commentId: -1, nickname: '' });
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
     const onPostComment = async () => {
         try {
             let newComment: Comment;
 
             if (target.commentId !== -1) {
                 // 답글인 경우
-                await postComment(postId, content, target.commentId);
+                const response = await postComment(postId, content, target.commentId);
 
                 newComment = {
-                    commentId: Date.now(), // 일시적으로 고유 ID, 서버에서 받아오면 교체 필요
+                    commentId: response.data.commentId, // 일시적으로 고유 ID, 서버에서 받아오면 교체 필요
                     userId: authStore.data.userId,
                     nickname: authStore.data.nickname,
                     profileImage: authStore.data.profileImage,
@@ -178,12 +156,16 @@ export const Comments = ({ postId }: CommentsProps) => {
                 );
 
                 setReplyRefreshKey((prev) => prev + 1);
+                if (luna) {
+                    await elizaComment(postId, response.data.commentId);
+                    fetchComments();
+                }
             } else {
                 // 일반 댓글인 경우
-                await postComment(postId, content);
+                const response = await postComment(postId, content);
 
                 newComment = {
-                    commentId: Date.now(), // 임시 ID
+                    commentId: response.data.commentId, // 임시 ID
                     userId: authStore.data.userId,
                     nickname: authStore.data.nickname,
                     profileImage: authStore.data.profileImage,
@@ -194,6 +176,10 @@ export const Comments = ({ postId }: CommentsProps) => {
                 };
 
                 setComments((prev) => [newComment, ...prev]);
+                if (luna) {
+                    await elizaComment(postId, response.data.commentId);
+                    fetchComments();
+                }
             }
 
             setContent('');
@@ -216,6 +202,10 @@ export const Comments = ({ postId }: CommentsProps) => {
         }
     };
 
+    const toggleLuna = () => {
+        setLuna(!luna);
+    }
+
     return (
         <div className="flex flex-col gap-y-2">
             <h2 className="flex items-center justify-center text-lg font-semibold">
@@ -227,9 +217,9 @@ export const Comments = ({ postId }: CommentsProps) => {
                         key={comment.commentId}
                         className="grid grid-cols-[auto_1fr] items-center gap-2 border-b border-gray-200 pb-2"
                     >
-                        <div className="flex h-full w-full items-start overflow-hidden rounded-full">
+                        <div className="flex items-start overflow-hidden rounded-full">
                             <img
-                                className="h-auto w-12"
+                                className="h-12 w-auto"
                                 src={
                                     comment.profileImage
                                         ? comment.profileImage
@@ -336,19 +326,24 @@ export const Comments = ({ postId }: CommentsProps) => {
                             alt=""
                         />
                     </div>
-                    <input
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                e.preventDefault();
-                                onPostComment();
-                            }
-                        }}
-                        type="text"
-                        placeholder="댓글을 입력하세요"
-                        className="h-12 w-full rounded-full border px-3 py-2 text-sm"
-                    />
+                    <div className='relative w-full'>
+                        <input
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    onPostComment();
+                                }
+                            }}
+                            type="text"
+                            placeholder="댓글을 입력하세요"
+                            className="h-12 w-full rounded-full border px-3 py-2 text-sm"
+                        />
+                        <div className='absolute right-4 top-1/2 -translate-y-1/2'>
+                            <img onClick={toggleLuna} className={`h-10 w-10 transition duration-300 ${luna ? "opacity-100" : "opacity-50"}`} src={PokerLuna} alt="" />
+                        </div>
+                    </div>
                     <div onClick={onPostComment}>
                         <img className="h-8 w-auto" src={SendIcon} alt="" />
                     </div>
