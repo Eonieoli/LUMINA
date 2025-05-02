@@ -13,20 +13,20 @@ import BellIcon from './header/bell.svg';
 import PlusIcon from './header/plus.svg';
 import LuminaLogo from './header/lumina_logo.svg';
 
-// 기부 페이지 
-import CoinIcon from './donate/coin.png'
-import SearchIconGray from './navbar/Ic_search.svg'
-import DownIcon from './donate/Ic_down.svg'
+// 기부 페이지
+import CoinIcon from './donate/coin.png';
+import SearchIconGray from './navbar/Ic_search.svg';
+import DownIcon from './donate/Ic_down.svg';
 
 // 루나 이미지
-import SmileLuna from './donate/smileLuna.png'
-import PokerLuna from './donate/Luna.png'
+import SmileLuna from './donate/smileLuna.png';
+import PokerLuna from './donate/Luna.png';
 
 // 네브바 아이콘
-import DonationIcon from './navbar/Ic_donate.png'
-import HomeIcon from './navbar/Ic_home.png'
-import RankingIcon from './navbar/Ic_ranking.png'
-import SearchIcon from './navbar/Ic_search.png'
+import DonationIcon from './navbar/Ic_donate.png';
+import HomeIcon from './navbar/Ic_home.png';
+import RankingIcon from './navbar/Ic_ranking.png';
+import SearchIcon from './navbar/Ic_search.png';
 
 export {
     DefaultProfile,
@@ -35,7 +35,7 @@ export {
     HeartFilledIcon,
     ChatIcon,
     SendIcon,
-    CoinIcon, 
+    CoinIcon,
     SmileLuna,
     PokerLuna,
     DonationIcon,
@@ -46,5 +46,5 @@ export {
     BellIcon,
     PlusIcon,
     LuminaLogo,
-    DownIcon
-}
+    DownIcon,
+};

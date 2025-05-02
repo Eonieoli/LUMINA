@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 
-
 interface authData {
     userId: number;
     nickname: string;
@@ -20,7 +19,6 @@ interface auth {
     resetData: () => void;
 }
 
-
 export const useAuthStore = create<auth>((set) => {
     const initialData: authData = {
         userId: -1,
@@ -32,13 +30,14 @@ export const useAuthStore = create<auth>((set) => {
         rank: -1,
         postCnt: -1,
         followerCnt: -1,
-        followingCnt: -1
-    }
+        followingCnt: -1,
+    };
     return {
         data: initialData,
         setData: (data: authData) => set({ data }),
-        resetData: () => set(() => ({
-            data: initialData
-        }))
-    }
-})
+        resetData: () =>
+            set(() => ({
+                data: initialData,
+            })),
+    };
+});

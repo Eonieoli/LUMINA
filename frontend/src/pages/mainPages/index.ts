@@ -5,7 +5,6 @@ import DonatePage from './Donate';
 import RankingPage from './Ranking';
 import MyPage from './MyPage';
 
-
 export {
     HomePage,
     PostCreatePage,
@@ -13,4 +12,4 @@ export {
     DonatePage,
     RankingPage,
     MyPage,
-}
+};
