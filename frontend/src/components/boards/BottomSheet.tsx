@@ -1,30 +1,30 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 interface BottomSheetProps {
-  onClose: () => void;
-  children: React.ReactNode;
+    onClose: () => void;
+    children: React.ReactNode;
 }
 
 export const BottomSheet = ({ onClose, children }: BottomSheetProps) => {
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, []);
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, []);
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex justify-center items-end bg-[#00000050] bg-opacity-50"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-h-[80%] bg-white rounded-t-2xl p-4 overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-3" />
-        {children}
-      </div>
-    </div>
-  );
+    return (
+        <div
+            className="bg-opacity-50 fixed inset-0 z-50 flex items-end justify-center bg-[#00000050]"
+            onClick={onClose}
+        >
+            <div
+                className="max-h-[80%] w-full overflow-y-auto rounded-t-2xl bg-white p-4"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-gray-300" />
+                {children}
+            </div>
+        </div>
+    );
 };
