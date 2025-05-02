@@ -103,11 +103,11 @@ export const Replies = ({
                     {replies.map((reply) => (
                         <div
                             key={reply.commentId}
-                            className="flex items-center gap-x-2"
+                            className="grid grid-cols-[auto_1fr] items-center gap-2 border-b border-gray-200 pb-2"
                         >
-                            <div className="overflow-hidden rounded-full">
+                            <div className="h-full items-center">
                                 <img
-                                    className="w-6"
+                                    className="w-6 rounded-full"
                                     src={
                                         reply.profileImage
                                             ? reply.profileImage
@@ -116,12 +116,12 @@ export const Replies = ({
                                     alt="댓글프로필"
                                 />
                             </div>
-                            <div className="flex w-full items-center justify-between">
+                            <div className="grid grid-cols-[1fr_auto] items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium">
                                         {reply.nickname}
                                     </p>
-                                    <p className="text-sm">
+                                    <p className="text-xs">
                                         {reply.commentContent}
                                     </p>
                                     {authStore.data.userId == reply.userId ? (
