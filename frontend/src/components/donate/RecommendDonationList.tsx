@@ -1,57 +1,62 @@
-import DonationCard from "./DonationCard"
-import { PokerLuna } from "@/assets/images";
+import DonationCard from './DonationCard';
+import { PokerLuna } from '@/assets/images';
 // 슬라이드 swiper 관련
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css"
-import "swiper/css/pagination"
-import { Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import { Pagination } from 'swiper/modules';
 
 interface RecommendDonationListProps {
-  donations: { donationId: number; donationName:string}[]
+    donations: { donationId: number; donationName: string }[];
 }
 
-export default function RecommendDonationList({ donations}: RecommendDonationListProps) {
-
+export default function RecommendDonationList({
+    donations,
+}: RecommendDonationListProps) {
     // 4개 카드를 슬라이드 하나에 넣기
-    const slides = []
-    for (let i = 0; i <donations.length; i+=4) {
-      slides.push(donations.slice(i, i+4))
+    const slides = [];
+    for (let i = 0; i < donations.length; i += 4) {
+        slides.push(donations.slice(i, i + 4));
     }
 
-  return (
-    <div className="flex flex-col gap-4">
-
-      {/* 추천 기부처 텍스트 영역 */}
-      <div className="flex flex-col items-start gap-2">
-
-        <div className="flex items-center gap-3">
-          <img src={PokerLuna} alt="추천 기부처" className="w-[40px] justufy-center" />
-          <p className="text-[20px] font-bold">이런 곳은 어때요?</p>
-        </div>
-        <p className="text-[15px] text-gray-600">AI가 여러분의 관심에 따라 기부처를 추천해드릴게요!</p>
-      </div>
-
-      {/* 추천 기부처 목록 */}
-      {/* 슬라이더 */}
-      <Swiper
-        pagination={{ clickable:true}}
-        modules={[Pagination]}
-        className="mySwiper w-full"
-      >
-        {slides.map((group, index) => (
-          <SwiperSlide key={index}>
-            <div className="grid grid-cols-2 gap-4 pb-10">
-              {group.map((donation) => (
-                <DonationCard
-                  key={donation.donationId}
-                  donationId={donation.donationId}
-                  donationName={donation.donationName}
-                />
-              ))}
+    return (
+        <div className="flex flex-col gap-4">
+            {/* 추천 기부처 텍스트 영역 */}
+            <div className="flex flex-col items-start gap-2">
+                <div className="flex items-center gap-3">
+                    <img
+                        src={PokerLuna}
+                        alt="추천 기부처"
+                        className="justufy-center w-[40px]"
+                    />
+                    <p className="text-[20px] font-bold">이런 곳은 어때요?</p>
+                </div>
+                <p className="text-[15px] text-gray-600">
+                    AI가 여러분의 관심에 따라 기부처를 추천해드릴게요!
+                </p>
             </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
-    </div>
-  )
+
+            {/* 추천 기부처 목록 */}
+            {/* 슬라이더 */}
+            <Swiper
+                pagination={{ clickable: true }}
+                modules={[Pagination]}
+                className="mySwiper w-full"
+            >
+                {slides.map((group, index) => (
+                    <SwiperSlide key={index}>
+                        <div className="grid grid-cols-2 gap-4 pb-10">
+                            {group.map((donation) => (
+                                <DonationCard
+                                    key={donation.donationId}
+                                    donationId={donation.donationId}
+                                    donationName={donation.donationName}
+                                />
+                            ))}
+                        </div>
+                    </SwiperSlide>
+                ))}
+            </Swiper>
+        </div>
+    );
 }

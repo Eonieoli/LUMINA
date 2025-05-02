@@ -1,23 +1,27 @@
-import { commentLike, deleteComment, getReplies } from "@/apis/board";
-import { DefaultProfile, HeartDefaultIcon, HeartFilledIcon } from "@/assets/images";
-import { useAuthStore } from "@/stores/auth";
-import { useState, useEffect, useCallback } from "react";
+import { commentLike, deleteComment, getReplies } from '@/apis/board';
+import {
+    DefaultProfile,
+    HeartDefaultIcon,
+    HeartFilledIcon,
+} from '@/assets/images';
+import { useAuthStore } from '@/stores/auth';
+import { useState, useEffect, useCallback } from 'react';
 
 interface reply {
-    commentId: number,
-    userId: number,
-    nickname: string,
-    profileImage: string,
-    commentContent: string,
-    likeCnt: number,
-    isLike: boolean
+    commentId: number;
+    userId: number;
+    nickname: string;
+    profileImage: string;
+    commentContent: string;
+    likeCnt: number;
+    isLike: boolean;
 }
 
 export const Replies = ({
     postId,
     commentId,
     childCommentCnt,
-    refreshKey
+    refreshKey,
 }: {
     postId: number;
     commentId: number;
@@ -63,7 +67,7 @@ export const Replies = ({
                               isLike: !comment.isLike,
                               likeCnt: comment.isLike
                                   ? comment.likeCnt - 1
-                                  : comment.likeCnt + 1
+                                  : comment.likeCnt + 1,
                           }
                         : comment
                 )
@@ -75,51 +79,80 @@ export const Replies = ({
 
     const deleteClick = async (commentId: number) => {
         try {
-          await deleteComment(postId, commentId)
-          setReplies((prevComments) =>
-            prevComments.filter((comment) => comment.commentId !== commentId)
-          );
+            await deleteComment(postId, commentId);
+            setReplies((prevComments) =>
+                prevComments.filter(
+                    (comment) => comment.commentId !== commentId
+                )
+            );
         } catch (error) {
-          console.error(error);
+            console.error(error);
         }
-      }
+    };
 
     return (
         <div className="col-start-2">
             {isRepliesOpened ? (
                 <div className="flex flex-col gap-y-2">
-                    <div onClick={toggleReplies} className="text-[12px] text-gray-500 cursor-pointer">
+                    <div
+                        onClick={toggleReplies}
+                        className="cursor-pointer text-[12px] text-gray-500"
+                    >
                         --- 답글 숨기기
                     </div>
                     {replies.map((reply) => (
-                        <div key={reply.commentId} className="flex items-center gap-x-2">
-                            <div className="rounded-full overflow-hidden">
+                        <div
+                            key={reply.commentId}
+                            className="flex items-center gap-x-2"
+                        >
+                            <div className="overflow-hidden rounded-full">
                                 <img
                                     className="w-6"
-                                    src={reply.profileImage ? reply.profileImage : DefaultProfile}
+                                    src={
+                                        reply.profileImage
+                                            ? reply.profileImage
+                                            : DefaultProfile
+                                    }
                                     alt="댓글프로필"
                                 />
                             </div>
-                            <div className="w-full flex justify-between items-center">
+                            <div className="flex w-full items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium">{reply.nickname}</p>
-                                    <p className="text-sm">{reply.commentContent}</p>
-                                    {authStore.data.userId == reply.userId ?
-                                        <div className="text-xs text-gray-500" onClick={() => deleteClick(reply.commentId)}>삭제하기</div>
-                                        :
-                                        null
-                                    }
+                                    <p className="text-sm font-medium">
+                                        {reply.nickname}
+                                    </p>
+                                    <p className="text-sm">
+                                        {reply.commentContent}
+                                    </p>
+                                    {authStore.data.userId == reply.userId ? (
+                                        <div
+                                            className="text-xs text-gray-500"
+                                            onClick={() =>
+                                                deleteClick(reply.commentId)
+                                            }
+                                        >
+                                            삭제하기
+                                        </div>
+                                    ) : null}
                                 </div>
                                 <div
-                                    onClick={() => heartClick(postId, reply.commentId)}
-                                    className="flex flex-col justify-center items-center cursor-pointer"
+                                    onClick={() =>
+                                        heartClick(postId, reply.commentId)
+                                    }
+                                    className="flex cursor-pointer flex-col items-center justify-center"
                                 >
                                     <img
                                         className="w-6"
-                                        src={reply.isLike ? HeartFilledIcon : HeartDefaultIcon}
+                                        src={
+                                            reply.isLike
+                                                ? HeartFilledIcon
+                                                : HeartDefaultIcon
+                                        }
                                         alt="좋아요"
                                     />
-                                    <span className="text-[10px] text-gray-500">{reply.likeCnt}</span>
+                                    <span className="text-[10px] text-gray-500">
+                                        {reply.likeCnt}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -127,7 +160,10 @@ export const Replies = ({
                 </div>
             ) : (
                 <div className="flex flex-col gap-y-2">
-                    <div onClick={toggleReplies} className="text-[12px] text-gray-500 cursor-pointer">
+                    <div
+                        onClick={toggleReplies}
+                        className="cursor-pointer text-[12px] text-gray-500"
+                    >
                         --- 답글 {childCommentCnt}개 더보기
                     </div>
                 </div>
