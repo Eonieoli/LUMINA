@@ -64,8 +64,11 @@ public class LuminaServiceImpl implements LuminaService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 게시물을 찾을 수 없습니다. 게시물 ID: " + postId));
 
+        String nickname = userRepository.findNicknameByUserId(userId);
+
         Map<String, String> request = new HashMap<>();
         request.put("user_id", userId.toString());
+        request.put("nickname", nickname);
         request.put("post_content", post.getPostContent());
         request.put("post_id", postId.toString());
 
@@ -93,8 +96,11 @@ public class LuminaServiceImpl implements LuminaService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다. 댓글 ID: " + commentId));
 
+        String nickname = userRepository.findNicknameByUserId(userId);
+
         Map<String, String> request = new HashMap<>();
         request.put("user_id", userId.toString());
+        request.put("nickname", nickname);
         request.put("comment_content", comment.getCommentContent());
         request.put("comment_id", commentId.toString());
 
