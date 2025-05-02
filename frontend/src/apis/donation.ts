@@ -53,3 +53,15 @@ export const getDonationDetail = async(donationId:string) => {
     throw error
   }
 }
+
+// 기부처 구독 및 구독 취소하기
+export const toggleDonationSubscribe = async(donationId: number) => {
+  try {
+    const response = await apiClient.post(`/donation/${donationId}`)
+    console.log("구독 토글 성공!", response.data.message)
+  }
+  catch(error){
+    console.log("구독 토글 실패!", error)
+    throw error
+  }
+}
