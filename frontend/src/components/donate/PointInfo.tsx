@@ -18,7 +18,7 @@ export default function PointInfo() {
     }, []);
 
     return (
-        <div className="mb-6 flex h-6 items-center justify-end">
+        <div className="flex h-6 items-center justify-end">
             <img src={CoinIcon} alt="coinImg" className="mr-2 w-5" />
             <p className="text-[15px] font-bold">{point}</p>
         </div>

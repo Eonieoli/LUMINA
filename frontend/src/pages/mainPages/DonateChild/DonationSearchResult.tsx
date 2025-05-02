@@ -72,7 +72,9 @@ export default function DonationSearchResultPage() {
             )}
 
             {/* 코인 조회 */}
-            <PointInfo />
+            <div className='mb-6'>
+                <PointInfo />
+            </div>
 
             {/* 검색창 */}
             <div className="mb-8 w-full" onClick={() => setIsSearchOpen(true)}>

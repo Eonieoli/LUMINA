@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom"
 import { HomePage, SearchPage, DonatePage, RankingPage, MyPage, PostCreatePage, DonationDetailPage} from "@/pages/mainPages"
 import { Navbar } from "@/components"
 import DonationSearchResultPage from "./mainPages/DonateChild/DonationSearchResult"
+import DonationInputPage from "./mainPages/DonateChild/DonationInput"
 
 export default function Main() {
   return (
@@ -20,6 +21,7 @@ export default function Main() {
 
             <Route path="donate/research/:keyword" element={<DonationSearchResultPage/>}/>
             <Route path="donate/:donationId" element={<DonationDetailPage/>} />
+            <Route path="donate/:donationId/point" element={<DonationInputPage/>} />
           </Routes>
         </div>
       </div>
