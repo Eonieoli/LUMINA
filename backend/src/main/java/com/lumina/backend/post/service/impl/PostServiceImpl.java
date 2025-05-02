@@ -7,9 +7,7 @@ import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.post.model.entity.*;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.request.UploadPostRequest;
-import com.lumina.backend.post.model.response.GetChildCommentResponse;
-import com.lumina.backend.post.model.response.GetCommentResponse;
-import com.lumina.backend.post.model.response.GetPostResponse;
+import com.lumina.backend.post.model.response.*;
 import com.lumina.backend.post.repository.*;
 import com.lumina.backend.post.service.PostService;
 import com.lumina.backend.post.service.S3Service;
@@ -56,7 +54,7 @@ public class PostServiceImpl implements PostService {
      */
     @Override
     @Transactional
-    public void uploadPost(
+    public UploadPostResponse uploadPost(
             Long userId, UploadPostRequest request) throws IOException {
 
         if (request.getCategoryName() == null || request.getCategoryName().trim().isEmpty()) {
@@ -80,7 +78,7 @@ public class PostServiceImpl implements PostService {
         } else {
             post = new Post(user, category, request.getPostContent(), 0);
         }
-        postRepository.save(post);
+        Post savePost = postRepository.save(post);
 
         // 해시태그 처리
         if (request.getHashtag() != null && !request.getHashtag().isEmpty()) {
@@ -94,6 +92,8 @@ public class PostServiceImpl implements PostService {
                 postHashtagRepository.save(postHashtag);
             }
         }
+
+        return new UploadPostResponse(savePost.getId());
     }
 
 
@@ -217,7 +217,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public void uploadComment(Long userId, Long postId, UploadCommentRequest request) {
+    public UploadCommentResponse uploadComment(Long userId, Long postId, UploadCommentRequest request) {
 
         if (request.getCommentContent() == null || request.getCommentContent().trim().isEmpty()) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "댓글 내용을 입력해주세요.");
@@ -241,7 +241,9 @@ public class PostServiceImpl implements PostService {
         } else {
             comment = new Comment(user, post, request.getCommentContent());
         }
-        commentRepository.save(comment);
+        Comment saveComment = commentRepository.save(comment);
+
+        return new UploadCommentResponse(saveComment.getId());
     }
 
 
