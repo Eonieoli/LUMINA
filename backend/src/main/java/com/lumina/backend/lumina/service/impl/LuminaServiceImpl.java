@@ -88,6 +88,11 @@ public class LuminaServiceImpl implements LuminaService {
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "평가 서버에서 응답이 없습니다.");
         }
 
-        return new UploadCommentRequest(response.getReply(), commentId);
+        Long parentCommentId = commentId;
+        if (comment.getParentComment() != null) {
+            parentCommentId = comment.getParentComment().getId();
+        }
+
+        return new UploadCommentRequest(response.getReply(), parentCommentId);
     }
 }
