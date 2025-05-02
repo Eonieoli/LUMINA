@@ -1,4 +1,5 @@
 import { createPost } from '@/apis/board';
+import { elizaBoard } from '@/apis/eliza';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -23,6 +24,8 @@ export default function PostCreate() {
                 categoryName: category,
                 hashtag: tags,
                 postContent: content,
+            }).then(async (res) => {
+                await elizaBoard(res.data.postId);
             });
 
             navigate('/');
