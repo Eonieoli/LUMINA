@@ -55,7 +55,7 @@ export const Replies = ({postId, commentId, childCommentCnt}: {postId: number, c
                     {replies.map((reply) => (
                         <div key={reply.commentId} className="flex items-center gap-x-2">
                             <div className="rounded-full overflow-hidden">
-                                <img className="w-6" src={reply.profileImage ? reply.profileImage : DefaultProfile} alt="댓글프로필필" />
+                                <img className="w-6" src={reply.profileImage ? reply.profileImage : DefaultProfile} alt="댓글프로필" />
                             </div>
                             <div className="w-full flex justify-between items-center">
                                 <div>

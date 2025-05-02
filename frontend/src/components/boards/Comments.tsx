@@ -174,8 +174,8 @@ export const Comments = ({ postId }: CommentsProps) => {
           }
         </div>
         <div className="flex items-center gap-x-2">
-          <div className="rounded-full">
-            <img className="w-auto h-12" src={authStore.data.profileImage ? authStore.data.profileImage : DefaultProfile} alt="" />
+          <div className="rounded-full aspect-square overflow-hidden">
+            <img className="w-12 h-12" src={authStore.data.profileImage ? authStore.data.profileImage : DefaultProfile} alt="" />
           </div>
           <input
             value={content}

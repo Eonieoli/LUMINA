@@ -32,7 +32,7 @@ export default function Navbar() {
       </Link>
 
       <Link to="/mypage">
-      <img src={authData.data.profileImage ? authData.data.profileImage : DefaultProfile} alt="Profile" className="w-6 h-6 cursor-pointer transition-transform duration-300 hover:scale-120"/>
+      <img src={authData.data.profileImage ? authData.data.profileImage : DefaultProfile} alt="Profile" className="w-6 h-6 rounded-full cursor-pointer transition-transform duration-300 hover:scale-120"/>
       </Link>
     </nav>
   )
