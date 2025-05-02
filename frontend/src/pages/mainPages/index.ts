@@ -6,7 +6,6 @@ import RankingPage from './Ranking';
 import MyPage from './MyPage';
 import DonationDetailPage from './DonateChild/DonationDetail';
 
-
 export {
     HomePage,
     PostCreatePage,

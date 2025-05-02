@@ -4,7 +4,6 @@ import { Navbar } from "@/components"
 import DonationSearchResultPage from "./mainPages/DonateChild/DonationSearchResult"
 
 export default function Main() {
-
   return (
     <>
       {/* 옆에 네비게이션 있으니까 왼쪽과 하단에 패딩값을 넣음 */}

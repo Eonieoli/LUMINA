@@ -2,11 +2,14 @@ import { donationImageMap, defaultDonationThumbnail } from "./DonationImageMap"
 import { useNavigate } from "react-router-dom"
 
 export interface DonationProps {
-  donationId: number
-  donationName: string
+    donationId: number;
+    donationName: string;
 }
 
-export default function DonationCard({ donationId, donationName} : DonationProps) {
+export default function DonationCard({
+    donationId,
+    donationName,
+}: DonationProps) {
 
   // 만약 donationId와 일치하는 썸네일이 없다면 디폴트 이미지로 대체
   const donationImg = donationImageMap[donationId] || defaultDonationThumbnail 
