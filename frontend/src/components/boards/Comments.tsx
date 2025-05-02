@@ -1,4 +1,4 @@
-import { commentLike, getComments, postComment } from "@/apis/board";
+import { commentLike, deleteComment, getComments, postComment } from "@/apis/board";
 import { DefaultProfile, HeartDefaultIcon, HeartFilledIcon, SendIcon } from "@/assets/images";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Replies } from "./Replies";
@@ -24,6 +24,7 @@ export const Comments = ({ postId }: CommentsProps) => {
   const [hasMore, setHasMore] = useState(true);
   const [target, setTarget] = useState({ commentId: -1, nickname: '' });
   const [content, setContent] = useState('');
+  const [replyRefreshKey, setReplyRefreshKey] = useState<number>(0);
   const observerRef = useRef<HTMLDivElement | null>(null);
   const authStore = useAuthStore();
 
@@ -102,31 +103,95 @@ export const Comments = ({ postId }: CommentsProps) => {
     }
   };
 
+  // const onPostComment = async () => {
+  //   try {
+  //     if (target.commentId !== -1) {
+  //       await postComment(postId, content, target.commentId);
+  //     } else {
+  //       await postComment(postId, content);
+  //     }
+
+  //     const newComment = {
+  //       commentId: -1,
+  //       userId: authStore.data.userId,
+  //       nickname: authStore.data.nickname,
+  //       profileImage: authStore.data.profileImage,
+  //       commentContent: content,
+  //       likeCnt: 0,
+  //       childCommentCnt: 0,
+  //       isLike: false,
+  //     };
+  //     setComments((prev) => [newComment, ...prev]);
+  //     setContent('');
+  //     setTarget({ commentId: -1, nickname: '' });
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
   const onPostComment = async () => {
     try {
+      let newComment: Comment;
+  
       if (target.commentId !== -1) {
+        // 답글인 경우
         await postComment(postId, content, target.commentId);
-      } else {
-        await postComment(postId, content);
-      }
+  
+        newComment = {
+          commentId: Date.now(), // 일시적으로 고유 ID, 서버에서 받아오면 교체 필요
+          userId: authStore.data.userId,
+          nickname: authStore.data.nickname,
+          profileImage: authStore.data.profileImage,
+          commentContent: content,
+          likeCnt: 0,
+          childCommentCnt: 0,
+          isLike: false,
+        };
+  
+        setComments((prevComments) =>
+          prevComments.map((comment) =>
+            comment.commentId === target.commentId
+              ? { ...comment, childCommentCnt: comment.childCommentCnt + 1 }
+              : comment
+          )
+        );
 
-      const newComment = {
-        commentId: -1,
-        userId: authStore.data.userId,
-        nickname: authStore.data.nickname,
-        profileImage: authStore.data.profileImage,
-        commentContent: content,
-        likeCnt: 0,
-        childCommentCnt: 0,
-        isLike: false,
-      };
-      setComments((prev) => [newComment, ...prev]);
+        setReplyRefreshKey(prev => prev + 1);
+      } else {
+        // 일반 댓글인 경우
+        await postComment(postId, content);
+  
+        newComment = {
+          commentId: Date.now(), // 임시 ID
+          userId: authStore.data.userId,
+          nickname: authStore.data.nickname,
+          profileImage: authStore.data.profileImage,
+          commentContent: content,
+          likeCnt: 0,
+          childCommentCnt: 0,
+          isLike: false,
+        };
+  
+        setComments((prev) => [newComment, ...prev]);
+      }
+  
       setContent('');
       setTarget({ commentId: -1, nickname: '' });
     } catch (error) {
       console.error(error);
     }
   };
+  
+
+  const deleteClick = async (commentId: number) => {
+    try {
+      await deleteComment(postId, commentId)
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment.commentId !== commentId)
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
 
   return (
@@ -136,13 +201,16 @@ export const Comments = ({ postId }: CommentsProps) => {
         {comments.map((comment) => (
           <div key={comment.commentId} className="grid grid-cols-[auto_1fr] items-center gap-2 border-b border-gray-200 pb-2">
             <div className="flex w-full h-full items-start rounded-full overflow-hidden">
-              <img className="w-12 h-auto" src={comment.profileImage ? comment.profileImage : DefaultProfile} alt="댓글프로필필" />
+              <img className="w-12 h-auto" src={comment.profileImage ? comment.profileImage : DefaultProfile} alt="댓글프로필" />
             </div>
             <div className="grid grid-cols-[1fr_auto] justify-between items-center">
               <div>
                 <p className="text-sm font-medium">{comment.nickname}</p>
                 <p className="text-sm break-all">{comment.commentContent}</p>
-                <div onClick={() => setTarget({commentId: comment.commentId, nickname: comment.nickname})} className="text-[12px] text-gray-500">답글 달기</div>
+                <div className="flex items-center gap-x-2 text-[12px] text-gray-500">
+                  <div onClick={() => setTarget({commentId: comment.commentId, nickname: comment.nickname})}>답글 달기</div>
+                  {authStore.data.userId == comment.userId ? <div onClick={() => deleteClick(comment.commentId)}>삭제하기</div> : null}
+                </div>
               </div>
               <div onClick={() => heartClick(postId, comment.commentId)} className="flex flex-col justify-center items-center">
                 <img className="w-6" src={comment.isLike ? HeartFilledIcon : HeartDefaultIcon} alt="좋아요" />
@@ -150,7 +218,12 @@ export const Comments = ({ postId }: CommentsProps) => {
               </div>
             </div>
             {comment.childCommentCnt > 0 ? 
-              <Replies postId={postId} commentId={comment.commentId} childCommentCnt={comment.childCommentCnt} />
+              <Replies
+                postId={postId}
+                commentId={comment.commentId}
+                childCommentCnt={comment.childCommentCnt}
+                refreshKey={replyRefreshKey}
+              />
               :
               null
             }
@@ -180,6 +253,12 @@ export const Comments = ({ postId }: CommentsProps) => {
           <input
             value={content}
             onChange={(e) => setContent(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                onPostComment();
+              }
+            }}
             type="text"
             placeholder="댓글을 입력하세요"
             className="w-full h-12 border px-3 py-2 rounded-full text-sm"
