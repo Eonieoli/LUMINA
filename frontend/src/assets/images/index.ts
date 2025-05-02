@@ -13,10 +13,11 @@ import BellIcon from './header/bell.svg';
 import PlusIcon from './header/plus.svg';
 import LuminaLogo from './header/lumina_logo.svg';
 
-// 기부 페이지
-import CoinIcon from './donate/coin.png';
-import SearchIconGray from './navbar/Ic_search.svg';
-import DownIcon from './donate/Ic_down.svg';
+// 기부 페이지 
+import CoinIcon from './donate/coin.png'
+import SearchIconGray from './navbar/Ic_search.svg'
+import DownIcon from './donate/Ic_down.svg'
+import BackIcon from './donate/Ic_back.svg'
 
 // 루나 이미지
 import SmileLuna from './donate/smileLuna.png';
@@ -47,4 +48,5 @@ export {
     PlusIcon,
     LuminaLogo,
     DownIcon,
-};
+    BackIcon
+}
