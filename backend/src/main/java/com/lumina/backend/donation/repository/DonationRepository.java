@@ -16,4 +16,6 @@ public interface DonationRepository extends JpaRepository<Donation, Long> {
     Optional<Donation> findByDonationName(String donationName);
 
     Page<Donation> findByDonationNameContaining(String keyword, Pageable pageable);
+
+    List<Donation> findByCategoryId(Long categoryId);
 }

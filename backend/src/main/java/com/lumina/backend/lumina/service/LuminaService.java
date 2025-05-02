@@ -7,4 +7,6 @@ public interface LuminaService {
     UploadCommentRequest getPostLumina(Long userId, Long postId);
 
     UploadCommentRequest getCommentLumina(Long userId, Long commentId);
+
+    void getAiDonation(Long userId);
 }
