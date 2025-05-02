@@ -13,12 +13,6 @@ export const getMyProfile = async () => {
 };
 
 // 카카오 로그인
-export const kakaoAuth = () => {
-    const kakaoAuthURL =
-        import.meta.env.VITE_KAKAO_AUTH +
-        'response_type=code&client_id=' +
-        import.meta.env.VITE_KAKAO_REST +
-        '&redirect_uri=' +
-        import.meta.env.VITE_KAKAO_REDIRECT;
-    window.location.href = kakaoAuthURL;
+export const oAuth = async (type: string) => {
+    window.location.href = import.meta.env.VITE_API_URL + "/user?type=" + type;
 };

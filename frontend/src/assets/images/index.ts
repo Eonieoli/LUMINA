@@ -1,6 +1,7 @@
 // 사용자 관련 에셋
 import DefaultProfile from './auth/default.svg';
-import KakaoAuthButton from './auth/kakao_login_medium_wide.png';
+import KakaoAuthButton from './auth/kakao_login_button.svg';
+import GoogleAuthButton from './auth/google_login_button.svg';
 
 // 게시물 관련 에셋
 import HeartDefaultIcon from './board/heart_default.svg';
@@ -29,9 +30,15 @@ import HomeIcon from './navbar/Ic_home.png';
 import RankingIcon from './navbar/Ic_ranking.png';
 import SearchIcon from './navbar/Ic_search.png';
 
+// 메인 이미지
+import MainText from './main/main_text.svg';
+import MainBackground from './main/background_img.svg'
+import MainBackgroundShort from './main/background_img_short.svg'
+
 export {
     DefaultProfile,
     KakaoAuthButton,
+    GoogleAuthButton,
     HeartDefaultIcon,
     HeartFilledIcon,
     ChatIcon,
@@ -48,5 +55,8 @@ export {
     PlusIcon,
     LuminaLogo,
     DownIcon,
-    BackIcon
+    BackIcon,
+    MainText,
+    MainBackground,
+    MainBackgroundShort,
 }
