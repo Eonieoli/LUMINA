@@ -1,6 +1,8 @@
 import { getDonationDetail } from "@/apis/donation"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
+import PointInfo from "@/components/donate/PointInfo"
+import { BackIcon } from "@/assets/images"
 
 interface DonationDetail {
   donationId: number
@@ -38,10 +40,12 @@ export default function DonationDetailPage() {
     fetchDetail()
   },[donationId])
 
-  if(!donation) return <div>없는 기부처다!</div>
+  if(!donation) return <div>존재하지 않는 기부처!</div>
 
   return (
-    <div>
+    <div className="w-full h-full px-6 py-6 bg-red-50">
+      <img src={BackIcon} alt="뒤로가기" />
+      <PointInfo />
       <h1>{donation.donationName}의 상세페이지!!!</h1>
     </div>
   )
