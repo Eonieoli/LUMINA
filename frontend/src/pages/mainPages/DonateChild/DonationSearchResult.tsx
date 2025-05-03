@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import SearchModal from '@/components/donationSearch/SearchModal';
 import PointInfo from '@/components/donate/PointInfo';
 import DonateSearchBar from '@/components/donate/SearchBar';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getSearchDonations } from '@/apis/donation';
 import DonationCard from '@/components/donate/DonationCard';
 import { DonationProps } from '@/components/donate/DonationCard';
-import { DownIcon } from '@/assets/images';
+import { DownIcon, BackIcon } from '@/assets/images';
 
 export default function DonationSearchResultPage() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -17,6 +17,8 @@ export default function DonationSearchResultPage() {
     const [donations, setDonations] = useState<DonationProps[]>([]);
     const [pageNum, setPageNum] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+
+    const navigate = useNavigate()
 
     // 검색어가 변경이 되면 페이지 번호를 1로 초기화
     useEffect(() => {
@@ -64,17 +66,23 @@ export default function DonationSearchResultPage() {
         }
     };
 
+    // 뒤로가기 클릭했을 때
+    const goToBack = () => {
+        navigate(-1)
+    }
+
     return (
         <div className="relative flex w-full flex-col px-6 py-6">
             {/* 검색 모달창 */}
             {isSearchOpen && (
                 <SearchModal onClose={() => setIsSearchOpen(false)} />
             )}
-
-            {/* 코인 조회 */}
-            <div className='mb-6'>
-                <PointInfo />
-            </div>
+            
+            {/* 상단바 */}
+                <div className="flex h-6 items-center justify-between mb-6">
+                    <img src={BackIcon} alt="BackIcon" className="w-5" onClick={goToBack}/>
+                    <PointInfo/>
+                </div>
 
             {/* 검색창 */}
             <div className="mb-8 w-full" onClick={() => setIsSearchOpen(true)}>
