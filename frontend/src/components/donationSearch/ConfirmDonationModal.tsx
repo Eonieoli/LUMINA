@@ -18,9 +18,9 @@ export default function ConfirmDonationModal({donationName, point, onCancel, onC
           </span>
           &nbsp;에 <br/>
           <span className="flex items-center justify-center">
-            <div className="font-semibold">
+            <span className="font-semibold">
               {point} &nbsp;
-            </div>
+            </span>
             <img src={CoinIcon} alt="코인아이콘" className="w-5"/>
             &nbsp;를 기부하시겠습니까?
           </span>

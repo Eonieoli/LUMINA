@@ -4,6 +4,7 @@ import DonationLayout from "./DonationLayout"
 import { useParams } from "react-router-dom"
 import { getDonationDetail } from "@/apis/donation"
 import ConfirmDonationModal from "@/components/donationSearch/ConfirmDonationModal"
+import { donate } from "@/apis/donation"
 
 export default function DonationInputPage() {
 
@@ -28,6 +29,17 @@ export default function DonationInputPage() {
     }
     fetchDonationDetail()
   },[donationId])
+
+  //확인모달창에서 기부하기를 눌렀을 때
+  const handdleDonate = async () => {
+    if(!donationId || !point) return 
+
+    try {
+      await donate(Number(donationId), Number(point))
+      setIsModalOpen(false)
+    }
+    catch(error){}
+  }
 
   return (
 
@@ -71,7 +83,7 @@ export default function DonationInputPage() {
               donationName = {donationName}
               point = {point}
               onCancel = {() => setIsModalOpen(false)}
-              onConfirm = {()=> {console.log("기부하기 끝!"), setIsModalOpen(false)}}
+              onConfirm = {handdleDonate}
             />
           )}
         </div>
