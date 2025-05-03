@@ -1,10 +1,10 @@
 import { getDonationDetail, toggleDonationSubscribe } from "@/apis/donation"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import PointInfo from "@/components/donate/PointInfo"
-import { BackIcon, HeartDefaultIcon, HeartFilledIcon, CoinIcon } from "@/assets/images"
+import { HeartDefaultIcon, HeartFilledIcon, CoinIcon } from "@/assets/images"
 import { useNavigate } from "react-router-dom"
 import { defaultDonationThumbnail, donationImageMap } from "@/components/donate/DonationImageMap"
+import DonationLayout from "./DonationLayout"
 
 interface DonationDetail {
   donationId: number
@@ -48,11 +48,6 @@ export default function DonationDetailPage() {
     fetchDetail()
   },[donationId])
 
-  // 뒤로가기 버튼을 클릭했을 때
-  const goToBack = () => {
-    navigate(-1)
-  }
-
   // 구독하기 버튼을 클릭했을 때
   const handleToggleSubscribe = async () => {
     if(!donation) return
@@ -65,21 +60,20 @@ export default function DonationDetailPage() {
 
   // 기부하기 버튼을 클릭했을 때
   const goToDonate = () => {
+    console.log(`${donation?.donationName}`,"으로 기부하러 이동")
     navigate(`/donate/${donation?.donationId}/point`)
   }
 
   if(!donation) return <div>존재하지 않는 기부처!</div>
 
   return (
-    <div className="w-full h-full px-6 py-6 mb-20">
 
-      {/* 상단바 */}
-      <div className="flex h-6 items-center justify-between mb-4">
-        <img src={BackIcon} alt="BackIcon" className="w-5" onClick={goToBack} />
-        <PointInfo />
-      </div>
-
-      <div>
+    <DonationLayout
+      bottomButton = {
+        <button onClick={goToDonate} className="w-full h-full">기부하기</button>
+      }
+    >
+      <div className="w-full h-full">
         {/* 기부처 상단 정보 */}
         <div className="flex flex-col justify-center items-center mb-6">
 
@@ -132,16 +126,7 @@ export default function DonationDetailPage() {
 
         </div>
       </div>
-
-
-      {/* 기부하기 버튼*/}
-      <button 
-        className="bg-[#9C97FA] w-full p-3 text-white rounded-2xl text-[20px] font-normal cursor-pointer mt-5 md: md:mt-15 hover:bg-[#5D56F1] transition-colors duration-300 "
-        onClick={goToDonate}        
-        >
-        기부하기
-      </button>
       
-    </div>
+    </DonationLayout>
   )
 }
