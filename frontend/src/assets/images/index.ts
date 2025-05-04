@@ -23,6 +23,7 @@ import BackIcon from './donate/Ic_back.svg'
 // 루나 이미지
 import SmileLuna from './donate/smileLuna.png';
 import PokerLuna from './donate/Luna.png';
+import WinkLuna from './donate/wink_Luna.png'
 
 // 네브바 아이콘
 import DonationIcon from './navbar/Ic_donate.png';
@@ -59,4 +60,5 @@ export {
     MainText,
     MainBackground,
     MainBackgroundShort,
+    WinkLuna
 }

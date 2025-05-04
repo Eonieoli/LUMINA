@@ -1,10 +1,12 @@
-import { Route, Routes } from "react-router-dom"
+import { Route, Routes, useLocation } from "react-router-dom"
 import { HomePage, SearchPage, DonatePage, RankingPage, MyPage, PostCreatePage, DonationDetailPage} from "@/pages/mainPages"
 import { Navbar } from "@/components"
 import DonationSearchResultPage from "./mainPages/DonateChild/DonationSearchResult"
 import DonationInputPage from "./mainPages/DonateChild/DonationInput"
 
 export default function Main() {
+  const location = useLocation() // 기부처 페이지 컴포넌트 재마운트 용
+  
   return (
     <>
       {/* 옆에 네비게이션 있으니까 왼쪽과 하단에 패딩값을 넣음 */}
@@ -15,7 +17,7 @@ export default function Main() {
             <Route index element={<HomePage/>} />
             <Route path="post" element={<PostCreatePage/>} />        
             <Route path="search" element={<SearchPage/>} />        
-            <Route path="donate" element={<DonatePage/>} />        
+            <Route path="donate" element={<DonatePage key={location.key}/>} />        
             <Route path="ranking" element={<RankingPage/>} />        
             <Route path="mypage" element={<MyPage/>} />
 
