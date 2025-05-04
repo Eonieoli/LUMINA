@@ -5,6 +5,9 @@ import DonatePage from './Donate';
 import RankingPage from './Ranking';
 import MyPage from './MyPage';
 import DonationDetailPage from './DonateChild/DonationDetail';
+import DonationSearchResultPage from './DonateChild/DonationSearchResult';
+import DonationThanksPage from './DonateChild/DonationThanks';
+import DonationInputPage from './DonateChild/DonationInput';
 
 export {
     HomePage,
@@ -13,5 +16,8 @@ export {
     DonatePage,
     RankingPage,
     MyPage,
-    DonationDetailPage
+    DonationDetailPage,
+    DonationSearchResultPage,
+    DonationThanksPage,
+    DonationInputPage
 }

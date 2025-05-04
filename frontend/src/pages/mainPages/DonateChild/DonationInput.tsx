@@ -1,7 +1,7 @@
 import { CoinIcon, WinkLuna } from "@/assets/images"
 import { useEffect, useState } from "react"
 import DonationLayout from "./DonationLayout"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { getDonationDetail } from "@/apis/donation"
 import ConfirmDonationModal from "@/components/donationSearch/ConfirmDonationModal"
 import { donate } from "@/apis/donation"
@@ -12,6 +12,8 @@ export default function DonationInputPage() {
 
   const [donationName, setDonationName] = useState("")
   const [point, setPoint] = useState<string>("") // HTML의 input 요소는 항상 문자열로 값을 반환하기 때문에
+
+  const navigate = useNavigate()
 
   // 확인버튼 클릭시 확인모달창 나오기
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -34,9 +36,11 @@ export default function DonationInputPage() {
   const handdleDonate = async () => {
     if(!donationId || !point) return 
 
+    // api 연결되면 순서 바꾸기
     try {
-      await donate(Number(donationId), Number(point))
       setIsModalOpen(false)
+      navigate(`/donate/thanks`, {state: {donationId}},)
+      await donate(Number(donationId), Number(point))
     }
     catch(error){}
   }

@@ -9,7 +9,7 @@ export default function PointInfo() {
         const fetchPointInfo = async () => {
             try {
                 const response = await getPointInfo();
-                setPoint(response);
+                setPoint(response.point);
             } catch (error) {
                 console.error(error);
             }
