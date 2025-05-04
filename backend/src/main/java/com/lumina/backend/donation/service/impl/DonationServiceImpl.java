@@ -145,11 +145,12 @@ public class DonationServiceImpl implements DonationService {
 
 
     @Override
-    public List<GetSubscribeDonationResponse> getSubscribeDonation(Long userId) {
+    public Map<String, Object> getSubscribeDonation(Long userId) {
 
         List<UserDonation> userDonations = userDonationRepository.findByUserIdAndRegistration(userId, "USER");
+        List<UserDonation> aiDonations = userDonationRepository.findByUserIdAndRegistration(userId, "AI");
 
-        return userDonations.stream()
+        List<GetSubscribeDonationResponse> userDonatioinList = userDonations.stream()
                 .map(userDonation -> {
                     Donation donation = userDonation.getDonation();
                     return new GetSubscribeDonationResponse(
@@ -157,6 +158,21 @@ public class DonationServiceImpl implements DonationService {
                     );
                 })
                 .collect(Collectors.toList());
+
+        List<GetSubscribeDonationResponse> aiDonatioinList = aiDonations.stream()
+                .map(aiDonation -> {
+                    Donation donation = aiDonation.getDonation();
+                    return new GetSubscribeDonationResponse(
+                            donation.getId(), donation.getDonationName()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("user", userDonatioinList);
+        result.put("ai", aiDonatioinList);
+
+        return result;
     }
 
 

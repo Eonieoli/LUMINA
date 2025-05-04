@@ -206,11 +206,14 @@ public class PostServiceImpl implements PostService {
         if (existPostLike != null) {
             // 기존 좋아요 관계가 있으면 좋아요 취소
             postLikeRepository.delete(existPostLike);
+            user.updateUserLikeCnt(-1);
             return false;
         } else {
             PostLike postLike = new PostLike(user, post);
             postLikeRepository.save(postLike);
+            user.updateUserLikeCnt(1);
         }
+        userRepository.save(user);
         return true;
     }
 
@@ -378,11 +381,14 @@ public class PostServiceImpl implements PostService {
         if (existCommentLike != null) {
             // 기존 좋아요 관계가 있으면 좋아요 취소
             commentLikeRepository.delete(existCommentLike);
+            user.updateUserLikeCnt(-1);
             return false;
         } else {
             CommentLike commentLike = new CommentLike(user, comment);
             commentLikeRepository.save(commentLike);
+            user.updateUserLikeCnt(1);
         }
+        userRepository.save(user);
         return true;
     }
 

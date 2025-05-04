@@ -17,4 +17,6 @@ public interface UserDonationRepository extends JpaRepository<UserDonation, Long
 
     @EntityGraph(attributePaths = {"donation"})
     List<UserDonation> findByUserIdAndRegistration(Long userId, String registration);
+
+    void deleteByUserIdAndRegistration(Long userId, String registration);
 }
