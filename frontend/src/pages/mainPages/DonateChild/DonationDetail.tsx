@@ -70,7 +70,7 @@ export default function DonationDetailPage() {
 
     <DonationLayout
       bottomButton = {
-        <button onClick={goToDonate} className="w-full h-full">기부하기</button>
+        <button onClick={goToDonate} className="w-full h-full p-3">기부하기</button>
       }
     >
       <div className="w-full h-full flex flex-col justify-center">

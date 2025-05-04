@@ -4,16 +4,22 @@ import DonationLayout from "./DonationLayout"
 import { useNavigate, useParams } from "react-router-dom"
 import { getDonationDetail } from "@/apis/donation"
 import ConfirmDonationModal from "@/components/donationSearch/ConfirmDonationModal"
-import { donate } from "@/apis/donation"
+import { donate, getPointInfo } from "@/apis/donation"
 
 export default function DonationInputPage() {
 
-  const {donationId} = useParams() // string값 반환
-
-  const [donationName, setDonationName] = useState("")
-  const [point, setPoint] = useState<string>("") // HTML의 input 요소는 항상 문자열로 값을 반환하기 때문에
-
   const navigate = useNavigate()
+  const {donationId} = useParams() // string값 반환
+  const [donationName, setDonationName] = useState("")
+
+  // 사용자가 입력할 포인트 값, HTML의 input 요소는 항상 문자열로 값을 반환하기 때문에
+  const [point, setPoint] = useState<string>("") 
+
+  // 사용자가 가지고 있는 포인트
+  const [userPoint, setUserpoint] = useState<number>(0)
+
+  //포인트 관련 에러메세지 
+  const [errorMsg, setErrorMsg] = useState<string>("")
 
   // 확인버튼 클릭시 확인모달창 나오기
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -32,6 +38,40 @@ export default function DonationInputPage() {
     fetchDonationDetail()
   },[donationId])
 
+  // 사용자의 포인트 정보 가져오기 
+  useEffect (() => {
+    const fetchUserPoint = async() => {
+      if(!donationId) return 
+
+      try {
+        const response = await getPointInfo()
+        setUserpoint(response.point)
+      }
+      catch(error) {}
+    }
+    fetchUserPoint()
+  },[donationId])
+
+  // 포인트 유효성 검사 후 모달창 열기
+  const checkPointValue = () => {
+    const checkPoint = Number(point)
+
+    if (!point) {
+      setErrorMsg("포인트를 입력해주세요!")
+      return
+    }
+    if (checkPoint > userPoint) {
+      setErrorMsg("보유한 포인트보다 더 기부할 수 없어요!")
+      return
+    }
+    if (isNaN(checkPoint)) {
+      setErrorMsg("숫자로 입력해주세요!")
+      return
+    }
+    setErrorMsg("")
+    setIsModalOpen(true)
+  }
+
   //확인모달창에서 기부하기를 눌렀을 때
   const handdleDonate = async () => {
     if(!donationId || !point) return 
@@ -49,7 +89,7 @@ export default function DonationInputPage() {
 
     <DonationLayout
       bottomButton = {
-        <button className="w-full h-full relative" onClick={() => setIsModalOpen(true)}>확인</button>
+        <button className="w-full h-full relative p-3" onClick={checkPointValue}>확인</button>
       }
       isModalOpen={isModalOpen}
     >
@@ -67,7 +107,7 @@ export default function DonationInputPage() {
           </div>
 
           {/* 루미나 이미지 */}
-            <img src={WinkLuna} alt="윙크하는루미나" className="w-50 mt-15 mb-15"/>  
+            <img src={WinkLuna} alt="윙크하는루미나" className="w-50 mt-10 mb-15"/>  
           
           {/* 포인트 입력창 */}
           <div className="flex justify-center items-center w-2/5 pb-0.5 text-gray-400">
@@ -80,6 +120,11 @@ export default function DonationInputPage() {
             />
             <img src={CoinIcon} alt="코인" className="w-6" />
           </div>
+
+          {/* 에러메세지 */}
+          {errorMsg && (
+            <div className="text-sm text-red-500">{errorMsg}</div>
+          )}
 
           {/* 확인 모달창 */}
           {isModalOpen && (

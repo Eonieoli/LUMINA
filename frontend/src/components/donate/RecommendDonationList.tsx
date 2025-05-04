@@ -29,10 +29,10 @@ export default function RecommendDonationList() {
         fetchRecommendDonations()
     },[])
 
-    // 4개 카드를 슬라이드 하나에 넣기
+    // 2개 카드를 슬라이드 하나에 넣기
     const slides = [];
-    for (let i = 0; i < donations.length; i += 4) {
-        slides.push(donations.slice(i, i + 4));
+    for (let i = 0; i < donations.length; i += 2) {
+        slides.push(donations.slice(i, i + 2));
     }
 
     return (

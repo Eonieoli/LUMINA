@@ -38,7 +38,7 @@ const goToBack = () => {
 
       {/* 하단 버튼 */}
       {bottomButton && (
-        <div className="bg-[#9C97FA] w-full p-3 mb-6 text-white rounded-2xl text-[20px] font-normal cursor-pointer hover:bg-[#5D56F1] transition-colors duration-300 text-center mt-6">
+        <div className="bg-[#9C97FA] w-full mb-6 text-white rounded-2xl text-[20px] font-normal cursor-pointer hover:bg-[#5D56F1] transition-colors duration-300 text-center mt-6">
           {bottomButton}
         </div>
       )}
