@@ -19,7 +19,7 @@ const goToBack = () => {
 }
 
   return(
-    <div  className={`w-full h-full px-6 pt-6 flex flex-col ${isModalOpen ? "bg-black/10" : ""}`}>
+    <div  className={`relative w-full h-full px-6 pt-6 flex flex-col ${isModalOpen ? "bg-black/10" : ""}`}>
 
       {/* 공통 상단바 */}
       <div className="flex items-center justify-between mb-6 h-6">

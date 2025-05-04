@@ -62,10 +62,12 @@ export default function DonationInputPage() {
     }
     if (checkPoint > userPoint) {
       setErrorMsg("보유한 포인트보다 더 기부할 수 없어요!")
+      setPoint("")
       return
     }
     if (isNaN(checkPoint)) {
       setErrorMsg("숫자로 입력해주세요!")
+      setPoint("")
       return
     }
     setErrorMsg("")
