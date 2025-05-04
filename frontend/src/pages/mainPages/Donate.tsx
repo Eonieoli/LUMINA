@@ -6,14 +6,6 @@ import PointInfo from '@/components/donate/PointInfo';
 import SearchModal from '@/components/donationSearch/SearchModal';
 
 export default function DonatePage() {
-    // 추천 기부페이지 임시 데이터
-    const mockData = [
-        { donationId: 101, donationName: '기부처 A' },
-        { donationId: 102, donationName: '기부처 B' },
-        { donationId: 103, donationName: '기부처 C' },
-        { donationId: 104, donationName: '기부처 D' },
-        { donationId: 105, donationName: '기부처 F' },
-    ];
 
     // 검색창 버튼 클릭시 보일 검색 모달창 상태 관리
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -41,7 +33,7 @@ export default function DonatePage() {
 
             {/* 추천 기부처 */}
             <div className="mb-6 w-full">
-                <RecommendDonationList donations={mockData} />
+                <RecommendDonationList />
             </div>
 
             {/* 관심 기부처 */}

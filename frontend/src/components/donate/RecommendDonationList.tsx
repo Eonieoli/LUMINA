@@ -5,14 +5,30 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
+import { useEffect, useState } from 'react';
+import { getFavoriteDonations } from '@/apis/donation';
 
 interface RecommendDonationListProps {
-    donations: { donationId: number; donationName: string }[];
+    donationId: number;
+    donationName: string;
 }
 
-export default function RecommendDonationList({
-    donations,
-}: RecommendDonationListProps) {
+export default function RecommendDonationList() {
+
+    const [donations, setDonations] = useState<RecommendDonationListProps[]>([])
+
+    useEffect(() => {
+        const fetchRecommendDonations = async () => {
+            try {
+                const response = await getFavoriteDonations()
+                console.log("추천 기부처 가져오기 성공!", response.ai)
+                setDonations(response.ai)
+            }
+            catch(error) {}
+        }
+        fetchRecommendDonations()
+    },[])
+
     // 4개 카드를 슬라이드 하나에 넣기
     const slides = [];
     for (let i = 0; i < donations.length; i += 4) {
