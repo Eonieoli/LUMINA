@@ -64,7 +64,7 @@ public class DonationServiceImpl implements DonationService {
     public void doDonation(
             Long userId, DoDonationRequest request) {
 
-        if (request.getDonationName() == null || request.getDonationName().trim().isEmpty()) {
+        if (request.getDonationId() == null) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "기부처는 필수 입력값입니다.");
         }
 
@@ -75,8 +75,8 @@ public class DonationServiceImpl implements DonationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
 
-        Donation donation = donationRepository.findByDonationName(request.getDonationName())
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "기부처를 찾을 수 없음: " + request.getDonationName()));
+        Donation donation = donationRepository.findById(request.getDonationId())
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "기부처를 찾을 수 없음: " + request.getDonationId()));
 
         if (user.getPoint() < request.getPoint()) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "보유 point가 부족합니다.");
