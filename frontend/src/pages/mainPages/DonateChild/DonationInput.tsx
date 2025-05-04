@@ -53,7 +53,7 @@ export default function DonationInputPage() {
       }
       isModalOpen={isModalOpen}
     >
-      <div className="w-full h-full">
+      <div className="w-full h-full flex justify-center">
         <div className="flex flex-col justify-center items-center" >
 
           {/* 안내 멘트 */}
@@ -67,7 +67,7 @@ export default function DonationInputPage() {
           </div>
 
           {/* 루미나 이미지 */}
-            <img src={WinkLuna} alt="윙크하는루미나" className="w-60 mt-15 mb-15"/>  
+            <img src={WinkLuna} alt="윙크하는루미나" className="w-50 mt-15 mb-15"/>  
           
           {/* 포인트 입력창 */}
           <div className="flex justify-center items-center w-2/5 pb-0.5 text-gray-400">

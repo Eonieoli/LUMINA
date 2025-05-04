@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import DonationLayout from "./DonationLayout";
 import { ComputerHandsupLuna } from "@/assets/images";
 import { getPointInfo } from "@/apis/donation";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+// import { useLocation } from "react-router-dom";
 
 export default function DonationThanks () {
 
   const [nickname, setNickkname] = useState<string>("Lumina")
-  const location = useLocation()
+  // const location = useLocation()
   const navigate = useNavigate()
-  const donationId = location.state?.donationId
+  // const donationId = location.state?.donationId
 
   useEffect(() => {
     const fetchNicknameInfo = async () => {
@@ -27,9 +28,11 @@ export default function DonationThanks () {
       bottomButton = {
         <button 
           className="w-full h-full relative"
-          onClick={() => {
-            if (donationId) navigate(`/donate/${donationId}`);
-          }}
+          //기부처 디테일 페이지(뒤로가기 문제)로 이동하게 할건지 마이페이지로 이동하게 할건지 고민
+          // onClick={() => {
+          //   if (donationId) navigate(`/donate/${donationId}`);
+          // }}
+          onClick={() => navigate('/mypage')}
         >
           확인
         </button>
@@ -39,7 +42,7 @@ export default function DonationThanks () {
         <div className="text-[20px]">
           {nickname}님의
           <span className="font-bold">
-            <span className="text-[#5D56F1]">기부</span>
+            <span className="text-[#5D56F1]"> 기부</span>
             에 감사
           </span>
           드립니다.

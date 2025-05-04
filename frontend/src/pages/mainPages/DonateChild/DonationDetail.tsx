@@ -73,7 +73,7 @@ export default function DonationDetailPage() {
         <button onClick={goToDonate} className="w-full h-full">기부하기</button>
       }
     >
-      <div className="w-full h-full">
+      <div className="w-full h-full flex flex-col justify-center">
         {/* 기부처 상단 정보 */}
         <div className="flex flex-col justify-center items-center mb-6">
 
@@ -91,7 +91,7 @@ export default function DonationDetailPage() {
               }
             </div>
           </div>
-          <p className="text-[16px] text-gray-600 text-center w-[260px]">생명에 대한 존중과 차별없는 동물권을 지향하는 시민들의 모임</p>
+          <p className="text-[16px] text-gray-600 text-center">생명에 대한 존중과 차별없는 동물권을 지향하는 시민들의 모임</p>
 
         </div>
 
