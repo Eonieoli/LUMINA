@@ -17,7 +17,7 @@ export default function Main() {
             <Route path="search" element={<SearchPage/>} />        
             <Route path="donate" element={<DonatePage key={location.key}/>} />        
             <Route path="ranking" element={<RankingPage/>} />        
-            <Route path="mypage" element={<MyPage/>} />
+            <Route path="mypage/:userId?" element={<MyPage/>} />
 
             <Route path="donate/research/:keyword" element={<DonationSearchResultPage/>}/>
             <Route path="donate/:donationId" element={<DonationDetailPage/>} />

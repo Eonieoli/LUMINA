@@ -1,4 +1,3 @@
-import { getMyProfile } from "@/apis/auth";
 import { useEffect, useRef, useState, useCallback} from "react";
 import { Hamburger, DefaultProfile } from "@/assets/images";
 import UserProfileFourInfo from "@/components/profile/fourInfo";
@@ -6,6 +5,8 @@ import ProfileBtn from "@/components/profile/button";
 import { Post } from "./Home";
 import { getUserPosts } from "@/apis/board";
 import { Board } from "@/components";
+import { useParams } from "react-router-dom";
+import { getUserProfile } from "@/apis/auth";
 
 interface MypageProps {
     userId: number
@@ -22,6 +23,9 @@ interface MypageProps {
 
 export default function MyPage() {
 
+    const { userId } = useParams();
+    const profileUserId = Number(userId)
+
     const [userInfo, setUserInfo] = useState<MypageProps>()
     const [userPosts, setUserposts] = useState<Post[]>([])
     const [pageNum, setPageNum] = useState(1);
@@ -30,19 +34,22 @@ export default function MyPage() {
     const observer = useRef<IntersectionObserver | null> (null)
     const fetchedOnce = useRef(false)
 
+
     // 유저 정보 가져오기
     useEffect(() => {
+
+        if(!profileUserId) return
+
         const fetchProfile= async () =>  {
             try {
-                const response = await getMyProfile()
+                const response = await getUserProfile(profileUserId)
                 setUserInfo(response.data)
-                console.log("프로필 정보!" , response.data)
                 return response.data
             }
             catch (error) {}
         }
         fetchProfile()
-    }, [])
+    }, [userId])
 
     // 유저 게시물 가져오기
     useEffect (() => {
