@@ -13,6 +13,7 @@ import SendIcon from './board/send.svg';
 import BellIcon from './header/bell.svg';
 import PlusIcon from './header/plus.svg';
 import LuminaLogo from './header/lumina_logo.svg';
+import Hamburger from './header/hamburger.svg'
 
 // 기부 페이지 
 import CoinIcon from './donate/coin.png'
@@ -62,5 +63,6 @@ export {
     MainBackground,
     MainBackgroundShort,
     WinkLuna,
-    ComputerHandsupLuna
+    ComputerHandsupLuna,
+    Hamburger
 }
