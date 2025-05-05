@@ -7,6 +7,8 @@ import { getUserPosts } from "@/apis/board";
 import { Board } from "@/components";
 import { useParams } from "react-router-dom";
 import { getUserProfile } from "@/apis/auth";
+import { useAuthStore } from '@/stores/auth';
+import { followToggle } from "@/apis/follow";
 
 interface MypageProps {
     userId: number
@@ -19,12 +21,21 @@ interface MypageProps {
     postCnt: number
     followCnt: number
     followingCnt: number
+    isFollowing: Boolean
 }
 
 export default function MyPage() {
 
+    // 나의 아이디 
+    const authData = useAuthStore();
+    const myUserId = authData.data.userId
+    
+    // 내가 조회하려는 프로필 유저의  id
     const { userId } = useParams();
     const profileUserId = Number(userId)
+    
+    //만약 내가 나의 마이페이지를 조회하는거면 true
+    const ismyprofile = myUserId===profileUserId ? true : false
 
     const [userInfo, setUserInfo] = useState<MypageProps>()
     const [userPosts, setUserposts] = useState<Post[]>([])
@@ -33,6 +44,7 @@ export default function MyPage() {
     const [isLoading, setIsLoading] = useState(false)
     const observer = useRef<IntersectionObserver | null> (null)
     const fetchedOnce = useRef(false)
+    const isFollowing = userInfo?.isFollowing
 
 
     // 유저 정보 가져오기
@@ -44,6 +56,7 @@ export default function MyPage() {
             try {
                 const response = await getUserProfile(profileUserId)
                 setUserInfo(response.data)
+                console.log("나의 아이디", myUserId)
                 return response.data
             }
             catch (error) {}
@@ -93,7 +106,20 @@ export default function MyPage() {
         [isLoading, hasMore]
     );
     
+    // 프로필 수정을 눌렀다면
+    const goToProfileEdit = () => {
+        console.log("프로필 수정버튼 클릭")
+    }
 
+    //팔로우 팔로잉 버튼을 눌렀다면
+    const handlefollowToggle = async() => {
+        try{
+            await followToggle(profileUserId)
+            const response = await getUserProfile(profileUserId)
+            setUserInfo(response.data)
+        }
+        catch(error) {}
+    }
 
     return (
         <div className="w-full h-full">
@@ -127,10 +153,24 @@ export default function MyPage() {
                 </div>
 
                 {/* 버튼 */}
-                <div className="flex justify-center">
-                    <ProfileBtn text="프로필 수정" textColor="text-gray-600" bgColor="bg-white" />
-                </div>
-                
+                {/* 나의 프로필이라면 */}
+                {ismyprofile && 
+                    <div className="flex justify-center">
+                        <ProfileBtn text="프로필 수정" textColor="text-gray-600" bgColor="bg-white" onClick={goToProfileEdit} />
+                    </div>
+                }
+                {/* 다른 사람의 프로필이라면 */}
+                {!ismyprofile && isFollowing &&
+                    <div className="flex justify-center">
+                        <ProfileBtn text="팔로잉" textColor="text-white" bgColor="bg-[#5D56F1]"  onClick={handlefollowToggle}/>
+                    </div>
+                }
+                {!ismyprofile && !isFollowing &&
+                    <div className="flex justify-center">
+                        <ProfileBtn text="팔로우" textColor="text-[#5D56F1]" bgColor="bg-white" onClick={handlefollowToggle} />
+                    </div>
+                }
+
             </div>
 
             {/* 루미나 선행도 그래프 */}
