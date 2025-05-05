@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { getPosts } from '@/apis/board';
 import { Board, Header } from '@/components';
 
-interface Post {
+export interface Post {
     postId: number;
     userId: number;
     nickname: string;
