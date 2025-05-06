@@ -24,7 +24,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
-    private final CookieUtil cookieUtil;
 
     private final OAuthService oAuthService;
 
@@ -76,8 +75,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         redisUtil.setex(userKey, refresh, Long.parseLong(jwtRedisExp)); // 1일 TTL
 
         // 클라이언트에 Access Token 및 Refresh Token 쿠키로 설정
-        response.addCookie(cookieUtil.createCookie("access", access));
-        response.addCookie(cookieUtil.createCookie("refresh", refresh));
+        response.addCookie(CookieUtil.createCookie("access", access));
+        response.addCookie(CookieUtil.createCookie("refresh", refresh));
 
         //인증 성공 후 리다이렉트
         response.sendRedirect(successURL);

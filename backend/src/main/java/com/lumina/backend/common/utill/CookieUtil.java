@@ -1,20 +1,11 @@
 package com.lumina.backend.common.utill;
 
-import com.lumina.backend.common.jwt.JWTUtil;
-import com.lumina.backend.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
 public class CookieUtil {
 
-    private final UserRepository userRepository;
-
-    private final JWTUtil jwtUtil;
-
+    private CookieUtil() {}
 
     /**
      * 쿠키를 생성합니다.
@@ -23,7 +14,7 @@ public class CookieUtil {
      * @param value 쿠키 값
      * @return 생성된 Cookie 객체
      */
-    public Cookie createCookie(
+    public static Cookie createCookie(
             String key, String value) {
 
         Cookie cookie = new Cookie(key, value);
@@ -42,7 +33,7 @@ public class CookieUtil {
      * @param response HTTP 응답 객체
      * @param cookieName 삭제할 쿠키의 이름
      */
-    public void deleteCookie(
+    public static void deleteCookie(
             HttpServletResponse response, String cookieName) {
 
         Cookie cookie = new Cookie(cookieName, null); // 쿠키 값을 null로 설정

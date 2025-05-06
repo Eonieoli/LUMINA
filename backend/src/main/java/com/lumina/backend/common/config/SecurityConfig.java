@@ -41,7 +41,6 @@ public class SecurityConfig {
 
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
-    private final CookieUtil cookieUtil;
 
 
     /**
@@ -99,7 +98,7 @@ public class SecurityConfig {
                 .addFilterAfter(new JWTFilter(jwtUtil, oAuthService, objectMapper), OAuth2LoginAuthenticationFilter.class);
 
         http
-                .addFilterBefore(new CustomLogoutFilter(userRepository, jwtUtil, redisUtil, cookieUtil), LogoutFilter.class);
+                .addFilterBefore(new CustomLogoutFilter(userRepository, jwtUtil, redisUtil), LogoutFilter.class);
 
         // OAuth2 로그인 설정
         http

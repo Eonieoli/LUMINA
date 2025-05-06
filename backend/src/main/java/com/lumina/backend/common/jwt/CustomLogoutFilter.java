@@ -32,7 +32,6 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
-    private final CookieUtil cookieUtil;
 
 
     /**
@@ -114,8 +113,8 @@ public class CustomLogoutFilter extends GenericFilterBean {
         redisUtil.delete(userKey);
 
         // 7. access 및 refresh 쿠키 삭제
-        cookieUtil.deleteCookie(response, "access");
-        cookieUtil.deleteCookie(response, "refresh");
+        CookieUtil.deleteCookie(response, "access");
+        CookieUtil.deleteCookie(response, "refresh");
 
         // 8. 로그아웃 성공 상태 코드 전송
         response.setStatus(HttpServletResponse.SC_OK);

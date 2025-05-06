@@ -1,13 +1,11 @@
 package com.lumina.backend.common.controller;
 
 import com.lumina.backend.common.jwt.JWTUtil;
-import com.lumina.backend.common.model.entity.BaseEntity;
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.common.model.response.GetToken;
 import com.lumina.backend.common.utill.CookieUtil;
 import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.user.repository.UserRepository;
-import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +26,6 @@ public class CommonController {
 
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
-    private final CookieUtil cookieUtil;
-
-    private final OAuthService oAuthService;
 
     @Value("${LOGIN_SUCCESS}")
     private String successURL;
@@ -65,8 +60,8 @@ public class CommonController {
         redisUtil.setex(userKey, refresh, Long.parseLong(jwtRedisExp)); // 1일 TTL
 
         // 클라이언트에 Access Token 및 Refresh Token 쿠키로 설정
-        response.addCookie(cookieUtil.createCookie("access", access));
-        response.addCookie(cookieUtil.createCookie("refresh", refresh));
+        response.addCookie(CookieUtil.createCookie("access", access));
+        response.addCookie(CookieUtil.createCookie("refresh", refresh));
 
         //인증 성공 후 리다이렉트
         response.sendRedirect(successURL);

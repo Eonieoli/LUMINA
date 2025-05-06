@@ -26,7 +26,6 @@ public class OAuthServiceImpl implements OAuthService {
 
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
-    private final CookieUtil cookieUtil;
 
     @Value("${JWT_ACCESS_EXP}")
     private String jwtAccessExp;
@@ -102,8 +101,8 @@ public class OAuthServiceImpl implements OAuthService {
         redisUtil.setex(userKey, newRefresh, Long.parseLong(jwtRedisExp));
 
         // 클라이언트에 새 토큰 쿠키로 설정
-        response.addCookie(cookieUtil.createCookie("access", newAccess));
-        response.addCookie(cookieUtil.createCookie("refresh", newRefresh));
+        response.addCookie(CookieUtil.createCookie("access", newAccess));
+        response.addCookie(CookieUtil.createCookie("refresh", newRefresh));
 
         return newAccess;
     }
@@ -137,7 +136,7 @@ public class OAuthServiceImpl implements OAuthService {
         redisUtil.delete(userKey);
 
         // 쿠키에서 Access Token과 Refresh Token 삭제
-        cookieUtil.deleteCookie(response, "access");
-        cookieUtil.deleteCookie(response, "refresh");
+        CookieUtil.deleteCookie(response, "access");
+        CookieUtil.deleteCookie(response, "refresh");
     }
 }

@@ -1,7 +1,6 @@
-package com.lumina.backend.post.service.impl;
+package com.lumina.backend.common.service;
 
 import com.lumina.backend.common.exception.CustomException;
-import com.lumina.backend.post.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -17,7 +16,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class S3ServiceImpl implements S3Service {
+public class S3Service {
 
     private final S3Client s3Client;
 
@@ -33,7 +32,6 @@ public class S3ServiceImpl implements S3Service {
      * @return String 업로드된 파일의 URL
      * @throws CustomException 파일 처리 중 발생할 수 있는 입출력 예외
      */
-    @Override
     public String uploadImageFile(MultipartFile file, String folderName) throws IOException {
 
         if (file == null || file.isEmpty()) {
@@ -69,7 +67,6 @@ public class S3ServiceImpl implements S3Service {
      * @param fileName 파일 이름
      * @return String 생성된 파일 URL
      */
-    @Override
     public String getFileUrl(
             String folderName, String fileName) {
 
@@ -86,7 +83,6 @@ public class S3ServiceImpl implements S3Service {
      *
      * @param imageUrl 삭제할 이미지의 URL
      */
-    @Override
     public void deleteImageFile(
             String imageUrl, String folderName) {
 
@@ -112,7 +108,6 @@ public class S3ServiceImpl implements S3Service {
      * @param url 파일 URL
      * @return String 추출된 파일명 (없으면 null 반환)
      */
-    @Override
     public String extractFileName(
             String url, String folderName) {
 
