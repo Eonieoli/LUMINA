@@ -80,9 +80,9 @@ export default function DonationInputPage() {
 
     // api 연결되면 순서 바꾸기
     try {
+      await postDonatePoint(Number(donationId), Number(point))
       setIsModalOpen(false)
       navigate(`/donate/thanks`, {state: {donationId}},)
-      await postDonatePoint(Number(donationId), Number(point))
     }
     catch(error){}
   }
