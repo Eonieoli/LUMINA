@@ -69,7 +69,7 @@ export const toggleDonationSubscribe = async(donationId: number) => {
 // 기부하기
 export const postDonatePoint = async(donationId: number, point: number) => {
   try {
-    const response = await apiClient.post('/donate', {donationId:donationId, point:point})
+    const response = await apiClient.post('/donation', {donationId:donationId, point:point})
     console.log("기부하기 성공!!", response.data.message)
     return response.data
   }
