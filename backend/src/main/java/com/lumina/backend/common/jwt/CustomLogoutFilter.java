@@ -1,6 +1,7 @@
 package com.lumina.backend.common.jwt;
 
 import com.lumina.backend.common.exception.CustomException;
+import com.lumina.backend.common.utill.CookieUtil;
 import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.user.repository.UserRepository;
 import com.lumina.backend.user.service.OAuthService;
@@ -27,10 +28,11 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class CustomLogoutFilter extends GenericFilterBean {
 
+    private final UserRepository userRepository;
+
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
-    private final UserRepository userRepository;
-    private final OAuthService oAuthService;
+    private final CookieUtil cookieUtil;
 
 
     /**
@@ -99,7 +101,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         // 5. Redis에서 토큰 존재 여부 확인
         String nickName = jwtUtil.getNickname(refresh); // 토큰에서 닉네임 추출
         String userAgent = request.getHeader("User-Agent").toLowerCase(); // 기기 정보 추출
-        String deviceType = oAuthService.getDeviceType(userAgent); // PC 또는 모바일 여부 판별
+        String deviceType = redisUtil.getDeviceType(userAgent); // PC 또는 모바일 여부 판별
         String userKey = "refresh:" + userRepository.findIdByNickname(nickName) + ":" + deviceType; // Redis 키 조합
 
         Boolean isExist = redisUtil.exists(userKey); // Redis에 존재하는지 확인
@@ -112,8 +114,8 @@ public class CustomLogoutFilter extends GenericFilterBean {
         redisUtil.delete(userKey);
 
         // 7. access 및 refresh 쿠키 삭제
-        oAuthService.deleteCookie(response, "access");
-        oAuthService.deleteCookie(response, "refresh");
+        cookieUtil.deleteCookie(response, "access");
+        cookieUtil.deleteCookie(response, "refresh");
 
         // 8. 로그아웃 성공 상태 코드 전송
         response.setStatus(HttpServletResponse.SC_OK);

@@ -1,6 +1,7 @@
 package com.lumina.backend.common.handler;
 
 import com.lumina.backend.common.jwt.JWTUtil;
+import com.lumina.backend.common.utill.CookieUtil;
 import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.user.model.dto.CustomOAuth2User;
 import com.lumina.backend.user.repository.UserRepository;
@@ -23,6 +24,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
+    private final CookieUtil cookieUtil;
 
     private final OAuthService oAuthService;
 
@@ -63,7 +65,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // 기기 정보 가져오기
         String userAgent = request.getHeader("User-Agent").toLowerCase();
-        String deviceType = oAuthService.getDeviceType(userAgent); // 기기 유형 판별
+        String deviceType = redisUtil.getDeviceType(userAgent); // 기기 유형 판별
 
         // Access Token 및 Refresh Token 생성
         String access = jwtUtil.createJwt("access", nickname, role, Long.parseLong(jwtAccessExp)); // 10분 유효
@@ -74,8 +76,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         redisUtil.setex(userKey, refresh, Long.parseLong(jwtRedisExp)); // 1일 TTL
 
         // 클라이언트에 Access Token 및 Refresh Token 쿠키로 설정
-        response.addCookie(oAuthService.createCookie("access", access));
-        response.addCookie(oAuthService.createCookie("refresh", refresh));
+        response.addCookie(cookieUtil.createCookie("access", access));
+        response.addCookie(cookieUtil.createCookie("refresh", refresh));
 
         //인증 성공 후 리다이렉트
         response.sendRedirect(successURL);

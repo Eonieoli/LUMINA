@@ -2,7 +2,9 @@ package com.lumina.backend.user.service.impl;
 
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.jwt.JWTUtil;
+import com.lumina.backend.common.utill.CookieUtil;
 import com.lumina.backend.common.utill.RedisUtil;
+import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.donation.repository.DonationRepository;
 import com.lumina.backend.post.repository.PostRepository;
 import com.lumina.backend.post.service.S3Service;
@@ -38,13 +40,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
     private final PostRepository postRepository;
-    private final DonationRepository donationRepository;
 
-    private final OAuthService oAuthService;
     private final S3Service s3Service;
 
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
+    private final CookieUtil cookieUtil;
+    private final TokenUtil tokenUtil;
 
     @Value("${JWT_ACCESS_EXP}")
     private String jwtAccessExp;
@@ -176,9 +178,9 @@ public class UserServiceImpl implements UserService {
         if (!user.getNickname().equals(request.getNickname())) {
             // 기기 정보 가져오기
             String userAgent = httpRequest.getHeader("User-Agent").toLowerCase();
-            String deviceType = oAuthService.getDeviceType(userAgent); // 기기 유형 판별
+            String deviceType = redisUtil.getDeviceType(userAgent); // 기기 유형 판별
             String userKey = "refresh:" + userId + ":" + deviceType;
-            String role = oAuthService.findRoleByToken(httpRequest);
+            String role = tokenUtil.findRoleByToken(httpRequest);
 
             // 새로운 액세스 및 리프레시 토큰 생성
             String newAccess = jwtUtil.createJwt("access", request.getNickname(), role, Long.parseLong(jwtAccessExp)); // 10분 유효
@@ -188,8 +190,8 @@ public class UserServiceImpl implements UserService {
             redisUtil.setex(userKey, newRefresh, Long.parseLong(jwtRedisExp));
 
             // 클라이언트에 새 토큰 쿠키로 설정
-            response.addCookie(oAuthService.createCookie("access", newAccess));
-            response.addCookie(oAuthService.createCookie("refresh", newRefresh));
+            response.addCookie(cookieUtil.createCookie("access", newAccess));
+            response.addCookie(cookieUtil.createCookie("refresh", newRefresh));
         }
 
         user.updateProfile(profileImageUrl, request.getNickname(), request.getMessage());

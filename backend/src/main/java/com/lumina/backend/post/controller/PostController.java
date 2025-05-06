@@ -1,6 +1,7 @@
 package com.lumina.backend.post.controller;
 
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.request.UploadPostRequest;
 import com.lumina.backend.post.model.response.GetChildCommentResponse;
@@ -27,12 +28,14 @@ public class PostController {
     private final OAuthService oAuthService;
     private final PostService postService;
 
+    private final TokenUtil tokenUtil;
+
     @PostMapping("")
     public ResponseEntity<BaseResponse<UploadPostResponse>> uploadPost(
             HttpServletRequest request,
             @ModelAttribute UploadPostRequest uploadPostRequest) throws IOException {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         UploadPostResponse response = postService.uploadPost(userId, uploadPostRequest);
 
         return ResponseEntity.ok(BaseResponse.success("게시물 등록 완료", response));
@@ -46,7 +49,7 @@ public class PostController {
             @RequestParam(required = false) String categoryName,
             @RequestParam int pageNum) {
 
-        Long myId = oAuthService.findIdByToken(request);
+        Long myId = tokenUtil.findIdByToken(request);
         Map<String, Object> response = postService.getPosts(myId, userId, categoryName, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("게시물 조회 성공", response));
@@ -64,8 +67,8 @@ public class PostController {
     public ResponseEntity<BaseResponse<Void>> deletePost(
             HttpServletRequest request, @PathVariable Long postId) {
 
-        Long userId = oAuthService.findIdByToken(request);
-        String role = oAuthService.findRoleByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
+        String role = tokenUtil.findRoleByToken(request);
         postService.deletePost(userId, role, postId);
 
         return ResponseEntity.ok(BaseResponse.withMessage("게시물 삭제 완료"));
@@ -83,7 +86,7 @@ public class PostController {
     public ResponseEntity<BaseResponse<Void>> toggleLike(
             HttpServletRequest request, @PathVariable Long postId) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         Boolean like = postService.toggleLike(userId, postId);
 
         // 결과에 따른 응답 메시지 생성
@@ -102,7 +105,7 @@ public class PostController {
             @RequestBody UploadCommentRequest uploadCommentRequest,
             @PathVariable Long postId) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         UploadCommentResponse response = postService.uploadComment(userId, postId, uploadCommentRequest);
 
         return ResponseEntity.ok(BaseResponse.success("댓글 등록 완료", response));
@@ -115,7 +118,7 @@ public class PostController {
             @PathVariable Long postId,
             @RequestParam int pageNum) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         Map<String, Object> response = postService.getComment(userId, postId, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("댓글 조회 성공", response));
@@ -128,7 +131,7 @@ public class PostController {
             @PathVariable Long postId,
             @PathVariable Long commentId) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         List<GetChildCommentResponse> response = postService.getChildComment(userId, postId, commentId);
 
         return ResponseEntity.ok(BaseResponse.success("대댓글 조회 성공", response));
@@ -149,8 +152,8 @@ public class PostController {
             @PathVariable Long postId,
             @PathVariable Long commentId) {
 
-        Long userId = oAuthService.findIdByToken(request);
-        String role = oAuthService.findRoleByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
+        String role = tokenUtil.findRoleByToken(request);
         postService.deleteComment(userId, role, postId, commentId);
 
         return ResponseEntity.ok(BaseResponse.withMessage("댓글 삭제 완료"));
@@ -171,7 +174,7 @@ public class PostController {
             @PathVariable Long postId,
             @PathVariable Long commentId) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         Boolean like = postService.toggleCommentLike(userId, postId, commentId);
 
         // 결과에 따른 응답 메시지 생성
@@ -189,7 +192,7 @@ public class PostController {
             HttpServletRequest request,
             @RequestParam int pageNum) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         Map<String, Object> response = postService.getSubscribePost(userId, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("구독 카테고리 게시물 조회 성공", response));
@@ -208,7 +211,7 @@ public class PostController {
             @RequestParam String keyword,
             @RequestParam int pageNum) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         Map<String, Object> response = postService.searchPost(userId, keyword, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("게시물 검색 성공", response));

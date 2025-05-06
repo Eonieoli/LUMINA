@@ -2,6 +2,7 @@ package com.lumina.backend.user.service.impl;
 
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.jwt.JWTUtil;
+import com.lumina.backend.common.utill.CookieUtil;
 import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.repository.UserRepository;
@@ -25,6 +26,7 @@ public class OAuthServiceImpl implements OAuthService {
 
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
+    private final CookieUtil cookieUtil;
 
     @Value("${JWT_ACCESS_EXP}")
     private String jwtAccessExp;
@@ -75,7 +77,7 @@ public class OAuthServiceImpl implements OAuthService {
         // 닉네임 및 Redis 키 생성
         String nickname = jwtUtil.getNickname(refresh);
         String userAgent = request.getHeader("User-Agent").toLowerCase();
-        String deviceType = getDeviceType(userAgent); // 기기 유형 판별
+        String deviceType = redisUtil.getDeviceType(userAgent); // 기기 유형 판별
         String userKey = "refresh:" + userRepository.findIdByNickname(nickname) + ":" + deviceType; // Redis 키 생성;
 
         // Redis에 저장된 리프레시 토큰 존재 여부 확인
@@ -91,8 +93,8 @@ public class OAuthServiceImpl implements OAuthService {
             throw new CustomException(HttpStatus.BAD_REQUEST, "Redis의 값과 다름");
         }
 
-        String role = jwtUtil.getRole(refresh);
         // 새로운 액세스 및 리프레시 토큰 생성
+        String role = jwtUtil.getRole(refresh);
         String newAccess = jwtUtil.createJwt("access", nickname, role, Long.parseLong(jwtAccessExp)); // 10분 유효
         String newRefresh = jwtUtil.createJwt("refresh", nickname, role, Long.parseLong(jwtRefreshExp)); // 1일 유효
 
@@ -100,50 +102,10 @@ public class OAuthServiceImpl implements OAuthService {
         redisUtil.setex(userKey, newRefresh, Long.parseLong(jwtRedisExp));
 
         // 클라이언트에 새 토큰 쿠키로 설정
-        response.addCookie(createCookie("access", newAccess));
-        response.addCookie(createCookie("refresh", newRefresh));
+        response.addCookie(cookieUtil.createCookie("access", newAccess));
+        response.addCookie(cookieUtil.createCookie("refresh", newRefresh));
 
         return newAccess;
-    }
-
-
-    /**
-     * 현재 로그인한 사용자의 ID를 닉네임을 통해 조회하는 메서드
-     *
-     * @param request HTTP 요청 객체 (쿠키에서 AccessToken 추출)
-     * @return Long 사용자 ID
-     */
-    @Override
-    public Long findIdByToken(
-            HttpServletRequest request) {
-
-        // 쿠키에서 AccessToken 추출
-        String access = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("access".equals(cookie.getName())) {
-                    access = cookie.getValue();
-                    break; // AccessToken을 찾았으므로 루프 종료
-                }
-            }
-        }
-
-        //개발용
-        if (access == null) {
-            String authorizationHeader = request.getHeader("Authorization");
-            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-                access = authorizationHeader.substring(7); // "Bearer " 부분을 제외하고 토큰만 추출
-            }
-        }
-        //여기까지
-
-        // JWT에서 닉네임 추출
-        String nickname = jwtUtil.getNickname(access);
-        // 닉네임으로 사용자 ID 조회
-        Long userId = userRepository.findIdByNickname(nickname);
-
-        return userId;
     }
 
 
@@ -170,106 +132,12 @@ public class OAuthServiceImpl implements OAuthService {
 
         // Redis에서 Refresh Token 삭제
         String userAgent = request.getHeader("User-Agent").toLowerCase();
-        String deviceType = getDeviceType(userAgent); // 기기 유형 판별
+        String deviceType = redisUtil.getDeviceType(userAgent); // 기기 유형 판별
         String userKey = "refresh:" + userId + ":" + deviceType;
         redisUtil.delete(userKey);
 
         // 쿠키에서 Access Token과 Refresh Token 삭제
-        deleteCookie(response, "access");
-        deleteCookie(response, "refresh");
-    }
-
-
-    /**
-     * 쿠키를 생성합니다.
-     *
-     * @param key 쿠키 이름
-     * @param value 쿠키 값
-     * @return 생성된 Cookie 객체
-     */
-    @Override
-    public Cookie createCookie(
-            String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 24); // 1일 유지
-//        cookie.setSecure(true); // HTTPS에서만 전송 (배포 환경에서는 필수)
-        cookie.setHttpOnly(true); // JavaScript에서 접근 불가
-        cookie.setPath("/"); // 모든 경로에서 접근 가능
-
-        return cookie;
-    }
-
-
-    /**
-     * 특정 이름의 쿠키를 삭제하는 헬퍼 메서드
-     *
-     * @param response HTTP 응답 객체
-     * @param cookieName 삭제할 쿠키의 이름
-     */
-    @Override
-    public void deleteCookie(
-            HttpServletResponse response, String cookieName) {
-
-        Cookie cookie = new Cookie(cookieName, null); // 쿠키 값을 null로 설정
-        cookie.setMaxAge(0); // 쿠키 만료 시간을 0으로 설정 (즉시 삭제)
-        cookie.setPath("/"); // 쿠키 경로를 루트로 설정 (애플리케이션 전체에 적용)
-        response.addCookie(cookie); // 응답에 삭제할 쿠키 추가
-    }
-
-
-    /**
-     * User-Agent를 분석하여 기기 유형을 판별합니다.
-     *
-     * @param userAgent HTTP User-Agent 헤더 값
-     * @return "pc" 또는 "mobile"
-     */
-    @Override
-    public String getDeviceType(
-            String userAgent) {
-
-        if (userAgent.contains("mobile") || userAgent.contains("android") || userAgent.contains("iphone")) {
-            return "mobile";
-        }
-
-        return "pc";
-    }
-
-
-    /**
-     * 현재 로그인한 사용자의 Role을 토큰을 통해 조회하는 메서드
-     *
-     * @param request HTTP 요청 객체 (쿠키에서 AccessToken 추출)
-     * @return String 사용자 Role
-     */
-    @Override
-    public String findRoleByToken(
-            HttpServletRequest request) {
-
-        // 쿠키에서 AccessToken 추출
-        String access = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("access".equals(cookie.getName())) {
-                    access = cookie.getValue();
-                    break; // AccessToken을 찾았으므로 루프 종료
-                }
-            }
-        }
-
-        //개발용
-        if (access == null) {
-            String authorizationHeader = request.getHeader("Authorization");
-            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-                access = authorizationHeader.substring(7); // "Bearer " 부분을 제외하고 토큰만 추출
-            }
-        }
-        //여기까지
-
-        // JWT에서 role 추출
-        String role = jwtUtil.getRole(access);
-
-        return role;
+        cookieUtil.deleteCookie(response, "access");
+        cookieUtil.deleteCookie(response, "refresh");
     }
 }

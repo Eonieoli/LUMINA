@@ -1,6 +1,7 @@
 package com.lumina.backend.user.controller;
 
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.user.model.request.ToggleFollowRequest;
 import com.lumina.backend.user.service.FollowService;
 import com.lumina.backend.user.service.OAuthService;
@@ -19,6 +20,8 @@ public class FollowController {
     private final OAuthService oAuthService;
     private final FollowService followService;
 
+    private final TokenUtil tokenUtil;
+
 
     /**
      * 현재 사용자의 팔로우 상태를 토글하는 엔드포인트
@@ -32,7 +35,7 @@ public class FollowController {
             @RequestBody ToggleFollowRequest toggleFollowRequest,
             HttpServletRequest request) {
 
-        Long followerId = oAuthService.findIdByToken(request);
+        Long followerId = tokenUtil.findIdByToken(request);
         Boolean follow = followService.toggleFollow(followerId, toggleFollowRequest.getFollowingId());
 
         BaseResponse<Void> baseResponse = follow ?
@@ -55,7 +58,7 @@ public class FollowController {
             @RequestParam(required = false) Long userId,
             @RequestParam int pageNum) {
 
-        Long myId = oAuthService.findIdByToken(request);
+        Long myId = tokenUtil.findIdByToken(request);
         Long targetUserId = (userId != null) ? userId : myId;
         boolean isMe = (userId == null || userId.equals(myId));
 
@@ -77,7 +80,7 @@ public class FollowController {
             @RequestParam(required = false) Long userId,
             @RequestParam int pageNum) {
 
-        Long myId = oAuthService.findIdByToken(request);
+        Long myId = tokenUtil.findIdByToken(request);
         Long targetUserId = (userId != null) ? userId : myId;
         boolean isMe = (userId == null || userId.equals(myId));
 
@@ -99,7 +102,7 @@ public class FollowController {
             HttpServletRequest request,
             @PathVariable Long userId) {
 
-        Long myId = oAuthService.findIdByToken(request);
+        Long myId = tokenUtil.findIdByToken(request);
         followService.deleteMyFollower(myId, userId);
 
         return ResponseEntity.ok(BaseResponse.withMessage("팔로워 삭제 완료"));

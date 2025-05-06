@@ -3,6 +3,7 @@ package com.lumina.backend.category.controller;
 import com.lumina.backend.category.model.response.GetCategoryResponse;
 import com.lumina.backend.category.service.CategoryService;
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryController {
 
+    private final TokenUtil tokenUtil;
+
     private final OAuthService oAuthService;
     private final CategoryService categoryService;
 
@@ -24,7 +27,7 @@ public class CategoryController {
     public ResponseEntity<BaseResponse<List<GetCategoryResponse>>> getCategory(
             HttpServletRequest request) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         List<GetCategoryResponse> response = categoryService.getCategory(userId);
 
         return ResponseEntity.ok(BaseResponse.success("전체 카테고리 조회 성공", response));
@@ -42,7 +45,7 @@ public class CategoryController {
     public ResponseEntity<BaseResponse<Void>> toggleCategorySubscribe(
             HttpServletRequest request, @PathVariable Long categoryId) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         Boolean subscribe = categoryService.toggleCategorySubscribe(userId, categoryId);
 
         // 결과에 따른 응답 메시지 생성

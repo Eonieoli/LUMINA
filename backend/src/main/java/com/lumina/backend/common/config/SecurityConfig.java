@@ -6,6 +6,7 @@ import com.lumina.backend.common.jwt.CustomLogoutFilter;
 import com.lumina.backend.common.jwt.JWTFilter;
 import com.lumina.backend.common.jwt.JWTUtil;
 import com.lumina.backend.common.service.CustomOAuth2UserService;
+import com.lumina.backend.common.utill.CookieUtil;
 import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.user.repository.UserRepository;
 import com.lumina.backend.user.service.OAuthService;
@@ -40,6 +41,7 @@ public class SecurityConfig {
 
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
+    private final CookieUtil cookieUtil;
 
 
     /**
@@ -97,7 +99,7 @@ public class SecurityConfig {
                 .addFilterAfter(new JWTFilter(jwtUtil, oAuthService, objectMapper), OAuth2LoginAuthenticationFilter.class);
 
         http
-                .addFilterBefore(new CustomLogoutFilter(jwtUtil, redisUtil, userRepository, oAuthService), LogoutFilter.class);
+                .addFilterBefore(new CustomLogoutFilter(userRepository, jwtUtil, redisUtil, cookieUtil), LogoutFilter.class);
 
         // OAuth2 로그인 설정
         http
