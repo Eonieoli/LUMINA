@@ -84,29 +84,29 @@ export default function DonationSearchResultPage() {
                     />
                 </div>
 
-                {/* 만약 빈 검색창이라면 */}
+                {/* 만약 빈 검색창 or 전체조회라면 */}
                 {decodedKeyword.trim() === '' && (
                     <div className="mb-8 text-center text-sm text-gray-500">
-                        검색어를 입력해주세요!
+                        기부처를 검색해보세요!
                     </div>
                 )}
 
                 {/* 결과 */}
-                <div className="grid grid-cols-2 gap-4 pb-8">
-                    {donations.length > 0 ? (
-                        donations.map((donation) => (
-                            <DonationCard
-                                key={donation.donationId}
-                                donationId={donation.donationId}
-                                donationName={donation.donationName}
-                            />
-                        ))
-                    ) : (
-                        <p className="col-span-2 flex items-center justify-center text-sm text-gray-500">
-                            검색결과가 없습니다.
-                        </p>
-                    )}
-                </div>
+                    <div className="grid grid-cols-2 gap-4 pb-8">
+                        {donations.length > 0 ? (
+                            donations.map((donation) => (
+                                <DonationCard
+                                    key={donation.donationId}
+                                    donationId={donation.donationId}
+                                    donationName={donation.donationName}
+                                />
+                            ))
+                        ) : (
+                            <p className="col-span-2 flex items-center justify-center text-sm text-gray-500">
+                                존재하지 않는 기부처입니다.
+                            </p>
+                        )}
+                    </div>
 
                 {/* 더보기 버튼 */}
                 {pageNum < totalPages && (

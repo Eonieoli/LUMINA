@@ -1,28 +1,28 @@
 import { apiClient } from './axios';
 
-// 유저 포인트 조회
+// 유저 포인트, 닉네임, id 조회
 export const getPointInfo = async () => {
     try {
         const response = await apiClient.get('/user/point');
         console.log(
+            response.data.data.nickname,
             '유저 포인트 가져오기 성공! 포인트:',
-            response.data.data.point
+            response.data.data.point, 
         );
-        return response.data.data.point;
+        return response.data.data;
     } catch (error) {
         console.log('유저 포인트 가져오기 실패!', error);
         throw error;
     }
 };
 
-//관심 기부처 조회
+//추천 기부처, 관심 기부처 조회
 export const getFavoriteDonations = async () => {
     try {
         const response = await apiClient.get('/donation/me');
-        console.log('관심 기부처 가져오기 성공! ', response.data.data);
         return response.data.data;
     } catch (error) {
-        console.log('관심 기부처 가져오기 실패! ', error);
+        console.log("추천, 관심 기부처 가져오기 실패!", error)
         throw error;
     }
 };

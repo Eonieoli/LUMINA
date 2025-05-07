@@ -19,7 +19,7 @@ const goToBack = () => {
 }
 
   return(
-    <div  className={`w-full h-full px-6 pt-6 flex flex-col ${isModalOpen ? "bg-black/10" : ""}`}>
+    <div  className={`relative w-full h-full px-6 pt-6 flex flex-col ${isModalOpen ? "bg-black/10" : ""}`}>
 
       {/* 공통 상단바 */}
       <div className="flex items-center justify-between mb-6 h-6">
@@ -38,7 +38,7 @@ const goToBack = () => {
 
       {/* 하단 버튼 */}
       {bottomButton && (
-        <div className="bg-[#9C97FA] w-full p-3 mb-6 text-white rounded-2xl text-[20px] font-normal cursor-pointer hover:bg-[#5D56F1] transition-colors duration-300 text-center mt-6">
+        <div className="bg-[#9C97FA] w-full mb-6 text-white rounded-2xl text-[20px] font-normal cursor-pointer hover:bg-[#5D56F1] transition-colors duration-300 text-center mt-6">
           {bottomButton}
         </div>
       )}
