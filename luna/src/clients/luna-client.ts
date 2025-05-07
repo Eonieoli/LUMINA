@@ -33,7 +33,7 @@ export class LunaClientInterface {
     // 1. 게시글에 대한 리워드 평가 API
     this.app.post("/api/v1/evaluate-post", async (req, res) => {
       try {
-        const { user_id, post_content, post_id } = req.body; //구조분해 할당 -> 요청 본문에서 필요한 값 추출
+        const { user_id, post_content, post_id, nickname } = req.body; //구조분해 할당 -> 요청 본문에서 필요한 값 추출
 
         if (!user_id || !post_content) {
           return res
@@ -42,7 +42,11 @@ export class LunaClientInterface {
         }
 
         // LLM에게 게시글 평가 요청
-        const response = await this.evaluateGoodDeed(user_id, post_content);
+        const response = await this.evaluateGoodDeed(
+          user_id,
+          post_content,
+          nickname
+        );
 
         // 응답 반환
         res.json({
@@ -59,7 +63,7 @@ export class LunaClientInterface {
     // 2. @luna 멘션에 대한 응답 생성 API
     this.app.post("/api/v1/reply-mention", async (req, res) => {
       try {
-        const { user_id, comment_content, comment_id } = req.body;
+        const { user_id, comment_content, comment_id, nickname } = req.body;
 
         if (!user_id || !comment_content) {
           return res
@@ -68,7 +72,11 @@ export class LunaClientInterface {
         }
 
         // LLM에게 멘션 응답 요청
-        const response = await this.respondToMention(user_id, comment_content);
+        const response = await this.respondToMention(
+          user_id,
+          comment_content,
+          nickname
+        );
 
         // 응답 반환
         res.json({
@@ -95,7 +103,8 @@ export class LunaClientInterface {
   // 선한 행동에 대한 평가 및 리워드 생성
   private async evaluateGoodDeed(
     userId: string,
-    postContent: string
+    postContent: string,
+    nickname: string
   ): Promise<any> {
     // 게시글 평가를 위한 프롬프트 구성
     //
@@ -107,13 +116,23 @@ export class LunaClientInterface {
 리워드 메시지는 다음 형식으로 작성해주세요:
 1. 선한 행동에 대한 긍정적인 평가
 2. 이 행동이 사회에 미치는 영향
-3. 격려와 응원의 메시지`;
+3. 격려와 응원의 메시지
 
-    // Eliza 에이전트에 메시지 전달
-    // 메시지 처리를 위해 직접 API 요청 사용
-    const serverPort = parseInt(process.env.LUNA_PLATFORM_PORT || "4000");
+게시글 작성자: ${nickname}
+작성자에게 대답을 하는 것이니 작성자를 언급할 때 ${nickname}를 사용해주세요`;
+
+    // ElizaOS 메인 서버는 3001 포트에서 실행 중
+    const elizaServerPort = parseInt(process.env.ELIZA_SERVER_PORT || "3001");
+
+    elizaLogger.info("게시글 내용:", postContent);
+    elizaLogger.info("사용자 ID:", userId);
+    elizaLogger.info(
+      "요청 URL:",
+      `http://localhost:${elizaServerPort}/${this.runtime.character.name}/message`
+    );
+
     const response = await fetch(
-      `http://localhost:${serverPort}/${this.runtime.character.name}/message`,
+      `http://localhost:${elizaServerPort}/${this.runtime.character.name}/message`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -131,7 +150,8 @@ export class LunaClientInterface {
   // @luna 멘션에 대한 응답 생성
   private async respondToMention(
     userId: string,
-    question: string
+    question: string,
+    nickname: string
   ): Promise<any> {
     // 멘션 응답을 위한 프롬프트 구성
     const promptText = `사용자가 @luna 로 언급하며 다음과 같은 질문을 했습니다: 
@@ -140,10 +160,13 @@ ${question}
 당신은 선한 행동 SNS 플랫폼의 관리자 Luna입니다. 
 질문이 기부 관련 조언을 구하는 것이라면, 적절한 기부처와 방법을 추천해주세요.
 질문이 선한 행동에 관한 것이라면, 도움이 되는 정보와 격려를 제공해주세요.
-질문이 다른 주제라면, SNS의 방향에 맞게 친절하게 답변해주세요.`;
+질문이 다른 주제라면, SNS의 방향에 맞게 친절하게 답변해주세요.
+
+댓글 작성자: ${nickname}
+작성자에게 대답을 하는 것이니 댓글 작성자를 언급할 때 ${nickname}를 사용해주세요`;
 
     // Eliza 에이전트에 메시지 전달
-    const serverPort = parseInt(process.env.LUNA_PLATFORM_PORT || "4000");
+    const serverPort = parseInt(process.env.ELIZA_SERVER_PORT || "3001");
     const response = await fetch(
       `http://localhost:${serverPort}/${this.runtime.character.name}/message`,
       {
