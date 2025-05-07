@@ -116,3 +116,24 @@ body {
 ::-webkit-scrollbar {
     display: none;
 }
+
+/* 페이지가 나타날 때 (enter) */
+/* 전역 CSS 또는 App.css에 추가 */
+.fade-enter {
+    opacity: 0;
+    /* transform: translateY(5px); */
+  }
+  .fade-enter-active {
+    opacity: 1;
+    /* transform: translateY(0); */
+    transition: opacity 300ms, transform 300ms;
+  }
+  .fade-exit {
+    opacity: 1;
+  }
+  .fade-exit-active {
+    opacity: 0;
+    /* transform: translateY(-5px); */
+    transition: opacity 300ms, transform 300ms;
+  }
+  

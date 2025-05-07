@@ -8,9 +8,11 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { BottomSheet, Comments } from '@/components';
 import { useAuthStore } from '@/stores/auth';
+import { useNavigate } from 'react-router-dom';
 
 interface BoardProps {
     postId: number;
+    userId: number;
     nickname: string;
     profileImage?: string;
     postImage?: string;
@@ -24,6 +26,7 @@ interface BoardProps {
 
 export const Board = ({
     postId,
+    userId,
     nickname,
     profileImage,
     postImage,
@@ -42,6 +45,7 @@ export const Board = ({
     const contentRef = useRef<HTMLDivElement>(null);
     const [showComments, setShowComments] = useState(false);
     const [isDesktop, setIsDesktop] = useState(false);
+    const navigate = useNavigate();
 
     const toggleContent = () => setIsExpanded(!isExpanded);
 
@@ -65,6 +69,10 @@ export const Board = ({
             console.error(error);
         }
     };
+
+    const profileClick = (userId: number) => {
+        navigate(`/mypage/${userId}`);
+    }
 
     useEffect(() => {
         if (contentRef.current) {
@@ -109,7 +117,7 @@ export const Board = ({
             <div className="flex w-full flex-col gap-y-2 border-y-3 border-gray-200 px-5 py-2">
                 {/* 사용자 프로필 */}
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-x-4">
+                    <div className="flex items-center gap-x-4" onClick={() => profileClick(userId)}>
                         <img
                             src={profileImage ? profileImage : DefaultProfile}
                             alt="프로필 이미지"

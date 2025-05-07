@@ -82,6 +82,7 @@ export default function HomePage() {
                     >
                         <Board
                             postId={post.postId}
+                            userId={post.userId}
                             nickname={post.nickname}
                             profileImage={post.profileImage}
                             postImage={post.postImage}
