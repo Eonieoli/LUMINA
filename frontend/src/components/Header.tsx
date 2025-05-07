@@ -8,8 +8,8 @@ export default function Header() {
 
     return (
         <>
-            <div className="sticky top-0 z-30 flex justify-between bg-white px-5 pt-12 pb-2">
-                <img onClick={scrollToTop} src={LuminaLogo} alt="로고" />
+            <div className="sticky top-0 z-30 flex justify-between items-center bg-white px-5 pt-8 pb-2">
+                <img className='w-25 h-auto' onClick={scrollToTop} src={LuminaLogo} alt="로고" />
                 <div className="flex gap-x-2">
                     <img className="h-6 w-auto" src={BellIcon} alt="종" />
                     <Link to="/post">
