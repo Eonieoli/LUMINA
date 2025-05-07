@@ -39,9 +39,6 @@ public class User extends BaseEntity {
     @Column(name = "sum_point", nullable = false)
     private Integer sumPoint;
 
-    @Column(name = "grade", nullable = false)
-    private Integer grade;
-
     @Column(name = "positiveness", nullable = false)
     private Integer positiveness;
 
@@ -55,14 +52,13 @@ public class User extends BaseEntity {
     private Boolean userStatus;
 
     public User(String socialId, String socialType, String profileImage, String message, Integer point,
-                Integer sumPoint, Integer grade, Integer positiveness, Integer likeCnt, String role, Boolean userStatus) {
+                Integer sumPoint, Integer positiveness, Integer likeCnt, String role, Boolean userStatus) {
         this.socialId = socialId;
         this.socialType = socialType;
         this.profileImage = profileImage;
         this.message = message;
         this.point = point;
         this.sumPoint = sumPoint;
-        this.grade = grade;
         this.positiveness = positiveness;
         this.likeCnt = likeCnt;
         this.role = role;
@@ -88,7 +84,6 @@ public class User extends BaseEntity {
         this.message = null;
         this.point = -1;
         this.sumPoint = -1;
-        this.grade = -1;
         this.positiveness = -101;
         this.userStatus = false;
     }
@@ -123,12 +118,6 @@ public class User extends BaseEntity {
     public void updateSumPoint(Integer point) {
         this.sumPoint += point;
     }
-
-    /**
-     * 사용자의 등급을 업데이트합니다.
-     * (구현 필요)
-     */
-    public void updateGrade(){ }
 
     /**
      * 사용자의 선향 수치를 업데이트합니다.
