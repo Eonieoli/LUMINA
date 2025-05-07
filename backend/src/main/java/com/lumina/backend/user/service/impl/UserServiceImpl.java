@@ -1,7 +1,6 @@
 package com.lumina.backend.user.service.impl;
 
 import com.lumina.backend.common.exception.CustomException;
-import com.lumina.backend.common.jwt.JWTUtil;
 import com.lumina.backend.common.service.S3Service;
 import com.lumina.backend.common.service.TokenService;
 import com.lumina.backend.common.utill.*;
@@ -39,7 +38,7 @@ public class UserServiceImpl implements UserService {
     private final PostRepository postRepository;
 
     private final RedisUtil redisUtil;
-    private final UserUtil userUtil;
+    private final FindUtil findUtil;
 
     private final S3Service s3Service;
     private final TokenService tokenService;
@@ -63,7 +62,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public GetMyProfileResponse getMyProfile(Long userId) {
 
-        User user = userUtil.getUserById(userId);
+        User user = findUtil.getUserById(userId);
 
         int sumPointRank = getUserRankFromRedis(userId);
         int postCnt = postRepository.countByUserId(userId);
@@ -89,9 +88,9 @@ public class UserServiceImpl implements UserService {
     public GetUserProfileResponse getUserProfile(
             Long myId, Long userId) {
 
-        ValidationUtil.validateUserId(userId);
+        ValidationUtil.validateId(userId, "사용자");
 
-        User user = userUtil.getUserById(userId);
+        User user = findUtil.getUserById(userId);
 
         int sumPointRank = getUserRankFromRedis(userId);
         int postCnt = postRepository.countByUserId(userId);
@@ -123,7 +122,7 @@ public class UserServiceImpl implements UserService {
         ValidationUtil.validateRequiredField(request.getNickname(), "닉네임");
         ValidationUtil.validateRequiredField(request.getMessage(), "상태 메시지");
 
-        User user = userUtil.getUserById(userId);
+        User user = findUtil.getUserById(userId);
         validateDuplicateNickname(request.getNickname(), userId);
         String profileImageUrl = handleProfileImageUpdate(userId, request.getProfileImageFile());
 
@@ -146,7 +145,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public GetUserPointResponse getUserPoint(Long userId) {
 
-        User user = userUtil.getUserById(userId);
+        User user = findUtil.getUserById(userId);
 
         return new GetUserPointResponse(user.getId(), user.getNickname(), user.getPoint());
     }
@@ -184,7 +183,7 @@ public class UserServiceImpl implements UserService {
     public List<GetSumPointRankResponse> getSumPointRank(Long userId) {
 
         String rankKey = "sum-point:rank";
-        User my = userUtil.getUserById(userId);
+        User my = findUtil.getUserById(userId);
         Long myRank = redisUtil.getUserRank(rankKey, "user:" + userId);
 
         List<String> userKeys = redisUtil.getTopRankersInOrder(rankKey, 0, 9);

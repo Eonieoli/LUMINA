@@ -12,13 +12,8 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    /**
-     * 특정 사용자가 올린 게시물 개수를 조회합니다.
-     *
-     * @param userId 게시물 사용자 ID
-     * @return 팔로워 수
-     */
     int countByUserId(Long userId);
+
 
     @EntityGraph(attributePaths = {"user", "category"})
     Page<Post> findByUserId(Long userId, Pageable pageable);
@@ -31,6 +26,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @EntityGraph(attributePaths = {"user", "category"})
     Page<Post> findByCategoryIdIn(List<Long> categoryIds, Pageable pageable);
+
 
     @EntityGraph(attributePaths = {"user", "category"})
     @Query("SELECT ph.post FROM PostHashtag ph JOIN ph.hashtag h WHERE h.hashtagName LIKE %:keyword%")

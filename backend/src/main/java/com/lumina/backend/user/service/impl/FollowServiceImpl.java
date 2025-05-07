@@ -2,13 +2,12 @@ package com.lumina.backend.user.service.impl;
 
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.utill.PagingResponseUtil;
-import com.lumina.backend.common.utill.UserUtil;
+import com.lumina.backend.common.utill.FindUtil;
 import com.lumina.backend.common.utill.ValidationUtil;
 import com.lumina.backend.user.model.entity.Follow;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.model.response.GetFollowsResponse;
 import com.lumina.backend.user.repository.FollowRepository;
-import com.lumina.backend.user.repository.UserRepository;
 import com.lumina.backend.user.service.FollowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,10 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,7 +32,7 @@ public class FollowServiceImpl implements FollowService {
 
     private final FollowRepository followRepository;
 
-    private final UserUtil userUtil;
+    private final FindUtil findUtil;
 
 
     /**
@@ -50,12 +47,12 @@ public class FollowServiceImpl implements FollowService {
     public Boolean toggleFollow(
             Long followerId, Long followingId) {
 
-        ValidationUtil.validateUserId(followerId);
-        ValidationUtil.validateUserId(followingId);
+        ValidationUtil.validateId(followerId, "사용자");
+        ValidationUtil.validateId(followingId, "사용자");
         ValidationUtil.validateFollow(followerId, followingId);
 
-        User follower = userUtil.getUserById(followerId);
-        User following = userUtil.getUserById(followingId);
+        User follower = findUtil.getUserById(followerId);
+        User following = findUtil.getUserById(followingId);
 
         return followRepository.findByFollowerIdAndFollowingId(followerId, followingId)
                 .map(existingFollow -> {
@@ -109,7 +106,7 @@ public class FollowServiceImpl implements FollowService {
     public void deleteMyFollower(
             Long myId, Long userId) {
 
-        ValidationUtil.validateUserId(userId);
+        ValidationUtil.validateId(userId, "사용자");
 
         Follow follow = followRepository.findByFollowerIdAndFollowingId(userId, myId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "팔로워 관계를 찾을 수 없음"));

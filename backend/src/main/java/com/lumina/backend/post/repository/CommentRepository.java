@@ -13,15 +13,15 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     int countByPostIdAndParentCommentIdIsNull(Long postId);
 
+    int countByParentCommentId(Long commentId);
+
 
     @EntityGraph(attributePaths = {"user", "parentComment"})
     Page<Comment> findByPostIdAndParentCommentIsNull(Long postId, Pageable pageable);
 
-    int countByParentCommentId(Long commentId);
+    @EntityGraph(attributePaths = {"post"})
+    Page<Comment> findByUserId(Long userId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user"})
     List<Comment> findByPostIdAndParentCommentId(Long postId, Long parentCommentId);
-
-    @EntityGraph(attributePaths = {"post"})
-    Page<Comment> findByUserId(Long userId, Pageable pageable);
 }
