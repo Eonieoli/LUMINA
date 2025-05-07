@@ -25,4 +25,11 @@ public class ValidationUtil {
             throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상이어야 합니다.");
         }
     }
+
+    //팔로우 유효성 검사
+    public static void validateFollow(Long followerId, Long followingId) {
+        if (followerId.equals(followingId)) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "자신을 팔로우할 수 없습니다.");
+        }
+    }
 }

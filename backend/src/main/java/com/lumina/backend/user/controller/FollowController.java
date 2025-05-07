@@ -77,8 +77,7 @@ public class FollowController {
 
         Long myId = tokenUtil.findIdByToken(request);
         Long targetUserId = (userId != null) ? userId : myId;
-        boolean isMe = (userId == null || userId.equals(myId));
-        Map<String, Object> response = followService.getFollowings(myId, targetUserId, isMe, pageNum);
+        Map<String, Object> response = followService.getFollowings(myId, targetUserId, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", response));
     }

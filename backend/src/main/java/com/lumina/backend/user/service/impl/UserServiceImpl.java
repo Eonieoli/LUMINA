@@ -38,9 +38,7 @@ public class UserServiceImpl implements UserService {
     private final FollowRepository followRepository;
     private final PostRepository postRepository;
 
-    private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
-    private final TokenUtil tokenUtil;
     private final UserUtil userUtil;
 
     private final S3Service s3Service;

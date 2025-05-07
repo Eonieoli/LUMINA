@@ -19,7 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BoardController {
 
-    private final OAuthService oAuthService;
     private final UserService userService;
 
     private final TokenUtil tokenUtil;
@@ -34,5 +33,4 @@ public class BoardController {
 
         return ResponseEntity.ok(BaseResponse.success("누적 기부금 수치 랭킹 조회 성공", response));
     }
-
 }
