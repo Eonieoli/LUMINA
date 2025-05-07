@@ -139,7 +139,7 @@ export class LunaClientInterface {
     3. 격려 메시지와 함께 리워드 안내 (A유형은 B유형보다 더 높은 리워드, B유형은 작은 리워드)`;
 
     // ElizaOS 메인 서버는 3001 포트에서 실행 중
-    const elizaServerPort = parseInt(process.env.ELIZA_SERVER_PORT || "3001");
+    const elizaServerPort = parseInt(process.env.ELIZA_SERVER_PORT || "3000");
 
     elizaLogger.info("게시글 내용:", postContent);
     elizaLogger.info("사용자 ID:", userId);
@@ -186,7 +186,7 @@ export class LunaClientInterface {
     5. 댓글 내용을 사람처럼 부르지 마세요.`;
 
     // Eliza 에이전트에 메시지 전달
-    const serverPort = parseInt(process.env.ELIZA_SERVER_PORT || "3001");
+    const serverPort = parseInt(process.env.ELIZA_SERVER_PORT || "3000");
     const response = await fetch(
       `http://localhost:${serverPort}/${this.runtime.character.name}/message`,
       {

@@ -11,6 +11,6 @@ services:
     env_file:
       - .env
     ports:
-      - "3001:3001" # ElizaOS 메인 서버
+      - "3000:3000" # ElizaOS 메인 서버
       - "4000:4000" # Luna API 서버 (4000 포트 매핑)
     restart: always
