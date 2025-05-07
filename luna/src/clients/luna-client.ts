@@ -147,9 +147,9 @@ export class LunaClientInterface {
       "요청 URL:",
       `http://localhost:${elizaServerPort}/${this.runtime.character.name}/message`
     );
+    // elizaLogger.info("요청 PROMPT:", promptText);
 
     const response = await fetch(
-      `http://localhost:${elizaServerPort}/${this.runtime.character.name}/message`,
       `http://localhost:${elizaServerPort}/${this.runtime.character.name}/message`,
       {
         method: "POST",
@@ -188,7 +188,7 @@ export class LunaClientInterface {
     // Eliza 에이전트에 메시지 전달
     const serverPort = parseInt(process.env.ELIZA_SERVER_PORT || "3001");
     const response = await fetch(
-      `http://localhost:${elizaServerPort}/${this.runtime.character.name}/message`,
+      `http://localhost:${serverPort}/${this.runtime.character.name}/message`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
