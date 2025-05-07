@@ -2,6 +2,7 @@ import { RankingInfo } from "@/apis/ranking";
 import { useEffect, useState } from "react";
 import Logo from "@/assets/images/header/logo.svg"
 import { DefaultProfile, SmileLuna, PokerLuna } from '@/assets/images';
+import { useNavigate } from "react-router-dom";
 
 interface rankingList {
   userId: number
@@ -14,6 +15,7 @@ interface rankingList {
 export default function RankingPage() {
 
   const [rankings, setRankings] = useState<rankingList[]>([])
+  const navigate = useNavigate()
 
   // const myRanking = rankings[0]
   const topTen = rankings.slice(1)
@@ -30,6 +32,11 @@ export default function RankingPage() {
     fetchRankings()
   },[])
 
+  // 프로필 페이지로 이동하기
+  const goToUserProfile = (userId:number) => {
+    navigate(`/mypage/${userId}`)
+  }
+
 
   return (
   <div className="p-6">
@@ -39,7 +46,7 @@ export default function RankingPage() {
     {/* top 3 */}
     <div className="flex justify-between items-end gap-2 mb-5 ">
 
-      <div className="flex flex-col justify-center items-center">
+      <div className="flex flex-col justify-center items-center" onClick={() => {goToUserProfile(rankings[2].userId)}}>
         <img 
           src={rankings[2]?.profileImage ?? DefaultProfile} 
           alt="top2 프로필이미지" 
@@ -49,7 +56,7 @@ export default function RankingPage() {
         <p className="text-gray-500">{rankings[2]?.sumPoint}</p>
       </div>
 
-      <div className="flex flex-col justify-center items-center">
+      <div className="flex flex-col justify-center items-center" onClick={() => {goToUserProfile(rankings[1].userId)}}>
         <img 
           src={rankings[1]?.profileImage ?? DefaultProfile} 
           alt="top1 프로필이미지" 
@@ -59,7 +66,7 @@ export default function RankingPage() {
         <p className="text-gray-500">{rankings[1]?.sumPoint}</p>
       </div>
 
-      <div className="flex flex-col justify-center items-center">
+      <div className="flex flex-col justify-center items-center" onClick={() => {goToUserProfile(rankings[3].userId)}}>
         <img 
           src={rankings[3]?.profileImage ?? DefaultProfile} 
           alt="top3 프로필이미지" 
@@ -113,6 +120,7 @@ export default function RankingPage() {
           <div
             key={`${user.userId}`}
             className="flex items-center justify-between border-2 border-[#9C97FA] rounded-2xl px-4 py-2"
+            onClick={()=> goToUserProfile(user.userId)}
           >
             {/* 왼쪽: 순위, 이미지, 닉네임 */}
             <div className="flex items-center gap-3">

@@ -51,6 +51,20 @@ export const getPosts = async (pageNum: number) => {
     }
 };
 
+// 특정 유저 게시물 전체 조회
+export const getUserPosts = async (userId: number, pageNum: number) => {
+    try {
+        const response = await apiClient.get('/post', {
+            params: {userId, pageNum},
+        })
+        return response.data.data
+    }
+    catch (error) {
+        console.log("특정 유저 게시물 조회 실패!", error)
+        throw error
+    }
+}
+
 // 게시물 댓글 조회
 // 게시물 피드에서 댓글 클릭 시
 export const getComments = async (pageNum: number, postId: number) => {

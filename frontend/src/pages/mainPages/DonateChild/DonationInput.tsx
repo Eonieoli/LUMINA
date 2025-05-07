@@ -4,7 +4,7 @@ import DonationLayout from "./DonationLayout"
 import { useNavigate, useParams } from "react-router-dom"
 import { getDonationDetail } from "@/apis/donation"
 import ConfirmDonationModal from "@/components/donationSearch/ConfirmDonationModal"
-import { donate, getPointInfo } from "@/apis/donation"
+import { postDonatePoint, getPointInfo } from "@/apis/donation"
 
 export default function DonationInputPage() {
 
@@ -80,9 +80,9 @@ export default function DonationInputPage() {
 
     // api 연결되면 순서 바꾸기
     try {
+      await postDonatePoint(Number(donationId), Number(point))
       setIsModalOpen(false)
       navigate(`/donate/thanks`, {state: {donationId}},)
-      await donate(Number(donationId), Number(point))
     }
     catch(error){}
   }
