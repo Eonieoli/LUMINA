@@ -13,6 +13,5 @@ public class GetUserResponse {
     private String message;
     private int point;
     private int sumPoint;
-    private int grade;
     private int positiveness;
 }

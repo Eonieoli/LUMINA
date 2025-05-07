@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
 
         return new GetMyProfileResponse(
                 user.getId(), user.getNickname(), user.getProfileImage(),
-                user.getMessage(), user.getPositiveness(), user.getGrade(),
+                user.getMessage(), user.getPositiveness(),
                 sumPointRank, postCnt, followerCnt, followingCnt
         );
     }
@@ -103,7 +103,7 @@ public class UserServiceImpl implements UserService {
 
         return new GetUserProfileResponse(
                 user.getId(), user.getNickname(), user.getProfileImage(),
-                user.getMessage(), user.getPositiveness(), user.getGrade(),
+                user.getMessage(), user.getPositiveness(),
                 sumPointRank, postCnt, followerCnt, followingCnt, isFollowing
         );
     }

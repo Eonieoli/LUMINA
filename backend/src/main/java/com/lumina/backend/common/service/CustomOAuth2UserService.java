@@ -75,7 +75,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     0,
                     0,
                     0,
-                    0,
                     "ROLE_USER",
                     true
             );

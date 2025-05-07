@@ -87,7 +87,7 @@ public class FollowServiceImpl implements FollowService {
      */
     @Override
     public Map<String, Object> getFollowers(
-            Long myId, Long targetUserId, boolean isMe, int pageNum) {
+            Long myId, Long targetUserId, int pageNum) {
 
         if (pageNum < 1) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
