@@ -2,7 +2,6 @@ package com.lumina.backend.common.utill;
 
 import com.lumina.backend.common.jwt.JWTUtil;
 import com.lumina.backend.user.repository.UserRepository;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -25,16 +24,7 @@ public class TokenUtil {
     public Long findIdByToken(HttpServletRequest request) {
 
         // 쿠키에서 AccessToken 추출
-        String access = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("access".equals(cookie.getName())) {
-                    access = cookie.getValue();
-                    break; // AccessToken을 찾았으므로 루프 종료
-                }
-            }
-        }
+        String access = CookieUtil.getCookieValue(request, "access");
 
         //개발용
         if (access == null) {
@@ -61,16 +51,7 @@ public class TokenUtil {
     public String findRoleByToken(HttpServletRequest request) {
 
         // 쿠키에서 AccessToken 추출
-        String access = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("access".equals(cookie.getName())) {
-                    access = cookie.getValue();
-                    break; // AccessToken을 찾았으므로 루프 종료
-                }
-            }
-        }
+        String access = CookieUtil.getCookieValue(request, "access");
 
         //개발용
         if (access == null) {

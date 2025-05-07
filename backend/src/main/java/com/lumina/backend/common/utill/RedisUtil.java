@@ -1,6 +1,7 @@
 package com.lumina.backend.common.utill;
 
 import com.lumina.backend.user.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -173,13 +174,21 @@ public class RedisUtil {
      * @param userAgent HTTP User-Agent 헤더 값
      * @return "pc" 또는 "mobile"
      */
-    public String getDeviceType(
-            String userAgent) {
+    public String getDeviceType(String userAgent) {
 
         if (userAgent.contains("mobile") || userAgent.contains("android") || userAgent.contains("iphone")) {
             return "mobile";
         }
 
         return "pc";
+    }
+
+
+    public String getRefreshKey(HttpServletRequest request, Long userId) {
+
+        String userAgent = request.getHeader("User-Agent").toLowerCase();
+        String deviceType = getDeviceType(userAgent);
+
+        return "refresh:" + userId + ":" + deviceType;
     }
 }

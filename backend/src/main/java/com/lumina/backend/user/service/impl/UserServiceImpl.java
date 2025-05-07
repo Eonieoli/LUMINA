@@ -3,6 +3,7 @@ package com.lumina.backend.user.service.impl;
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.jwt.JWTUtil;
 import com.lumina.backend.common.service.S3Service;
+import com.lumina.backend.common.service.TokenService;
 import com.lumina.backend.common.utill.*;
 import com.lumina.backend.post.repository.PostRepository;
 import com.lumina.backend.user.model.entity.User;
@@ -37,12 +38,13 @@ public class UserServiceImpl implements UserService {
     private final FollowRepository followRepository;
     private final PostRepository postRepository;
 
-    private final S3Service s3Service;
-
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
     private final TokenUtil tokenUtil;
     private final UserUtil userUtil;
+
+    private final S3Service s3Service;
+    private final TokenService tokenService;
 
     @Value("${JWT_ACCESS_EXP}")
     private String jwtAccessExp;
@@ -128,7 +130,8 @@ public class UserServiceImpl implements UserService {
         String profileImageUrl = handleProfileImageUpdate(userId, request.getProfileImageFile());
 
         if (!user.getNickname().equals(request.getNickname())) {
-            reissueTokens(userId, request.getNickname(), httpRequest, response);
+            String userKey = redisUtil.getRefreshKey(httpRequest, userId);
+            tokenService.reissueTokens(userKey, request.getNickname(), httpRequest, response);
         }
 
         user.updateProfile(profileImageUrl, request.getNickname(), request.getMessage());
@@ -183,9 +186,8 @@ public class UserServiceImpl implements UserService {
     public List<GetSumPointRankResponse> getSumPointRank(Long userId) {
 
         String rankKey = "sum-point:rank";
-        String userKey = "user:" + userId;
         User my = userUtil.getUserById(userId);
-        Long myRank = redisUtil.getUserRank(rankKey, userKey);
+        Long myRank = redisUtil.getUserRank(rankKey, "user:" + userId);
 
         List<String> userKeys = redisUtil.getTopRankersInOrder(rankKey, 0, 9);
         List<Long> userIds = userKeys.stream()
@@ -232,24 +234,6 @@ public class UserServiceImpl implements UserService {
             return s3Service.uploadImageFile(newFile, "profile/");
         }
         return existingImage;
-    }
-
-    private void reissueTokens(
-            Long userId, String newNickname,
-            HttpServletRequest request, HttpServletResponse response) {
-
-        String userAgent = request.getHeader("User-Agent").toLowerCase();
-        String deviceType = redisUtil.getDeviceType(userAgent);
-        String userKey = "refresh:" + userId + ":" + deviceType;
-        String role = tokenUtil.findRoleByToken(request);
-
-        String newAccess = jwtUtil.createJwt("access", newNickname, role, Long.parseLong(jwtAccessExp));
-        String newRefresh = jwtUtil.createJwt("refresh", newNickname, role, Long.parseLong(jwtRefreshExp));
-
-        redisUtil.setex(userKey, newRefresh, Long.parseLong(jwtRedisExp));
-
-        response.addCookie(CookieUtil.createCookie("access", newAccess));
-        response.addCookie(CookieUtil.createCookie("refresh", newRefresh));
     }
 
     private GetSumPointRankResponse toRankResponse(User user, int rank) {
