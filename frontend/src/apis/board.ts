@@ -51,6 +51,20 @@ export const getPosts = async (pageNum: number) => {
     }
 };
 
+// 특정 유저 게시물 전체 조회
+export const getUserPosts = async (userId: number, pageNum: number) => {
+    try {
+        const response = await apiClient.get('/post', {
+            params: {userId, pageNum},
+        })
+        return response.data.data
+    }
+    catch (error) {
+        console.log("특정 유저 게시물 조회 실패!", error)
+        throw error
+    }
+}
+
 // 게시물 댓글 조회
 // 게시물 피드에서 댓글 클릭 시
 export const getComments = async (pageNum: number, postId: number) => {
@@ -155,3 +169,52 @@ export const commentLike = async (postId: number, commentId: number) => {
         throw error;
     }
 };
+
+// 카테고리 검색
+export const getCategoryExplore = async (pageNum: number, ) => {
+    try {
+        const response = await apiClient.get('/post', {
+            params: {
+                pageNum
+            }
+        })
+        return response.data
+    } catch (error) {
+        console.error("카테고리 검색 API 요청 에러: ", error);
+        throw error
+    }
+}
+
+// 유저명으로 유저 검색
+export const getUser = async (keyword: string) => {
+    try {
+        const response = await apiClient.get('/user/search', {
+            params: {
+                keyword,
+                pageNum: 1
+            }
+        })
+
+        return response.data
+    } catch (error) {
+        console.error('유저 검색 API 요청 에러: ', error);
+        throw error
+    }
+}
+
+// 해시태그로 게시물 조회
+export const getHashtagPosts = async (keyword: string, pageNum: number) => {
+    try {
+        const response = await apiClient.get('/post/search', {
+            params: {
+                keyword,
+                pageNum
+            }
+        })
+
+        return response.data
+    } catch (error) {
+        console.error('해시태그 게시물 조회 API 요청 에러: ', error);
+        throw error
+    }
+}

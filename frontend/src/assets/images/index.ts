@@ -12,7 +12,8 @@ import SendIcon from './board/send.svg';
 // 헤더 관련 에셋
 import BellIcon from './header/bell.svg';
 import PlusIcon from './header/plus.svg';
-import LuminaLogo from './header/lumina_logo.svg';
+import LuminaLogo from './header/logo.svg';
+import Hamburger from './header/hamburger.svg'
 
 // 기부 페이지 
 import CoinIcon from './donate/coin.png'
@@ -23,6 +24,8 @@ import BackIcon from './donate/Ic_back.svg'
 // 루나 이미지
 import SmileLuna from './donate/smileLuna.png';
 import PokerLuna from './donate/Luna.png';
+import WinkLuna from './donate/wink_Luna.png'
+import ComputerHandsupLuna from './donate/computer_handsup_Luna.png'
 
 // 네브바 아이콘
 import DonationIcon from './navbar/Ic_donate.png';
@@ -59,4 +62,7 @@ export {
     MainText,
     MainBackground,
     MainBackgroundShort,
+    WinkLuna,
+    ComputerHandsupLuna,
+    Hamburger
 }

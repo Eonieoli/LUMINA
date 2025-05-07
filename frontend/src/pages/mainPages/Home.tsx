@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { getPosts } from '@/apis/board';
 import { Board, Header } from '@/components';
 
-interface Post {
+export interface Post {
     postId: number;
     userId: number;
     nickname: string;
@@ -82,6 +82,7 @@ export default function HomePage() {
                     >
                         <Board
                             postId={post.postId}
+                            userId={post.userId}
                             nickname={post.nickname}
                             profileImage={post.profileImage}
                             postImage={post.postImage}

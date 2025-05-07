@@ -9,7 +9,7 @@ export default function PointInfo() {
         const fetchPointInfo = async () => {
             try {
                 const response = await getPointInfo();
-                setPoint(response);
+                setPoint(response.point);
             } catch (error) {
                 console.error(error);
             }
@@ -19,8 +19,8 @@ export default function PointInfo() {
 
     return (
         <div className="flex h-6 items-center justify-end">
-            <img src={CoinIcon} alt="coinImg" className="mr-2 w-5" />
-            <p className="text-[15px] font-bold">{point}</p>
+            <p className="text-[15px] font-bold mr-2">{point}</p>
+            <img src={CoinIcon} alt="coinImg" className="w-5" />
         </div>
     );
 }

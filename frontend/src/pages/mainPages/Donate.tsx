@@ -4,19 +4,14 @@ import FavoriteDonationList from '@/components/donate/FavoriteDonationList';
 import RecommendDonationList from '@/components/donate/RecommendDonationList';
 import PointInfo from '@/components/donate/PointInfo';
 import SearchModal from '@/components/donationSearch/SearchModal';
+import BackIcon from '@/assets/images/donate/Ic_back.svg'
+import { useNavigate } from 'react-router-dom';
 
 export default function DonatePage() {
-    // 추천 기부페이지 임시 데이터
-    const mockData = [
-        { donationId: 101, donationName: '기부처 A' },
-        { donationId: 102, donationName: '기부처 B' },
-        { donationId: 103, donationName: '기부처 C' },
-        { donationId: 104, donationName: '기부처 D' },
-        { donationId: 105, donationName: '기부처 F' },
-    ];
 
     // 검색창 버튼 클릭시 보일 검색 모달창 상태 관리
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const navigate = useNavigate()
 
     return (
         <div className="relative flex w-full flex-col px-6 py-6">
@@ -41,13 +36,24 @@ export default function DonatePage() {
 
             {/* 추천 기부처 */}
             <div className="mb-6 w-full">
-                <RecommendDonationList donations={mockData} />
+                <RecommendDonationList />
             </div>
 
             {/* 관심 기부처 */}
             <div className="mb-6 w-full">
                 <FavoriteDonationList />
             </div>
+
+            {/* 전체 기부처 */}
+            <div className='mb-6 w-full text-gray-600'>
+                <div 
+                    className='flex items-center justify-center cursor-pointer'
+                    onClick={() => navigate(`/donate/research/donations`)}>
+                    <span className='text-[15px]'>전체 기부처</span>
+                    <img src={BackIcon} alt="전체 기부처 조회" className='rotate-180 h-2.5 ml-2 opacity-50' />
+                </div>
+            </div>
+
         </div>
     );
 }

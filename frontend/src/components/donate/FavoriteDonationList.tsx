@@ -21,7 +21,8 @@ export default function FavoriteDonationList() {
         const fetchFavoriteDonations = async () => {
             try {
                 const response = await getFavoriteDonations();
-                setDonations(response);
+                console.log("관심 기부처 가져오기 성공!", response.user)
+                setDonations(response.user);
             } catch (error) {
                 console.log('관심 기부처 가져오기 실패!', error);
             }

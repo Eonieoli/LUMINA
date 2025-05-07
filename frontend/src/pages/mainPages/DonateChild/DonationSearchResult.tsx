@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import SearchModal from '@/components/donationSearch/SearchModal';
-import PointInfo from '@/components/donate/PointInfo';
 import DonateSearchBar from '@/components/donate/SearchBar';
 import { useParams } from 'react-router-dom';
 import { getSearchDonations } from '@/apis/donation';
 import DonationCard from '@/components/donate/DonationCard';
 import { DonationProps } from '@/components/donate/DonationCard';
 import { DownIcon } from '@/assets/images';
+import DonationLayout from './DonationLayout';
 
 export default function DonationSearchResultPage() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -65,62 +65,64 @@ export default function DonationSearchResultPage() {
     };
 
     return (
-        <div className="relative flex w-full flex-col px-6 py-6">
+
+        <DonationLayout>
+
             {/* 검색 모달창 */}
             {isSearchOpen && (
                 <SearchModal onClose={() => setIsSearchOpen(false)} />
             )}
 
-            {/* 코인 조회 */}
-            <div className='mb-6'>
-                <PointInfo />
-            </div>
+            <div className="relative flex w-full flex-col">
 
-            {/* 검색창 */}
-            <div className="mb-8 w-full" onClick={() => setIsSearchOpen(true)}>
-                <DonateSearchBar
-                    keyword=""
-                    setKeyword={() => {}}
-                    onSearchClick={() => {}}
-                />
-            </div>
-
-            {/* 만약 빈 검색창이라면 */}
-            {decodedKeyword.trim() === '' && (
-                <div className="mb-8 text-center text-sm text-gray-500">
-                    검색어를 입력해주세요!
+                {/* 검색창 */}
+                <div className="mb-8 w-full" onClick={() => setIsSearchOpen(true)}>
+                    <DonateSearchBar
+                        keyword=""
+                        setKeyword={() => {}}
+                        onSearchClick={() => {}}
+                    />
                 </div>
-            )}
 
-            {/* 결과 */}
-            <div className="grid grid-cols-2 gap-4 pb-8">
-                {donations.length > 0 ? (
-                    donations.map((donation) => (
-                        <DonationCard
-                            key={donation.donationId}
-                            donationId={donation.donationId}
-                            donationName={donation.donationName}
-                        />
-                    ))
-                ) : (
-                    <p className="col-span-2 flex items-center justify-center text-sm text-gray-500">
-                        검색결과가 없습니다.
-                    </p>
+                {/* 만약 빈 검색창 or 전체조회라면 */}
+                {decodedKeyword.trim() === '' && (
+                    <div className="mb-8 text-center text-sm text-gray-500">
+                        기부처를 검색해보세요!
+                    </div>
                 )}
-            </div>
 
-            {/* 더보기 버튼 */}
-            {pageNum < totalPages && (
-                <div className="mt-4 flex items-center justify-center">
-                    <button
-                        onClick={handleLoadMore}
-                        className="flex flex-col items-center justify-center"
-                    >
-                        <p className="text-gray-500">더보기</p>
-                        <img src={DownIcon} alt="더보기" className="h-6 w-6" />
-                    </button>
-                </div>
-            )}
-        </div>
+                {/* 결과 */}
+                    <div className="grid grid-cols-2 gap-4 pb-8">
+                        {donations.length > 0 ? (
+                            donations.map((donation) => (
+                                <DonationCard
+                                    key={donation.donationId}
+                                    donationId={donation.donationId}
+                                    donationName={donation.donationName}
+                                />
+                            ))
+                        ) : (
+                            <p className="col-span-2 flex items-center justify-center text-sm text-gray-500">
+                                존재하지 않는 기부처입니다.
+                            </p>
+                        )}
+                    </div>
+
+                {/* 더보기 버튼 */}
+                {pageNum < totalPages && (
+                    <div className="mt-4 flex items-center justify-center">
+                        <button
+                            onClick={handleLoadMore}
+                            className="flex flex-col items-center justify-center"
+                        >
+                            <p className="text-gray-500">더보기</p>
+                            <img src={DownIcon} alt="더보기" className="h-6 w-6" />
+                        </button>
+                    </div>
+                )}
+
+            </div> 
+        </DonationLayout>
+
     );
 }

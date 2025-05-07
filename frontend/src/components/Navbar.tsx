@@ -45,7 +45,7 @@ export default function Navbar() {
                 />
             </Link>
 
-            <Link to="/mypage">
+            <Link to={`/mypage/${authData.data.userId}`}>
                 <img
                     src={
                         authData.data.profileImage
