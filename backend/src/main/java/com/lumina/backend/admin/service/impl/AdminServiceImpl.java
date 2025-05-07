@@ -63,7 +63,6 @@ public class AdminServiceImpl implements AdminService {
                             user.getMessage(),
                             user.getPoint(),
                             user.getSumPoint(),
-                            user.getGrade(),
                             user.getPositiveness()
                     );
                 })
@@ -147,7 +146,6 @@ public class AdminServiceImpl implements AdminService {
                         user.getMessage(),
                         user.getPoint(),
                         user.getSumPoint(),
-                        user.getGrade(),
                         user.getPositiveness()
                 ))
                 .collect(Collectors.toList());

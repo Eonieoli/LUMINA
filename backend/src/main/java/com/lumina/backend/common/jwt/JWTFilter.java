@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.common.service.CustomHttpServletRequestWrapper;
+import com.lumina.backend.common.utill.CookieUtil;
 import com.lumina.backend.user.model.dto.CustomOAuth2User;
 import com.lumina.backend.user.model.dto.UserDto;
 import com.lumina.backend.user.service.OAuthService;
@@ -68,20 +69,14 @@ public class JWTFilter extends OncePerRequestFilter {
      * @throws IOException 입출력 예외
      */
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request, HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
+
         HttpServletRequest requestToUse = request;
         try {
             // 쿠키에서 액세스 토큰 추출
-            String accessToken = null;
-            Cookie[] cookies = request.getCookies();
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals("access")) {
-                        accessToken = cookie.getValue();
-                        break;
-                    }
-                }
-            }
+            String accessToken = CookieUtil.getCookieValue(request, "access");
 
             // 개발용
             if (accessToken == null) {

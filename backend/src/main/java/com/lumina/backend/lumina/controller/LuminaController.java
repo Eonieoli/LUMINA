@@ -1,6 +1,7 @@
 package com.lumina.backend.lumina.controller;
 
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.lumina.service.LuminaService;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.service.PostService;
@@ -25,13 +26,15 @@ public class LuminaController {
     private final LuminaService luminaService;
     private final PostService postService;
 
+    private final TokenUtil tokenUtil;
+
 
     @PostMapping("/post/{postId}")
     public ResponseEntity<BaseResponse<Void>> getPostLumina(
             HttpServletRequest request,
             @PathVariable Long postId) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         Long luminaId = userRepository.findIdByNickname("Luna");
         UploadCommentRequest uploadCommentRequest = luminaService.getPostLumina(userId, postId);
         postService.uploadComment(luminaId, postId, uploadCommentRequest);
@@ -46,7 +49,7 @@ public class LuminaController {
             @PathVariable Long postId,
             @PathVariable Long commentId) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         Long luminaId = userRepository.findIdByNickname("Luna");
         UploadCommentRequest uploadCommentRequest = luminaService.getCommentLumina(userId, commentId);
         postService.uploadComment(luminaId, postId, uploadCommentRequest);

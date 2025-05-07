@@ -1,6 +1,7 @@
 package com.lumina.backend.user.controller;
 
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.user.model.request.ToggleFollowRequest;
 import com.lumina.backend.user.service.FollowService;
 import com.lumina.backend.user.service.OAuthService;
@@ -16,8 +17,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FollowController {
 
-    private final OAuthService oAuthService;
     private final FollowService followService;
+
+    private final TokenUtil tokenUtil;
 
 
     /**
@@ -32,7 +34,7 @@ public class FollowController {
             @RequestBody ToggleFollowRequest toggleFollowRequest,
             HttpServletRequest request) {
 
-        Long followerId = oAuthService.findIdByToken(request);
+        Long followerId = tokenUtil.findIdByToken(request);
         Boolean follow = followService.toggleFollow(followerId, toggleFollowRequest.getFollowingId());
 
         BaseResponse<Void> baseResponse = follow ?
@@ -51,39 +53,33 @@ public class FollowController {
      */
     @GetMapping("/follower")
     public ResponseEntity<BaseResponse<Map<String, Object>>> getFollowers(
-            HttpServletRequest request,
-            @RequestParam(required = false) Long userId,
+            HttpServletRequest request, @RequestParam(required = false) Long userId,
             @RequestParam int pageNum) {
 
-        Long myId = oAuthService.findIdByToken(request);
+        Long myId = tokenUtil.findIdByToken(request);
         Long targetUserId = (userId != null) ? userId : myId;
-        boolean isMe = (userId == null || userId.equals(myId));
+        Map<String, Object> response = followService.getFollowers(myId, targetUserId, pageNum);
 
-        Map<String, Object> reponse = followService.getFollowers(myId, targetUserId, isMe, pageNum);
-
-        return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", reponse));
+        return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", response));
     }
 
 
     /**
-     * 현재 사용자의 팔로워 목록을 조회하는 엔드포인트
+     * 현재 사용자의 팔로잉 목록을 조회하는 엔드포인트
      *
      * @param request HTTP 요청 객체
-     * @return ResponseEntity<BaseResponse<Map<String, Object>>> 팔로워 목록 정보
+     * @return ResponseEntity<BaseResponse<Map<String, Object>>> 팔로잉 목록 정보
      */
     @GetMapping("/following")
     public ResponseEntity<BaseResponse<Map<String, Object>>> getFollowings(
-            HttpServletRequest request,
-            @RequestParam(required = false) Long userId,
+            HttpServletRequest request, @RequestParam(required = false) Long userId,
             @RequestParam int pageNum) {
 
-        Long myId = oAuthService.findIdByToken(request);
+        Long myId = tokenUtil.findIdByToken(request);
         Long targetUserId = (userId != null) ? userId : myId;
-        boolean isMe = (userId == null || userId.equals(myId));
+        Map<String, Object> response = followService.getFollowings(myId, targetUserId, pageNum);
 
-        Map<String, Object> reponse = followService.getFollowings(myId, targetUserId, isMe, pageNum);
-
-        return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", reponse));
+        return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", response));
     }
 
 
@@ -96,10 +92,9 @@ public class FollowController {
      */
     @DeleteMapping("/follower/{userId}")
     public ResponseEntity<BaseResponse<Void>> deleteMyFollower(
-            HttpServletRequest request,
-            @PathVariable Long userId) {
+            HttpServletRequest request, @PathVariable Long userId) {
 
-        Long myId = oAuthService.findIdByToken(request);
+        Long myId = tokenUtil.findIdByToken(request);
         followService.deleteMyFollower(myId, userId);
 
         return ResponseEntity.ok(BaseResponse.withMessage("팔로워 삭제 완료"));

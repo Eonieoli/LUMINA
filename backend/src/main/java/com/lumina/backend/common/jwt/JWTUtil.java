@@ -20,8 +20,7 @@ public class JWTUtil {
      *
      * @param secret JWT 서명에 사용할 시크릿 키
      */
-    public JWTUtil(
-            @Value("${jwt.secret}")String secret) {
+    public JWTUtil(@Value("${jwt.secret}")String secret) {
 
         secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
     }

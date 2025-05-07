@@ -12,7 +12,6 @@ public class GetUserProfileResponse {
     private String profileImage;
     private String message;
     private int positiveness;
-    private int grade;
     private int rank;
     private int postCnt;
     private int followerCnt;

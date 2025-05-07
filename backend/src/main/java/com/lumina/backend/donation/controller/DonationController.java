@@ -2,6 +2,7 @@ package com.lumina.backend.donation.controller;
 
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.donation.model.response.GetDetailDonationResponse;
 import com.lumina.backend.donation.model.response.GetDonationResponse;
 import com.lumina.backend.donation.model.response.GetSubscribeDonationResponse;
@@ -31,12 +32,14 @@ public class DonationController {
     private final DonationService donationService;
     private final LuminaService luminaService;
 
+    private final TokenUtil tokenUtil;
+
 
     @GetMapping("")
     public ResponseEntity<BaseResponse<List<GetDonationResponse>>> getDonation(
             HttpServletRequest request) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         List<GetDonationResponse> response = donationService.getDonation(userId);
 
         return ResponseEntity.ok(BaseResponse.success("전체 기부처 조회 성공", response));
@@ -47,7 +50,7 @@ public class DonationController {
             HttpServletRequest request,
             @RequestBody DoDonationRequest doDonationRequest) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         donationService.doDonation(userId, doDonationRequest);
 
         return ResponseEntity.ok(BaseResponse.withMessage("기부 완료"));
@@ -65,7 +68,7 @@ public class DonationController {
     public ResponseEntity<BaseResponse<Void>> toggleDonationSubscribe(
             HttpServletRequest request, @PathVariable Long donationId) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         Boolean subscribe = donationService.toggleDonationSubscribe(userId, donationId);
 
         // 결과에 따른 응답 메시지 생성
@@ -82,7 +85,7 @@ public class DonationController {
     public ResponseEntity<BaseResponse<Map<String, Object>>> getSubscribeDonation(
             HttpServletRequest request) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
         if (user.getLikeCnt() >= 20) {
@@ -116,7 +119,7 @@ public class DonationController {
             HttpServletRequest request,
             @PathVariable Long donationId) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         GetDetailDonationResponse response = donationService.getDetailDonation(userId, donationId);
 
         return ResponseEntity.ok(BaseResponse.success("전체 기부처 조회 성공", response));
