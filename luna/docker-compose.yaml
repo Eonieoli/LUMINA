@@ -1,5 +1,6 @@
 services:
   eliza:
+    container_name: eliza
     command: ["pnpm", "start", "--character=./characters/luna.character.json"]
     build:
       context: .
