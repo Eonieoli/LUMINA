@@ -184,6 +184,7 @@ export default function MyPage() {
                     <div key={post.postId} ref={isLast ? lastPostRef : undefined}>
                         <Board
                         postId={post.postId}
+                        userId={post.userId}
                         nickname={post.nickname}
                         profileImage={post.profileImage}
                         postImage={post.postImage}
