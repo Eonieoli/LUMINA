@@ -4,6 +4,7 @@ import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.donation.model.entity.Donation;
 import com.lumina.backend.donation.model.entity.UserDonation;
+import com.lumina.backend.donation.model.response.GetDetailDonationResponse;
 import com.lumina.backend.donation.model.response.GetDonationResponse;
 import com.lumina.backend.donation.model.response.GetSubscribeDonationResponse;
 import com.lumina.backend.donation.model.response.SearchDonationResponse;
@@ -63,7 +64,7 @@ public class DonationServiceImpl implements DonationService {
     public void doDonation(
             Long userId, DoDonationRequest request) {
 
-        if (request.getDonationName() == null || request.getDonationName().trim().isEmpty()) {
+        if (request.getDonationId() == null) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "기부처는 필수 입력값입니다.");
         }
 
@@ -74,12 +75,26 @@ public class DonationServiceImpl implements DonationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
 
-        Donation donation = donationRepository.findByDonationName(request.getDonationName())
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "기부처를 찾을 수 없음: " + request.getDonationName()));
+        Donation donation = donationRepository.findById(request.getDonationId())
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "기부처를 찾을 수 없음: " + request.getDonationId()));
 
         if (user.getPoint() < request.getPoint()) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "보유 point가 부족합니다.");
         }
+
+        UserDonation existUserDonation = userDonationRepository.findByUserIdAndDonationIdAndRegistration(userId, donation.getId(), "DONATION")
+                .orElse(null);
+
+        if (existUserDonation != null) {
+            existUserDonation.updateUserDonation(request.getPoint());
+            donation.updateDonation(request.getPoint(), 0);
+        } else {
+            UserDonation userDonation = new UserDonation();
+            userDonation.registerDonation(user, donation, request.getPoint());
+            userDonationRepository.save(userDonation);
+            donation.updateDonation(request.getPoint(), 1);
+        }
+        donationRepository.save(donation);
 
         user.updatePoint(-request.getPoint());
         user.updateSumPoint(request.getPoint());
@@ -114,7 +129,7 @@ public class DonationServiceImpl implements DonationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
 
-        UserDonation existUserDonation = userDonationRepository.findByUserIdAndDonationId(userId, donationId)
+        UserDonation existUserDonation = userDonationRepository.findByUserIdAndDonationIdAndRegistration(userId, donationId, "USER")
                 .orElse(null);
 
         if (existUserDonation != null) {
@@ -130,11 +145,12 @@ public class DonationServiceImpl implements DonationService {
 
 
     @Override
-    public List<GetSubscribeDonationResponse> getSubscribeDonation(Long userId) {
+    public Map<String, Object> getSubscribeDonation(Long userId) {
 
         List<UserDonation> userDonations = userDonationRepository.findByUserIdAndRegistration(userId, "USER");
+        List<UserDonation> aiDonations = userDonationRepository.findByUserIdAndRegistration(userId, "AI");
 
-        return userDonations.stream()
+        List<GetSubscribeDonationResponse> userDonatioinList = userDonations.stream()
                 .map(userDonation -> {
                     Donation donation = userDonation.getDonation();
                     return new GetSubscribeDonationResponse(
@@ -142,6 +158,21 @@ public class DonationServiceImpl implements DonationService {
                     );
                 })
                 .collect(Collectors.toList());
+
+        List<GetSubscribeDonationResponse> aiDonatioinList = aiDonations.stream()
+                .map(aiDonation -> {
+                    Donation donation = aiDonation.getDonation();
+                    return new GetSubscribeDonationResponse(
+                            donation.getId(), donation.getDonationName()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("user", userDonatioinList);
+        result.put("ai", aiDonatioinList);
+
+        return result;
     }
 
 
@@ -175,5 +206,38 @@ public class DonationServiceImpl implements DonationService {
 
         // 3. 성공 응답 생성 및 반환
         return result;
+    }
+
+
+    @Override
+    public GetDetailDonationResponse getDetailDonation(
+            Long userId, Long donationId) {
+
+        if (donationId == null || donationId <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 기부처 ID입니다.");
+        }
+
+        Donation donation = donationRepository.findById(donationId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 기부처를 찾을 수 없습니다. 기부처 ID: " + donationId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
+
+        UserDonation existUserDonation = userDonationRepository.findByUserIdAndDonationIdAndRegistration(userId, donationId, "DONATION")
+                .orElse(null);
+
+        int myDonationCnt = 0;
+        int mySumDonation = 0;
+        if (existUserDonation != null) {
+            myDonationCnt = existUserDonation.getDonationCnt();
+            mySumDonation = existUserDonation.getDonationSum();
+        }
+
+        Boolean isSubscribe = userDonationRepository.existsByUserIdAndDonationIdAndRegistration(
+                userId, donationId, "USER");
+
+        return new GetDetailDonationResponse(
+                donationId, donation.getDonationName(), donation.getSumPoint(),
+                donation.getSumUser(), myDonationCnt, mySumDonation, isSubscribe);
     }
 }

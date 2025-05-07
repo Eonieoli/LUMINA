@@ -64,4 +64,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     String findRoleBySocialId(@Param("socialId") String socialId);
 
     Page<User> findByNicknameContaining(String keyword, Pageable pageable);
+
+    @Query("SELECT u.nickname FROM User u WHERE u.id = :userId")
+    String findNicknameByUserId(@Param("userId") Long userId);
 }

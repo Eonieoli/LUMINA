@@ -45,14 +45,17 @@ public class User extends BaseEntity {
     @Column(name = "positiveness", nullable = false)
     private Integer positiveness;
 
+    @Column(name = "like_cnt", nullable = false)
+    private Integer likeCnt;
+
     @Column(name = "role", nullable = false)
     private String role;
 
     @Column(name = "user_status", nullable = false)
     private Boolean userStatus;
 
-    public User(String socialId, String socialType, String profileImage, String message,
-            Integer point, Integer sumPoint, Integer grade, Integer positiveness, String role, Boolean userStatus) {
+    public User(String socialId, String socialType, String profileImage, String message, Integer point,
+                Integer sumPoint, Integer grade, Integer positiveness, Integer likeCnt, String role, Boolean userStatus) {
         this.socialId = socialId;
         this.socialType = socialType;
         this.profileImage = profileImage;
@@ -61,6 +64,7 @@ public class User extends BaseEntity {
         this.sumPoint = sumPoint;
         this.grade = grade;
         this.positiveness = positiveness;
+        this.likeCnt = likeCnt;
         this.role = role;
         this.userStatus = userStatus;
     }
@@ -142,5 +146,13 @@ public class User extends BaseEntity {
      */
     public void updateUserStatus(Boolean userStatus) {
         this.userStatus = userStatus;
+    }
+
+    public void updateUserLikeCnt(Integer likeCnt) {
+        this.likeCnt += likeCnt;
+    }
+
+    public void resetUserLickCnt() {
+        this.likeCnt = 0;
     }
 }

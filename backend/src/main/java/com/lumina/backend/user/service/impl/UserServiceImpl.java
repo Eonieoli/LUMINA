@@ -283,7 +283,7 @@ public class UserServiceImpl implements UserService {
                     user.getId(),
                     user.getNickname(),
                     user.getProfileImage(),
-                    user.getPositiveness(),
+                    user.getSumPoint(),
                     i + 1 // 1등부터 시작
             ));
         }

@@ -66,7 +66,8 @@ public class SecurityConfig {
                                 "http://localhost:5173",
                                 "https://k12s306.p.ssafy.io",
                                 "https://picscore.net",
-                                "http://localhost:3001"
+                                "http://localhost:4000",
+                                "http://eliza:4000"
                         ));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);

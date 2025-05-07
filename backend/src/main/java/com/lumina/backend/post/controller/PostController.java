@@ -5,6 +5,8 @@ import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.request.UploadPostRequest;
 import com.lumina.backend.post.model.response.GetChildCommentResponse;
 import com.lumina.backend.post.model.response.GetPostResponse;
+import com.lumina.backend.post.model.response.UploadCommentResponse;
+import com.lumina.backend.post.model.response.UploadPostResponse;
 import com.lumina.backend.post.service.PostService;
 import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,14 +28,14 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping("")
-    public ResponseEntity<BaseResponse<Void>> uploadPost(
+    public ResponseEntity<BaseResponse<UploadPostResponse>> uploadPost(
             HttpServletRequest request,
             @ModelAttribute UploadPostRequest uploadPostRequest) throws IOException {
 
         Long userId = oAuthService.findIdByToken(request);
-        postService.uploadPost(userId, uploadPostRequest);
+        UploadPostResponse response = postService.uploadPost(userId, uploadPostRequest);
 
-        return ResponseEntity.ok(BaseResponse.withMessage("게시물 등록 완료"));
+        return ResponseEntity.ok(BaseResponse.success("게시물 등록 완료", response));
     }
 
 
@@ -95,15 +97,15 @@ public class PostController {
 
 
     @PostMapping("/{postId}/comment")
-    public ResponseEntity<BaseResponse<Void>> uploadComment(
+    public ResponseEntity<BaseResponse<UploadCommentResponse>> uploadComment(
             HttpServletRequest request,
             @RequestBody UploadCommentRequest uploadCommentRequest,
             @PathVariable Long postId) {
 
         Long userId = oAuthService.findIdByToken(request);
-        postService.uploadComment(userId, postId, uploadCommentRequest);
+        UploadCommentResponse response = postService.uploadComment(userId, postId, uploadCommentRequest);
 
-        return ResponseEntity.ok(BaseResponse.withMessage("댓글 등록 완료"));
+        return ResponseEntity.ok(BaseResponse.success("댓글 등록 완료", response));
     }
 
 

@@ -1,6 +1,7 @@
 package com.lumina.backend.donation.service;
 
 import com.lumina.backend.donation.model.request.DoDonationRequest;
+import com.lumina.backend.donation.model.response.GetDetailDonationResponse;
 import com.lumina.backend.donation.model.response.GetDonationResponse;
 import com.lumina.backend.donation.model.response.GetSubscribeDonationResponse;
 
@@ -18,7 +19,10 @@ public interface DonationService {
      */
     Boolean toggleDonationSubscribe(Long userId, Long donationId);
 
-    List<GetSubscribeDonationResponse> getSubscribeDonation(Long userId);
+    Map<String, Object> getSubscribeDonation(Long userId);
 
     Map<String, Object> searchDonation(String keyword, int pageNum);
+
+    GetDetailDonationResponse getDetailDonation(Long userId, Long donationId);
+
 }

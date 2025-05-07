@@ -7,6 +7,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class DoDonationRequest {
 
-    private String donationName;
+    private Long donationId;
     private Integer point;
 }
