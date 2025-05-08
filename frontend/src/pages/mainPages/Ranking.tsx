@@ -23,11 +23,8 @@ export default function RankingPage() {
   // 랭킹 정보 가져오기
   useEffect (() => {
     const fetchRankings = async () => {
-      try {
-        const response = await RankingInfo()
-        setRankings(response)
-      }
-      catch (error) {}
+      const response = await RankingInfo()
+      setRankings(response)
     }
     fetchRankings()
   },[])

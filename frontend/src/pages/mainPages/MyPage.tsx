@@ -55,13 +55,10 @@ export default function MyPage() {
         if(!profileUserId) return
 
         const fetchProfile= async () =>  {
-            try {
-                const response = await getUserProfile(profileUserId)
-                setUserInfo(response.data)
-                console.log("나의 아이디", myUserId)
-                return response.data
-            }
-            catch (error) {}
+            const response = await getUserProfile(profileUserId)
+            setUserInfo(response.data)
+            console.log("나의 아이디", myUserId)
+            return response.data
         }
         fetchProfile()
     }, [userId])
@@ -115,12 +112,9 @@ export default function MyPage() {
 
     //팔로우 팔로잉 버튼을 눌렀다면
     const handlefollowToggle = async() => {
-        try{
-            await followToggle(profileUserId)
-            const response = await getUserProfile(profileUserId)
-            setUserInfo(response.data)
-        }
-        catch(error) {}
+        await followToggle(profileUserId)
+        const response = await getUserProfile(profileUserId)
+        setUserInfo(response.data)
     }
 
     // 팔로워 팔로잉 페이지 버튼을 눌렀다면 

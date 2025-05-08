@@ -37,13 +37,8 @@ export default function DonationDetailPage() {
         console.log("useParams 값:", donationId)
         return
       } 
-
-      try {
-        const response = await getDonationDetail(donationId)
-        setDonation(response)
-      }
-      catch(error) {
-      }
+      const response = await getDonationDetail(donationId)
+      setDonation(response)
     }
     fetchDetail()
   },[donationId])
@@ -51,11 +46,8 @@ export default function DonationDetailPage() {
   // 구독하기 버튼을 클릭했을 때
   const handleToggleSubscribe = async () => {
     if(!donation) return
-    try {
-      await toggleDonationSubscribe(donation.donationId)
-      setDonation(prev => prev ? {...prev, isSubscribe: !prev.isSubscribe}: null)
-    }
-    catch (error){}
+    await toggleDonationSubscribe(donation.donationId)
+    setDonation(prev => prev ? {...prev, isSubscribe: !prev.isSubscribe}: null)
   }
 
   // 기부하기 버튼을 클릭했을 때

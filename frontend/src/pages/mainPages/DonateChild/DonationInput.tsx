@@ -28,12 +28,8 @@ export default function DonationInputPage() {
   useEffect(() => {
     const fetchDonationDetail = async() => {
       if(!donationId) return
-
-      try {
-        const response = await getDonationDetail(donationId)
-        setDonationName(response.donationName)
-      }
-      catch(error){}
+      const response = await getDonationDetail(donationId)
+      setDonationName(response.donationName)
     }
     fetchDonationDetail()
   },[donationId])
@@ -43,11 +39,8 @@ export default function DonationInputPage() {
     const fetchUserPoint = async() => {
       if(!donationId) return 
 
-      try {
-        const response = await getPointInfo()
-        setUserpoint(response.point)
-      }
-      catch(error) {}
+      const response = await getPointInfo()
+      setUserpoint(response.point)
     }
     fetchUserPoint()
   },[donationId])
@@ -79,12 +72,9 @@ export default function DonationInputPage() {
     if(!donationId || !point) return 
 
     // api 연결되면 순서 바꾸기
-    try {
-      await postDonatePoint(Number(donationId), Number(point))
-      setIsModalOpen(false)
-      navigate(`/donate/thanks`, {state: {donationId}},)
-    }
-    catch(error){}
+    await postDonatePoint(Number(donationId), Number(point))
+    setIsModalOpen(false)
+    navigate(`/donate/thanks`, {state: {donationId}},)
   }
 
   return (
