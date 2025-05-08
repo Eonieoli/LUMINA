@@ -50,7 +50,7 @@ export default function RankingPage() {
         <img 
           src={rankings[2]?.profileImage ?? DefaultProfile} 
           alt="top2 프로필이미지" 
-          className="w-26 h-26 rounded-full object-cover mb-2"
+          className="w-24 rounded-full object-cover mb-2 aspect-square"
         />
         <p className="text-gray-700 text-[15px] font-semibold text-center w-[80px] truncate">{rankings[2]?.nickname}</p>
         <p className="text-gray-500">{rankings[2]?.sumPoint}</p>
@@ -60,7 +60,7 @@ export default function RankingPage() {
         <img 
           src={rankings[1]?.profileImage ?? DefaultProfile} 
           alt="top1 프로필이미지" 
-          className="w-32 h-32 md:w-full rounded-full object-cover mb-2"
+          className="w-32 aspect-square rounded-full object-cover mb-2"
         />
         <p className="text-gray-700 text-[15px] font-semibold text-center w-[100px] truncate">{rankings[1]?.nickname}</p>
         <p className="text-gray-500">{rankings[1]?.sumPoint}</p>
@@ -70,7 +70,7 @@ export default function RankingPage() {
         <img 
           src={rankings[3]?.profileImage ?? DefaultProfile} 
           alt="top3 프로필이미지" 
-          className="w-24 h-24 rounded-full object-cover mb-2"
+          className="w-22 aspect-square rounded-full object-cover mb-2"
         />
         <p className="text-gray-700 text-[15px] font-semibold text-center  w-[80px] truncate">{rankings[3]?.nickname}</p>
         <p className="text-gray-500">{rankings[3]?.sumPoint}</p>
@@ -91,7 +91,7 @@ export default function RankingPage() {
             <img 
               src={rankings[0]?.profileImage ?? DefaultProfile}
               alt="나의 프로필 이미지" 
-              className="h-15 bg-white rounded-full"/>
+              className="w-15 aspect-square bg-white rounded-full"/>
           </div>
           <p className="text-[16px]">
             {rankings[0]?.rank <= 3
