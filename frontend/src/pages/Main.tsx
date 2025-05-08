@@ -61,10 +61,10 @@ export default function Main() {
           timeout={300}
           unmountOnExit
         >
-          <div ref={getNodeRef()} className="flex justify-center">
+          <div ref={getNodeRef()} className="flex justify-center items-center h-dvh">
             <div
               id="scrollable-container"
-              className="relative h-dvh overflow-y-scroll w-full min-w-80 md:w-[468px] pb-20 md:pb-0 md:pl-20"
+              className="relative h-dvh overflow-y-scroll w-full min-w-80 md:w-[600px] md:h-[90dvh] pb-20 md:pb-0 md:ml-20 md:border border-gray-300 md:rounded-xl"
             >
               <Routes location={location}>
                 <Route index element={<HomePage />} />
