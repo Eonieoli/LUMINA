@@ -4,6 +4,7 @@ import { TelegramClientInterface } from "@elizaos/client-telegram";
 import { TwitterClientInterface } from "@elizaos/client-twitter";
 import { Character, IAgentRuntime } from "@elizaos/core";
 import { LunaClientInterface } from "./luna-client.ts";
+import { LocalLLMInterface } from "./local-llm-server.ts";
 
 export async function initializeClients(
   character: Character,
@@ -31,11 +32,22 @@ export async function initializeClients(
     clients.push(twitterClients);
   }
 
-  // Luna LLM
+  //luna
   if (runtime.character.name === "luna") {
-    console.log("Luna 에이전트용 커스텀 클라이언트 시작...");
-    const lunaClient = await LunaClientInterface.start(runtime);
-    if (lunaClient) clients.push(lunaClient);
+    console.log("Luna 에이전트 클라이언트 초기화 중");
+
+    //환경변수로 어떤 LLM 사용할 지 결정
+    const useLLMType = process.env.USE_LLM_TYPE || "openrouter";
+
+    if (useLLMType === "local") {
+      console.log("Local LLM 클라이언트 시작");
+      const localLLMClient = await LocalLLMInterface.start(runtime);
+      if (localLLMClient) clients.push(localLLMClient);
+    } else {
+      console.log("openrouter LLM 클라이언트 시작");
+      const lunaClient = await LunaClientInterface.start(runtime);
+      if (lunaClient) clients.push(lunaClient);
+    }
   }
 
   if (character.plugins?.length > 0) {
