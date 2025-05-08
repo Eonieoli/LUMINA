@@ -2,6 +2,7 @@ package com.lumina.backend.donation.controller;
 
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.common.utill.FindUtil;
 import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.donation.model.response.GetDetailDonationResponse;
 import com.lumina.backend.donation.model.response.GetDonationResponse;
@@ -28,7 +29,6 @@ public class DonationController {
 
     private final UserRepository userRepository;
 
-    private final OAuthService oAuthService;
     private final DonationService donationService;
     private final LuminaService luminaService;
 
@@ -47,8 +47,7 @@ public class DonationController {
 
     @PostMapping("")
     public ResponseEntity<BaseResponse<Void>> doDonation(
-            HttpServletRequest request,
-            @RequestBody DoDonationRequest doDonationRequest) {
+            HttpServletRequest request, @RequestBody DoDonationRequest doDonationRequest) {
 
         Long userId = tokenUtil.findIdByToken(request);
         donationService.doDonation(userId, doDonationRequest);
@@ -86,9 +85,7 @@ public class DonationController {
             HttpServletRequest request) {
 
         Long userId = tokenUtil.findIdByToken(request);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
-        if (user.getLikeCnt() >= 20) {
+        if (userRepository.findLikeCntByUserId(userId) >= 20) {
             luminaService.getAiDonation(userId);
         }
         Map<String, Object> response = donationService.getSubscribeDonation(userId);
@@ -105,8 +102,7 @@ public class DonationController {
      */
     @GetMapping("/search")
     public ResponseEntity<BaseResponse<Map<String, Object>>> searchDonation(
-            @RequestParam String keyword,
-            @RequestParam int pageNum) {
+            @RequestParam String keyword, @RequestParam int pageNum) {
 
         Map<String, Object> response = donationService.searchDonation(keyword, pageNum);
 
@@ -116,8 +112,7 @@ public class DonationController {
 
     @GetMapping("{donationId}")
     public ResponseEntity<BaseResponse<GetDetailDonationResponse>> getDetailDonation(
-            HttpServletRequest request,
-            @PathVariable Long donationId) {
+            HttpServletRequest request, @PathVariable Long donationId) {
 
         Long userId = tokenUtil.findIdByToken(request);
         GetDetailDonationResponse response = donationService.getDetailDonation(userId, donationId);
