@@ -11,6 +11,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# 환경 변수 설정 - Hugging Face 모델 ID
+ENV ABUSE_MODEL_ID="woobae/kcelectra-swear-detector"
+ENV GOODNESS_MODEL_ID="woobae/goodness-electra-v3"
+ENV FALLBACK_MODEL_ID="monologg/koelectra-base-v3-discriminator"
+
+# Hugging Face 캐시 디렉토리 생성
+RUN mkdir -p /root/.cache/huggingface
+
 # 애플리케이션 코드 복사
 COPY . .
 
