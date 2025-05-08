@@ -2,6 +2,7 @@ package com.lumina.backend.lumina.service.impl;
 
 import com.lumina.backend.category.repository.CategoryRepository;
 import com.lumina.backend.common.exception.CustomException;
+import com.lumina.backend.common.utill.FindUtil;
 import com.lumina.backend.donation.model.entity.Donation;
 import com.lumina.backend.donation.model.entity.UserDonation;
 import com.lumina.backend.donation.repository.DonationRepository;
@@ -48,6 +49,8 @@ public class LuminaServiceImpl implements LuminaService {
     private final UserDonationRepository userDonationRepository;
     private final UserRepository userRepository;
 
+    private final FindUtil findUtil;
+
     private final WebClient webClient;
 
     @Value("${LUMINA_POST}")
@@ -61,29 +64,12 @@ public class LuminaServiceImpl implements LuminaService {
     public UploadCommentRequest getPostLumina(
             Long userId, Long postId) {
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 게시물을 찾을 수 없습니다. 게시물 ID: " + postId));
-
+        Post post = findUtil.getPostById(postId);
         String nickname = userRepository.findNicknameByUserId(userId);
 
-        Map<String, String> request = new HashMap<>();
-        request.put("user_id", userId.toString());
-        request.put("nickname", nickname);
-        request.put("post_content", post.getPostContent());
-        request.put("post_id", postId.toString());
-
-        // POST 요청 보내고 응답 받기
-        EvaluatePostResponse response = webClient.post()
-                .uri(luminaPost)
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(EvaluatePostResponse.class)
-                .block(); // 동기 방식
-
-        // 응답 null 체크 및 예외 처리
-        if (response == null) {
-            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "평가 서버에서 응답이 없습니다.");
-        }
+        Map<String, String> requestPayload = createRequestPayload(
+                userId, postId, nickname, post.getPostContent());
+        EvaluatePostResponse response = requestLuminaEvaluation(requestPayload);
 
         return new UploadCommentRequest(response.getReward(), null);
     }
@@ -93,34 +79,15 @@ public class LuminaServiceImpl implements LuminaService {
     public UploadCommentRequest getCommentLumina(
             Long userId, Long commentId) {
 
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다. 댓글 ID: " + commentId));
-
+        Comment comment = findUtil.getCommentId(commentId);
         String nickname = userRepository.findNicknameByUserId(userId);
 
-        Map<String, String> request = new HashMap<>();
-        request.put("user_id", userId.toString());
-        request.put("nickname", nickname);
-        request.put("comment_content", comment.getCommentContent());
-        request.put("comment_id", commentId.toString());
+        Map<String, String> requestPayload = createCommentRequestPayload(userId, commentId, nickname, comment.getCommentContent());
+        EvaluateCommentResponse response = requestLuminaCommentEvaluation(requestPayload);
 
-        // POST 요청 보내고 응답 받기
-        EvaluateCommentResponse response = webClient.post()
-                .uri(luminaComment)
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(EvaluateCommentResponse.class)
-                .block(); // 동기 방식
-
-        // 응답 null 체크 및 예외 처리
-        if (response == null) {
-            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "평가 서버에서 응답이 없습니다.");
-        }
-
-        Long parentCommentId = commentId;
-        if (comment.getParentComment() != null) {
-            parentCommentId = comment.getParentComment().getId();
-        }
+        Long parentCommentId = (comment.getParentComment() != null)
+                ? comment.getParentComment().getId()
+                : commentId;
 
         return new UploadCommentRequest(response.getReply(), parentCommentId);
     }
@@ -159,8 +126,7 @@ public class LuminaServiceImpl implements LuminaService {
 
         userDonationRepository.deleteByUserIdAndRegistration(userId, "AI");
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
+        User user = findUtil.getUserById(userId);
 
         for (Donation donation : donationList) {
             UserDonation userDonation = new UserDonation(user, donation, "AI");
@@ -169,5 +135,54 @@ public class LuminaServiceImpl implements LuminaService {
 
         user.resetUserLickCnt();
         userRepository.save(user);
+    }
+
+
+    private Map<String, String> createRequestPayload(Long userId, Long postId, String nickname, String postContent) {
+        Map<String, String> payload = new HashMap<>();
+        payload.put("user_id", userId.toString());
+        payload.put("nickname", nickname);
+        payload.put("post_content", postContent);
+        payload.put("post_id", postId.toString());
+        return payload;
+    }
+
+    private EvaluatePostResponse requestLuminaEvaluation(Map<String, String> requestPayload) {
+        EvaluatePostResponse response = webClient.post()
+                .uri(luminaPost)
+                .bodyValue(requestPayload)
+                .retrieve()
+                .bodyToMono(EvaluatePostResponse.class)
+                .block(); // 동기 호출
+
+        if (response == null) {
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "평가 서버에서 응답이 없습니다.");
+        }
+
+        return response;
+    }
+
+    private Map<String, String> createCommentRequestPayload(Long userId, Long commentId, String nickname, String content) {
+        Map<String, String> payload = new HashMap<>();
+        payload.put("user_id", userId.toString());
+        payload.put("nickname", nickname);
+        payload.put("comment_content", content);
+        payload.put("comment_id", commentId.toString());
+        return payload;
+    }
+
+    private EvaluateCommentResponse requestLuminaCommentEvaluation(Map<String, String> requestPayload) {
+        EvaluateCommentResponse response = webClient.post()
+                .uri(luminaComment)
+                .bodyValue(requestPayload)
+                .retrieve()
+                .bodyToMono(EvaluateCommentResponse.class)
+                .block();
+
+        if (response == null) {
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "댓글 평가 서버에서 응답이 없습니다.");
+        }
+
+        return response;
     }
 }
