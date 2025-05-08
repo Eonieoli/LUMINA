@@ -1,5 +1,7 @@
 package com.lumina.backend.user.service;
 
+import com.lumina.backend.user.model.response.GetFollowsResponse;
+
 import java.util.List;
 import java.util.Map;
 
@@ -17,12 +19,12 @@ public interface FollowService {
     /**
      * 유저의 팔로워 목록을 조회하는 메서드
      */
-    Map<String, Object> getFollowers(Long myId, Long targetUserId, int pageNum);
+    List<GetFollowsResponse> getFollowers(Long myId, Long targetUserId);
 
     /**
      * 유저의 팔로잉 목록을 조회하는 메서드
      */
-    Map<String, Object> getFollowings(Long myId, Long targetUserId, int pageNum);
+    List<GetFollowsResponse> getFollowings(Long myId, Long targetUserId);
 
     /**
      * 현재 사용자의 팔로워를 삭제하는 메서드

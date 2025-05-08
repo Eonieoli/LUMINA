@@ -73,11 +73,14 @@ public class FollowServiceImpl implements FollowService {
      * @return Map<String, Object> 팔로워 목록을 포함한 응답
      */
     @Override
-    public Map<String, Object> getFollowers(
-            Long myId, Long targetUserId, int pageNum) {
+    public List<GetFollowsResponse> getFollowers(
+            Long myId, Long targetUserId) {
 
-        return getFollows(myId, targetUserId, pageNum,
-                followRepository::findByFollowingId, "followers");
+        List<Follow> followList = followRepository.findByFollowingId(targetUserId);
+
+        return followList.stream()
+                .map(follow -> convertToFollowResponses(myId, follow.getFollower()))
+                .collect(Collectors.toList());
     }
 
 
@@ -88,11 +91,14 @@ public class FollowServiceImpl implements FollowService {
      * @return Map<String, Object> 팔로잉 목록을 포함한 응답
      */
     @Override
-    public Map<String, Object> getFollowings(
-            Long myId, Long targetUserId, int pageNum) {
+    public List<GetFollowsResponse> getFollowings(
+            Long myId, Long targetUserId) {
 
-        return getFollows(myId, targetUserId, pageNum,
-                followRepository::findByFollowerId, "followings");
+        List<Follow> followList = followRepository.findByFollowerId(targetUserId);
+
+        return followList.stream()
+                .map(follow -> convertToFollowResponses(myId, follow.getFollowing()))
+                .collect(Collectors.toList());
     }
 
 
@@ -114,38 +120,50 @@ public class FollowServiceImpl implements FollowService {
         followRepository.delete(follow);
     }
 
+    private GetFollowsResponse convertToFollowResponses(Long myId, User follow) {
+        boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, follow.getId());
 
-    private List<GetFollowsResponse> convertToFollowResponses(
-            List<Follow> follows, Long myId,
-            Function<Follow, User> userExtractor) {
-
-        return follows.stream()
-                .map(follow -> {
-                    User user = userExtractor.apply(follow);
-                    boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, user.getId());
-                    return new GetFollowsResponse(
-                            user.getId(),
-                            user.getProfileImage(),
-                            user.getNickname(),
-                            isFollowing
-                    );
-                })
-                .collect(Collectors.toList());
+        return new GetFollowsResponse(
+                follow.getId(),
+                follow.getProfileImage(),
+                follow.getNickname(),
+                isFollowing
+        );
     }
 
-    private Map<String, Object> getFollows(
-            Long myId, Long targetUserId, int pageNum,
-            BiFunction<Long, Pageable, Page<Follow>> followFetchFunction, String keyName) {
 
-        ValidationUtil.validatePageNumber(pageNum);
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10);
-        Page<Follow> followPage = followFetchFunction.apply(targetUserId, pageRequest);
-
-        List<GetFollowsResponse> responses = convertToFollowResponses(
-                followPage.getContent(), myId,
-                keyName.equals("followers") ? Follow::getFollower : Follow::getFollowing);
-
-        return PagingResponseUtil.toPagingResult(followPage, pageNum, keyName, responses);
-    }
+//    private List<GetFollowsResponse> convertToFollowResponses(
+//            List<Follow> follows, Long myId,
+//            Function<Follow, User> userExtractor) {
+//
+//        return follows.stream()
+//                .map(follow -> {
+//                    User user = userExtractor.apply(follow);
+//                    boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, user.getId());
+//                    return new GetFollowsResponse(
+//                            user.getId(),
+//                            user.getProfileImage(),
+//                            user.getNickname(),
+//                            isFollowing
+//                    );
+//                })
+//                .collect(Collectors.toList());
+//    }
+//
+//    private Map<String, Object> getFollows(
+//            Long myId, Long targetUserId, int pageNum,
+//            BiFunction<Long, Pageable, Page<Follow>> followFetchFunction, String keyName) {
+//
+//        ValidationUtil.validatePageNumber(pageNum);
+//
+//        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10);
+//        Page<Follow> followPage = followFetchFunction.apply(targetUserId, pageRequest);
+//
+//        List<GetFollowsResponse> responses = convertToFollowResponses(
+//                followPage.getContent(), myId,
+//                keyName.equals("followers") ? Follow::getFollower : Follow::getFollowing);
+//
+//        return PagingResponseUtil.toPagingResult(followPage, pageNum, keyName, responses);
+//    }
 }
