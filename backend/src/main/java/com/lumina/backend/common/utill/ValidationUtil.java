@@ -1,6 +1,7 @@
 package com.lumina.backend.common.utill;
 
 import com.lumina.backend.common.exception.CustomException;
+import com.lumina.backend.post.model.entity.Comment;
 import com.lumina.backend.post.model.entity.Post;
 import org.springframework.http.HttpStatus;
 
@@ -37,6 +38,21 @@ public class ValidationUtil {
     //게시물 삭제 권한 검사
     public static void validatePostDelete(String role, Post post, Long userId) {
         if (role.equals("ROLE_USER") && !post.getUser().getId().equals(userId)) {
+            throw new CustomException(HttpStatus.FORBIDDEN, "사진 삭제 권한이 없습니다.");
+        }
+    }
+
+    // 부모 댓글 검사
+    public static void validateComment(Comment comment, Long postId) {
+
+        if (!comment.getPost().getId().equals(postId)) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "해당 게시글의 댓글이 아닙니다");
+        }
+    }
+
+    //게시물 삭제 권한 검사
+    public static void validateCommentDelete(String role, Comment comment, Long userId) {
+        if (role.equals("ROLE_USER") && !comment.getUser().getId().equals(userId)) {
             throw new CustomException(HttpStatus.FORBIDDEN, "사진 삭제 권한이 없습니다.");
         }
     }

@@ -6,7 +6,6 @@ import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.response.GetChildCommentResponse;
 import com.lumina.backend.post.model.response.UploadCommentResponse;
 import com.lumina.backend.post.service.CommentService;
-import com.lumina.backend.post.service.PostService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -129,8 +129,8 @@ public class PostServiceImpl implements PostService {
         User user = findUtil.getUserById(userId);
 
         return postLikeRepository.findByUserIdAndPostId(userId, postId)
-                .map(existingLike -> {
-                    postLikeRepository.delete(existingLike);
+                .map(existingPostLike -> {
+                    postLikeRepository.delete(existingPostLike);
                     updateUserLike(user, -1);
                     return false;
                 })

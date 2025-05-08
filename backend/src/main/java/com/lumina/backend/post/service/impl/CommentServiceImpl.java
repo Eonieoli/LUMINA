@@ -4,9 +4,13 @@ import com.lumina.backend.category.repository.CategoryRepository;
 import com.lumina.backend.category.repository.UserCategoryRepository;
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.service.S3Service;
+import com.lumina.backend.common.utill.FindUtil;
+import com.lumina.backend.common.utill.PagingResponseUtil;
+import com.lumina.backend.common.utill.ValidationUtil;
 import com.lumina.backend.post.model.entity.Comment;
 import com.lumina.backend.post.model.entity.CommentLike;
 import com.lumina.backend.post.model.entity.Post;
+import com.lumina.backend.post.model.entity.PostLike;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.response.GetChildCommentResponse;
 import com.lumina.backend.post.model.response.GetCommentResponse;
@@ -34,73 +38,41 @@ import java.util.stream.Collectors;
 public class CommentServiceImpl implements CommentService {
 
     private final UserRepository userRepository;
-    private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final CommentLikeRepository commentLikeRepository;
+
+    private final FindUtil findUtil;
 
 
     @Override
     @Transactional
     public UploadCommentResponse uploadComment(Long userId, Long postId, UploadCommentRequest request) {
 
-        if (request.getCommentContent() == null || request.getCommentContent().trim().isEmpty()) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "댓글 내용을 입력해주세요.");
-        }
+        ValidationUtil.validateRequiredField(request.getCommentContent(), "댓글 내용");
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
+        User user = findUtil.getUserById(userId);
+        Post post = findUtil.getPostById(postId);
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 게시물을 찾을 수 없습니다. 게시물 ID: " + postId));
+        Comment comment = createComment(user, post, request);
+        Comment savedComment = commentRepository.save(comment);
 
-        Comment comment;
-        if (request.getParentCommentId() != null) {
-            Comment parentComment = commentRepository.findById(request.getParentCommentId())
-                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다. 댓글 ID: " + request.getParentCommentId()));
-            if (!parentComment.getPost().getId().equals(postId)) {
-                throw new CustomException(HttpStatus.BAD_REQUEST, "부모 댓글의 게시물 불일치");
-            }
-
-            comment = new Comment(user, post, parentComment, request.getCommentContent());
-        } else {
-            comment = new Comment(user, post, request.getCommentContent());
-        }
-        Comment saveComment = commentRepository.save(comment);
-
-        return new UploadCommentResponse(saveComment.getId());
+        return new UploadCommentResponse(savedComment.getId());
     }
 
 
     @Override
     public Map<String, Object> getComment(Long userId, Long postId, int pageNum) {
 
-        if (pageNum < 1) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상의 값이어야 합니다.");
-        }
+        ValidationUtil.validatePageNumber(pageNum);
 
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Comment> commentPage = commentRepository.findByPostIdAndParentCommentIsNull(postId, pageRequest);
 
         List<GetCommentResponse> comments = commentPage.getContent().stream()
-                .map(comment -> {
-                    User user = comment.getUser();
-                    int likeCnt = commentLikeRepository.countByCommentId(comment.getId());
-                    int childCommentCnt = commentRepository.countByParentCommentId(comment.getId());
-                    Boolean isLike = commentLikeRepository.existsByUserIdAndCommentId(userId, comment.getId());
-
-                    return new GetCommentResponse(
-                            comment.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
-                            comment.getCommentContent(), likeCnt, childCommentCnt, isLike
-                    );
-                })
+                .map(comment -> toGetCommentResponse(userId, comment))
                 .collect(Collectors.toList());
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("totalPages", commentPage.getTotalPages());
-        result.put("currentPage", pageNum);
-        result.put("comments", comments);
-
-        return result;
+        return PagingResponseUtil.toPagingResult(commentPage, pageNum, "comments", comments);
     }
 
 
@@ -110,20 +82,9 @@ public class CommentServiceImpl implements CommentService {
 
         List<Comment> comments = commentRepository.findByPostIdAndParentCommentId(postId, ParentCommentId);
 
-        List<GetChildCommentResponse> commentResponseList = comments.stream()
-                .map(comment -> {
-                    User user = comment.getUser();
-                    int likeCnt = commentLikeRepository.countByCommentId(comment.getId());
-                    Boolean isLike = commentLikeRepository.existsByUserIdAndCommentId(userId, comment.getId());
-
-                    return new GetChildCommentResponse(
-                            comment.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
-                            comment.getCommentContent(), likeCnt, isLike
-                    );
-                })
+        return comments.stream()
+                .map(comment -> toGetChildCommentResponse(userId, comment))
                 .collect(Collectors.toList());
-
-        return commentResponseList;
     }
 
 
@@ -139,25 +100,12 @@ public class CommentServiceImpl implements CommentService {
     public void deleteComment(
             Long userId, String role, Long postId, Long commentId) {
 
-        // 게시물 조회
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "게시물을 찾을수 없음: " + postId ));
+        Post post = findUtil.getPostById(postId);
+        Comment comment = findUtil.getCommentId(commentId);
 
-        // 댓글 조회
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "댓글을 찾을수 없음: " + commentId ));
+        ValidationUtil.validateComment(comment, postId);
+        ValidationUtil.validateCommentDelete(role, comment, userId);
 
-        // 해당 댓글이 해당 게시물의 댓글이 아닌 경우 에러 반환
-        if (!comment.getPost().equals(post)) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "해당 게시글의 댓글이 아닙니다");
-        }
-
-        // 요청한 사용자 ID가 게시물 소유자가 아닐 경우 에러 반환
-        if (role.equals("ROLE_USER") && !comment.getUser().getId().equals(userId)) {
-            throw new CustomException(HttpStatus.FORBIDDEN, "댓글 삭제 권한이 없습니다.");
-        }
-
-        // mySQL에서 삭제
         commentRepository.delete(comment);
     }
 
@@ -174,42 +122,72 @@ public class CommentServiceImpl implements CommentService {
     public Boolean toggleCommentLike(
             Long userId, Long postId, Long commentId) {
 
-        if (postId == null || postId <= 0) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 게시물 ID입니다.");
+        ValidationUtil.validateId(postId, "게시물");
+        ValidationUtil.validateId(commentId, "댓글");
+
+        Post post = findUtil.getPostById(postId);
+        Comment comment = findUtil.getCommentId(commentId);
+        User user = findUtil.getUserById(userId);
+
+        ValidationUtil.validateComment(comment, postId);
+
+        return commentLikeRepository.findByUserIdAndCommentId(userId, commentId)
+                .map(existingCommentLike -> {
+                    commentLikeRepository.delete(existingCommentLike);
+                    updateUserLike(user, -1);
+                    return false;
+                })
+                .orElseGet(() -> {
+                    commentLikeRepository.save(new CommentLike(user, comment));
+                    updateUserLike(user, 1);
+                    return true;
+                });
+    }
+
+
+    private Comment createComment(User user, Post post, UploadCommentRequest request) {
+        if (request.getParentCommentId() == null) {
+            return new Comment(user, post, request.getCommentContent());
         }
 
-        if (commentId == null || commentId <= 0) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 댓글 ID입니다.");
-        }
+        Comment parentComment = commentRepository.findById(request.getParentCommentId())
+                .orElseThrow(() -> new CustomException(
+                        HttpStatus.NOT_FOUND,
+                        "해당 댓글을 찾을 수 없습니다. 댓글 ID: " + request.getParentCommentId()
+                ));
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 게시물을 찾을 수 없습니다. 게시물 ID: " + postId));
+        ValidationUtil.validateComment(parentComment, post.getId());
 
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다. 댓글 ID: " + commentId));
+        return new Comment(user, post, parentComment, request.getCommentContent());
+    }
 
-        // 해당 댓글이 해당 게시물의 댓글이 아닌 경우 에러 반환
-        if (!comment.getPost().equals(post)) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "해당 게시글의 댓글이 아닙니다");
-        }
+    private GetCommentResponse toGetCommentResponse(Long userId, Comment comment) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
+        User user = comment.getUser();
+        int likeCnt = commentLikeRepository.countByCommentId(comment.getId());
+        int childCommentCnt = commentRepository.countByParentCommentId(comment.getId());
+        boolean isLike = commentLikeRepository.existsByUserIdAndCommentId(userId, comment.getId());
 
-        CommentLike existCommentLike = commentLikeRepository.findByUserIdAndCommentId(userId, commentId)
-                .orElse(null);
+        return new GetCommentResponse(
+                comment.getId(), user.getId(), user.getNickname(),
+                user.getProfileImage(), comment.getCommentContent(),
+                likeCnt, childCommentCnt, isLike);
+    }
 
-        if (existCommentLike != null) {
-            // 기존 좋아요 관계가 있으면 좋아요 취소
-            commentLikeRepository.delete(existCommentLike);
-            user.updateUserLikeCnt(-1);
-            return false;
-        } else {
-            CommentLike commentLike = new CommentLike(user, comment);
-            commentLikeRepository.save(commentLike);
-            user.updateUserLikeCnt(1);
-        }
+    private GetChildCommentResponse toGetChildCommentResponse(Long userId, Comment comment) {
+
+        User user = comment.getUser();
+        int likeCnt = commentLikeRepository.countByCommentId(comment.getId());
+        Boolean isLike = commentLikeRepository.existsByUserIdAndCommentId(userId, comment.getId());
+
+        return new GetChildCommentResponse(
+                comment.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
+                comment.getCommentContent(), likeCnt, isLike
+        );
+    }
+
+    private void updateUserLike(User user, int value) {
+        user.updateUserLikeCnt(value);
         userRepository.save(user);
-        return true;
     }
 }
