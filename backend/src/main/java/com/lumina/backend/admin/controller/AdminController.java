@@ -21,7 +21,6 @@ public class AdminController {
     private final TokenUtil tokenUtil;
 
     private final AdminService adminService;
-    private final OAuthService oAuthService;
 
 
     @GetMapping("/user")

@@ -1,21 +1,18 @@
 package com.lumina.backend.user.service.impl;
 
-import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.jwt.JWTUtil;
 import com.lumina.backend.common.service.TokenService;
 import com.lumina.backend.common.utill.CookieUtil;
 import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.common.utill.TokenValidationUtil;
-import com.lumina.backend.common.utill.UserUtil;
+import com.lumina.backend.common.utill.FindUtil;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.repository.UserRepository;
 import com.lumina.backend.user.service.OAuthService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +27,7 @@ public class OAuthServiceImpl implements OAuthService {
 
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
-    private final UserUtil userUtil;
+    private final FindUtil findUtil;
     private final TokenValidationUtil tokenValidationUtil;
 
     private final TokenService tokenService;
@@ -82,7 +79,7 @@ public class OAuthServiceImpl implements OAuthService {
     public void deleteUser(
             Long userId, HttpServletRequest request, HttpServletResponse response) {
 
-        User user = userUtil.getUserById(userId);
+        User user = findUtil.getUserById(userId);
         user.deleteUser();
         userRepository.save(user);
 
