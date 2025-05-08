@@ -1,4 +1,4 @@
-import { getHashtagPosts, getPosts, getUser } from "@/apis/board";
+import { getCategoryExplore, getHashtagPosts, getUser } from "@/apis/board";
 import { DefaultProfile, SearchIcon } from "@/assets/images";
 import { Board } from "@/components";
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
@@ -39,12 +39,15 @@ export default function Search() {
     const wrapperRef = useRef<HTMLDivElement>(null); // 전체 감싸는 div ref
     const inputRef = useRef<HTMLInputElement>(null);  // 인풋 ref
     const [hashtag, setHashtag] = useState('');
+    // IME 상태 관리를 위한 참조
+    const isComposing = useRef(false);
 
     const navigate = useNavigate();
 
     const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
         setSearchInput(e.target.value);
-        setSearchedUsers([]);
+        // 입력 변경 시에는 사용자 목록을 초기화하지 않습니다.
+        // setSearchedUsers([]);
     }
 
     const handleDelete = (postId: number) => {
@@ -53,11 +56,7 @@ export default function Search() {
         );
     };
 
-    const handleClick = (userId: number) => {
-        navigate(`/mypage/${userId}`);
-    }
-
-    // 디바운스 로직 (입력 후 2초 지나면 업데이트)
+    // 디바운스 로직 (입력 후 500ms 지나면 업데이트)
     useEffect(() => {
       const timer = setTimeout(() => {
         setDebouncedInput(searchInput); // 실질적인 요청 트리거
@@ -89,7 +88,7 @@ export default function Search() {
                     console.log('해시택3:', hashtag, pageNum);
                     data = await getHashtagPosts(hashtag, pageNum);
                 } else {
-                    data = await getPosts(pageNum);
+                    data = await getCategoryExplore(pageNum);
                 }
     
                 const newPosts = data.data.posts;
@@ -159,6 +158,26 @@ export default function Search() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    // IME 이벤트 핸들러
+    const handleCompositionStart = () => {
+        console.log('IME 입력 시작');
+        isComposing.current = true;
+    };
+
+    const handleCompositionEnd = () => {
+        console.log('IME 입력 완료');
+        isComposing.current = false;
+    };
+
+    // 사용자 항목 클릭 핸들러 - 별도로 분리하여 IME와 관계없이 동작하도록 함
+    const handleUserClick = (userId: number) => {
+        console.log('사용자 클릭됨:', userId);
+        // 모달 닫기
+        setIsModalOpen(false);
+        // 페이지 이동
+        navigate(`/mypage/${userId}`);
+    };
+
     return (
         <div className="h-dvh overflow-y-auto">
             <div className="sticky top-0 z-30">
@@ -168,20 +187,23 @@ export default function Search() {
                             type="text"
                             ref={inputRef}
                             value={searchInput}
-                            onChange={(e) => handleInput(e)}
+                            onChange={handleInput}
+                            onCompositionStart={handleCompositionStart}
+                            onCompositionEnd={handleCompositionEnd}
                             onFocus={() => {
                                 if (searchedUsers.length) setIsModalOpen(true);
                             }}
                             className="w-full h-10 z-20 px-4 text-[16px] border-b-2 border-[#9C97FA]"
                         />
-                        <img onClick={() => {
+                        <img 
+                            onClick={() => {
                                 setHashtag(searchInput.trim());
                                 setHasMore(true);
                                 setIsModalOpen(false);
                             }}
                             src={SearchIcon}
                             alt="돋보기"
-                            className="absolute right-4 bottom-0 -translate-y-1/2 w-4 h-auto"
+                            className="absolute right-4 bottom-0 -translate-y-1/2 w-4 h-auto cursor-pointer"
                         />
                     </div>
                     {/* 유저 검색 모달 */}
@@ -190,15 +212,16 @@ export default function Search() {
                         {searchedUsers.map((user) => (
                             <div
                             key={user.userId}
-                            onClick={() => handleClick(user.userId)}
-                            className="p-4 flex gap-x-4 text-lg text-white items-center"
+                            // 클릭 이벤트를 별도의 함수로 처리
+                            onClick={() => handleUserClick(user.userId)}
+                            className="p-4 flex gap-x-4 text-lg text-white items-center cursor-pointer hover:bg-[#ffffff20]"
                             >
-                            <img
-                                src={user.profileImage || DefaultProfile}
-                                alt=""
-                                className="w-10 h-10 bg-white rounded-full"
-                            />
-                            <span>{user.nickname}</span>
+                                <img
+                                    src={user.profileImage || DefaultProfile}
+                                    alt=""
+                                    className="w-10 h-10 bg-white rounded-full"
+                                />
+                                <span>{user.nickname}</span>
                             </div>
                         ))}
                         </div>

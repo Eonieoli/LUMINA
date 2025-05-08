@@ -173,7 +173,7 @@ export const commentLike = async (postId: number, commentId: number) => {
 // 카테고리 검색
 export const getCategoryExplore = async (pageNum: number, ) => {
     try {
-        const response = await apiClient.get('/post', {
+        const response = await apiClient.get('/post/category', {
             params: {
                 pageNum
             }
