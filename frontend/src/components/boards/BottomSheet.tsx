@@ -16,18 +16,18 @@ export const BottomSheet = ({ onClose, children, isVisible }: BottomSheetProps) 
     }, []);
 
     return (
-        <div
-            className="bg-opacity-50 fixed inset-0 z-50 flex items-end justify-center bg-[#00000050]"
-            onClick={onClose}
-        >
-            <AnimatePresence>
+        <AnimatePresence>
+            <div
+                className="bg-opacity-50 fixed inset-0 z-50 flex items-end justify-center bg-[#00000050]"
+                onClick={onClose}
+            >
                 {isVisible && (
                     <motion.div
                     initial={{ opacity: 0, y: 100 }} // 처음 상태
                     animate={{ opacity: 1, y: 0 }}  // 등장 시
                     exit={{ opacity: 0, y: 100 }}    // 사라질 때
                     transition={{ duration: 0.5 }}
-                    className="your-class"
+                    className="w-full"
                     >
                         <div
                             className="max-h-[80%] w-full overflow-y-auto rounded-t-2xl bg-white p-4"
@@ -38,7 +38,7 @@ export const BottomSheet = ({ onClose, children, isVisible }: BottomSheetProps) 
                         </div>
                     </motion.div>
                 )}
-            </AnimatePresence>
-        </div>
+            </div>
+        </AnimatePresence>
     );
 };
