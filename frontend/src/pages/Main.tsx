@@ -1,5 +1,5 @@
 import { Route, Routes, useLocation } from "react-router-dom"
-import { HomePage, SearchPage, DonatePage, RankingPage, MyPage, PostCreatePage, DonationDetailPage, DonationThanksPage, DonationSearchResultPage, DonationInputPage} from "@/pages/mainPages"
+import { HomePage, SearchPage, DonatePage, RankingPage, MyPage, PostCreatePage, DonationDetailPage, DonationThanksPage, DonationSearchResultPage, DonationInputPage, FollowPage} from "@/pages/mainPages"
 import { Navbar } from "@/components"
 
 export default function Main() {
@@ -23,6 +23,8 @@ export default function Main() {
             <Route path="donate/:donationId" element={<DonationDetailPage/>} />
             <Route path="donate/:donationId/point" element={<DonationInputPage/>} />
             <Route path="donate/thanks" element={<DonationThanksPage/>}/>
+
+            <Route path="mypage/:profileUserId/follow" element={<FollowPage/>} /> 
           </Routes>
         </div>
       <Navbar/>

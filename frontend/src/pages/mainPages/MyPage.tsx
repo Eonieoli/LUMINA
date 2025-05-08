@@ -5,7 +5,7 @@ import ProfileBtn from "@/components/profile/button";
 import { Post } from "./Home";
 import { getUserPosts } from "@/apis/board";
 import { Board } from "@/components";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getUserProfile } from "@/apis/auth";
 import { useAuthStore } from '@/stores/auth';
 import { followToggle } from "@/apis/follow";
@@ -19,12 +19,14 @@ interface MypageProps {
     grade: number
     rank: number
     postCnt: number
-    followCnt: number
+    followerCnt: number
     followingCnt: number
-    isFollowing: Boolean
+    isFollowing: boolean
 }
 
 export default function MyPage() {
+
+    const navigate = useNavigate()
 
     // 나의 아이디 
     const authData = useAuthStore();
@@ -121,6 +123,14 @@ export default function MyPage() {
         catch(error) {}
     }
 
+    // 팔로워 팔로잉 페이지 버튼을 눌렀다면 
+    const goToFollowInfo = (info:string) => {
+        console.log(`${profileUserId}`,"의 팔로워를 조회해볼게")
+        navigate(`/mypage/${profileUserId}/follow`, {
+            state: {nickname: userInfo?.nickname, followers: userInfo?.followerCnt, followings: userInfo?.followingCnt, info}
+        })
+    }
+
     return (
         <div className="w-full h-full">
 
@@ -146,10 +156,10 @@ export default function MyPage() {
 
                 {/* 게시물, 팔로워, 팔로잉, lu */}
                 <div className="flex justify-evenly mb-4">
-                    <UserProfileFourInfo title="게시물" titleNumber={userInfo?.postCnt ?? 0}/>
-                    <UserProfileFourInfo title="팔로워" titleNumber={userInfo?.followCnt ?? 0}/>
-                    <UserProfileFourInfo title="팔로잉" titleNumber={userInfo?.followingCnt ?? 0}/>
-                    <UserProfileFourInfo title="선행도" titleNumber={userInfo?.positiveness ?? 0}/>
+                    <UserProfileFourInfo title="게시물" titleNumber={userInfo?.postCnt ?? 0} isBtn={false}/>
+                    <UserProfileFourInfo title="팔로워" titleNumber={userInfo?.followerCnt ?? 0 } isBtn={true} onClick={()=> goToFollowInfo("followers")} />
+                    <UserProfileFourInfo title="팔로잉" titleNumber={userInfo?.followingCnt ?? 0} isBtn={true} onClick={() => goToFollowInfo("followings")}/>
+                    <UserProfileFourInfo title="선행도" titleNumber={userInfo?.positiveness ?? 0} isBtn={false}/>
                 </div>
 
                 {/* 버튼 */}
