@@ -8,7 +8,7 @@ import {
 } from "@elizaos/core";
 import { bootstrapPlugin } from "@elizaos/plugin-bootstrap";
 import { createNodePlugin } from "@elizaos/plugin-node";
-import { solanaPlugin } from "@elizaos/plugin-solana";
+// Solana 플러그인 제거됨
 import fs from "fs";
 import net from "net";
 import path from "path";
@@ -58,7 +58,7 @@ export function createAgent(
     plugins: [
       bootstrapPlugin,
       nodePlugin,
-      character.settings?.secrets?.WALLET_PUBLIC_KEY ? solanaPlugin : null,
+      // Solana 플러그인 사용 부분 제거됨
     ].filter(Boolean),
     providers: [],
     actions: [],

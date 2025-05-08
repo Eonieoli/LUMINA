@@ -1,7 +1,6 @@
 import { AutoClientInterface } from "@elizaos/client-auto";
 import { DiscordClientInterface } from "@elizaos/client-discord";
-import { TelegramClientInterface } from "@elizaos/client-telegram";
-import { TwitterClientInterface } from "@elizaos/client-twitter";
+// Telegram 및 Twitter 클라이언트 임포트 제거됨
 import { Character, IAgentRuntime } from "@elizaos/core";
 import { LunaClientInterface } from "./luna-client.ts";
 import { LocalLLMInterface } from "./local-llm-server.ts";
@@ -22,15 +21,7 @@ export async function initializeClients(
     clients.push(await DiscordClientInterface.start(runtime));
   }
 
-  if (clientTypes.includes("telegram")) {
-    const telegramClient = await TelegramClientInterface.start(runtime);
-    if (telegramClient) clients.push(telegramClient);
-  }
-
-  if (clientTypes.includes("twitter")) {
-    const twitterClients = await TwitterClientInterface.start(runtime);
-    clients.push(twitterClients);
-  }
+  // Telegram 및 Twitter 클라이언트 초기화 부분 제거됨
 
   //luna
   if (runtime.character.name === "luna") {
