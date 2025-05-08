@@ -19,7 +19,7 @@ public interface DonationService {
      */
     Boolean toggleDonationSubscribe(Long userId, Long donationId);
 
-    List<GetSubscribeDonationResponse> getSubscribeDonation(Long userId);
+    Map<String, Object> getSubscribeDonation(Long userId);
 
     Map<String, Object> searchDonation(String keyword, int pageNum);
 

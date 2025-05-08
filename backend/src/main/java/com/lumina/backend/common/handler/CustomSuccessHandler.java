@@ -1,6 +1,8 @@
 package com.lumina.backend.common.handler;
 
 import com.lumina.backend.common.jwt.JWTUtil;
+import com.lumina.backend.common.service.TokenService;
+import com.lumina.backend.common.utill.CookieUtil;
 import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.user.model.dto.CustomOAuth2User;
 import com.lumina.backend.user.repository.UserRepository;
@@ -14,6 +16,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -21,10 +24,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final UserRepository userRepository;
 
-    private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
 
-    private final OAuthService oAuthService;
+    private final TokenService tokenService;
 
     @Value("${LOGIN_SUCCESS}")
     private String successURL;
@@ -50,34 +52,18 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      */
     @Override
     public void onAuthenticationSuccess(
-            HttpServletRequest request,
-            HttpServletResponse response,
+            HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws IOException {
 
-        // OAuth2User 정보 가져오기
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
 
         String socialId = customUserDetails.getSocialId();
         String nickname = userRepository.findNicknameBySocialId(socialId);
         String role = userRepository.findRoleBySocialId(socialId);
+        String userKey = redisUtil.getRefreshKey(request, userRepository.findIdByNickname(nickname));
 
-        // 기기 정보 가져오기
-        String userAgent = request.getHeader("User-Agent").toLowerCase();
-        String deviceType = oAuthService.getDeviceType(userAgent); // 기기 유형 판별
+        tokenService.reissueTokens(userKey, nickname, role, response);
 
-        // Access Token 및 Refresh Token 생성
-        String access = jwtUtil.createJwt("access", nickname, role, Long.parseLong(jwtAccessExp)); // 10분 유효
-        String refresh = jwtUtil.createJwt("refresh", nickname, role, Long.parseLong(jwtRefreshExp)); // 1일 유효
-
-        // Redis에 Refresh Token 저장
-        String userKey = "refresh:" + userRepository.findIdByNickname(nickname) + ":" + deviceType;
-        redisUtil.setex(userKey, refresh, Long.parseLong(jwtRedisExp)); // 1일 TTL
-
-        // 클라이언트에 Access Token 및 Refresh Token 쿠키로 설정
-        response.addCookie(oAuthService.createCookie("access", access));
-        response.addCookie(oAuthService.createCookie("refresh", refresh));
-
-        //인증 성공 후 리다이렉트
         response.sendRedirect(successURL);
     }
 }

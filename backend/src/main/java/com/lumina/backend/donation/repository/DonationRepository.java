@@ -11,9 +11,10 @@ import java.util.Optional;
 
 public interface DonationRepository extends JpaRepository<Donation, Long> {
 
+    Page<Donation> findByDonationNameContaining(String keyword, Pageable pageable);
+
+
     List<Donation> findByStatusTrue();
 
-    Optional<Donation> findByDonationName(String donationName);
-
-    Page<Donation> findByDonationNameContaining(String keyword, Pageable pageable);
+    List<Donation> findByCategoryId(Long categoryId);
 }

@@ -1,14 +1,21 @@
 package com.lumina.backend.donation.controller;
 
+import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.common.utill.FindUtil;
+import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.donation.model.response.GetDetailDonationResponse;
 import com.lumina.backend.donation.model.response.GetDonationResponse;
 import com.lumina.backend.donation.model.response.GetSubscribeDonationResponse;
 import com.lumina.backend.donation.service.DonationService;
 import com.lumina.backend.donation.model.request.DoDonationRequest;
+import com.lumina.backend.lumina.service.LuminaService;
+import com.lumina.backend.user.model.entity.User;
+import com.lumina.backend.user.repository.UserRepository;
 import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,15 +27,19 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DonationController {
 
-    private final OAuthService oAuthService;
+    private final UserRepository userRepository;
+
     private final DonationService donationService;
+    private final LuminaService luminaService;
+
+    private final TokenUtil tokenUtil;
 
 
     @GetMapping("")
     public ResponseEntity<BaseResponse<List<GetDonationResponse>>> getDonation(
             HttpServletRequest request) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         List<GetDonationResponse> response = donationService.getDonation(userId);
 
         return ResponseEntity.ok(BaseResponse.success("전체 기부처 조회 성공", response));
@@ -36,10 +47,9 @@ public class DonationController {
 
     @PostMapping("")
     public ResponseEntity<BaseResponse<Void>> doDonation(
-            HttpServletRequest request,
-            @RequestBody DoDonationRequest doDonationRequest) {
+            HttpServletRequest request, @RequestBody DoDonationRequest doDonationRequest) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         donationService.doDonation(userId, doDonationRequest);
 
         return ResponseEntity.ok(BaseResponse.withMessage("기부 완료"));
@@ -57,7 +67,7 @@ public class DonationController {
     public ResponseEntity<BaseResponse<Void>> toggleDonationSubscribe(
             HttpServletRequest request, @PathVariable Long donationId) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         Boolean subscribe = donationService.toggleDonationSubscribe(userId, donationId);
 
         // 결과에 따른 응답 메시지 생성
@@ -71,11 +81,14 @@ public class DonationController {
 
 
     @GetMapping("/me")
-    public ResponseEntity<BaseResponse<List<GetSubscribeDonationResponse>>> getSubscribeDonation(
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getSubscribeDonation(
             HttpServletRequest request) {
 
-        Long userId = oAuthService.findIdByToken(request);
-        List<GetSubscribeDonationResponse> response = donationService.getSubscribeDonation(userId);
+        Long userId = tokenUtil.findIdByToken(request);
+        if (userRepository.findLikeCntByUserId(userId) >= 20) {
+            luminaService.getAiDonation(userId);
+        }
+        Map<String, Object> response = donationService.getSubscribeDonation(userId);
 
         return ResponseEntity.ok(BaseResponse.success("관심 기부처 조회 성공", response));
     }
@@ -89,8 +102,7 @@ public class DonationController {
      */
     @GetMapping("/search")
     public ResponseEntity<BaseResponse<Map<String, Object>>> searchDonation(
-            @RequestParam String keyword,
-            @RequestParam int pageNum) {
+            @RequestParam String keyword, @RequestParam int pageNum) {
 
         Map<String, Object> response = donationService.searchDonation(keyword, pageNum);
 
@@ -100,10 +112,9 @@ public class DonationController {
 
     @GetMapping("{donationId}")
     public ResponseEntity<BaseResponse<GetDetailDonationResponse>> getDetailDonation(
-            HttpServletRequest request,
-            @PathVariable Long donationId) {
+            HttpServletRequest request, @PathVariable Long donationId) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         GetDetailDonationResponse response = donationService.getDetailDonation(userId, donationId);
 
         return ResponseEntity.ok(BaseResponse.success("전체 기부처 조회 성공", response));

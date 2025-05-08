@@ -1,8 +1,10 @@
 package com.lumina.backend.lumina.controller;
 
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.lumina.service.LuminaService;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
+import com.lumina.backend.post.service.CommentService;
 import com.lumina.backend.post.service.PostService;
 import com.lumina.backend.user.repository.UserRepository;
 import com.lumina.backend.user.service.OAuthService;
@@ -15,41 +17,40 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/lumina")
+@RequestMapping("/api/v1/lumina/post/{postId}")
 @RequiredArgsConstructor
 public class LuminaController {
 
     private final UserRepository userRepository;
 
-    private final OAuthService oAuthService;
     private final LuminaService luminaService;
-    private final PostService postService;
+    private final CommentService commentService;
+
+    private final TokenUtil tokenUtil;
 
 
-    @PostMapping("/post/{postId}")
+    @PostMapping("")
     public ResponseEntity<BaseResponse<Void>> getPostLumina(
-            HttpServletRequest request,
-            @PathVariable Long postId) {
+            HttpServletRequest request, @PathVariable Long postId) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         Long luminaId = userRepository.findIdByNickname("Luna");
         UploadCommentRequest uploadCommentRequest = luminaService.getPostLumina(userId, postId);
-        postService.uploadComment(luminaId, postId, uploadCommentRequest);
+        commentService.uploadComment(luminaId, postId, uploadCommentRequest);
 
         return ResponseEntity.ok(BaseResponse.withMessage("게시물에 대한 Lumina 댓글 성성 완료"));
     }
 
 
-    @PostMapping("/post/{postId}/comment/{commentId}")
+    @PostMapping("/comment/{commentId}")
     public ResponseEntity<BaseResponse<Void>> getCommentLumina(
-            HttpServletRequest request,
-            @PathVariable Long postId,
+            HttpServletRequest request, @PathVariable Long postId,
             @PathVariable Long commentId) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         Long luminaId = userRepository.findIdByNickname("Luna");
         UploadCommentRequest uploadCommentRequest = luminaService.getCommentLumina(userId, commentId);
-        postService.uploadComment(luminaId, postId, uploadCommentRequest);
+        commentService.uploadComment(luminaId, postId, uploadCommentRequest);
 
         return ResponseEntity.ok(BaseResponse.withMessage("댓글에 대한 Lumina 댓글 성성 완료"));
     }

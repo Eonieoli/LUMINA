@@ -107,8 +107,8 @@ def is_valid_comment(text):
 def remove_leading_numbers(text):
     if not isinstance(text, str):
         return ""
-    # 문장 맨 앞에 오는 3~8자리 숫자 제거
-    return re.sub(r"^\d{3,8}\s*", "", text)
+    # 문장 맨 앞에 오는 3~5자리 숫자 제거
+    return re.sub(r"^\d{3,5}\s*", "", text)
 
 
 # 전처리 적용

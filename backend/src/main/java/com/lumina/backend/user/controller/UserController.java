@@ -1,6 +1,7 @@
 package com.lumina.backend.user.controller;
 
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
 import com.lumina.backend.user.model.response.GetUserPointResponse;
@@ -18,15 +19,15 @@ import java.util.Map;
 
 /**
  * 사용자 관련 API를 처리하는 컨트롤러
- * - 사용자 정보 조회
  */
 @RestController
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
 public class UserController {
 
-    private final OAuthService oAuthService;
     private final UserService userService;
+
+    private final TokenUtil tokenUtil;
 
 
     /**
@@ -39,7 +40,7 @@ public class UserController {
     public ResponseEntity<BaseResponse<GetMyProfileResponse>> getMyProfile(
             HttpServletRequest request) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         GetMyProfileResponse getMyProfileResponse = userService.getMyProfile(userId);
 
         return ResponseEntity.ok(BaseResponse.success("내 프로필 조회 성공", getMyProfileResponse));
@@ -55,10 +56,9 @@ public class UserController {
      */
     @GetMapping("/profile/{userId}")
     public ResponseEntity<BaseResponse<GetUserProfileResponse>> getUserProfile(
-            HttpServletRequest request,
-            @PathVariable Long userId) {
+            HttpServletRequest request, @PathVariable Long userId) {
 
-        Long myId = oAuthService.findIdByToken(request);
+        Long myId = tokenUtil.findIdByToken(request);
         GetUserProfileResponse getUserProfileResponse = userService.getUserProfile(myId, userId);
 
         return ResponseEntity.ok(BaseResponse.success("유저 프로필 조회 성공", getUserProfileResponse));
@@ -75,22 +75,27 @@ public class UserController {
      */
     @PatchMapping("/profile")
     public ResponseEntity<BaseResponse<Void>> updateMyProfile(
-            HttpServletResponse response,
-            HttpServletRequest request,
+            HttpServletResponse response, HttpServletRequest request,
             @ModelAttribute UpdateMyProfileRequest updateMyProfileRequest) throws IOException {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         userService.updateMyProfile(userId, request, updateMyProfileRequest, response);
 
         return ResponseEntity.ok(BaseResponse.withMessage("프로필 수정 완료"));
     }
 
 
+    /**
+     * 현재 사용자의 포인트 정보를 응답하는 엔드포인트
+     *
+     * @param request HTTP 요청 객체 (현재 사용자 인증 정보 포함)
+     * @return ResponseEntity<BaseResponse<GetUserPointResponse>> 사용자 포인트 정보 응답
+     */
     @GetMapping("/point")
     public ResponseEntity<BaseResponse<GetUserPointResponse>> getUserPoint(
             HttpServletRequest request) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         GetUserPointResponse response = userService.getUserPoint(userId);
 
         return ResponseEntity.ok(BaseResponse.success("포인트 조회 성공", response));
@@ -105,8 +110,7 @@ public class UserController {
      */
     @GetMapping("/search")
     public ResponseEntity<BaseResponse<Map<String, Object>>> searchUser(
-            @RequestParam String keyword,
-            @RequestParam int pageNum) {
+            @RequestParam String keyword, @RequestParam int pageNum) {
 
         Map<String, Object> response = userService.searchUser(keyword, pageNum);
 

@@ -1,5 +1,7 @@
 package com.lumina.backend.common.utill;
 
+import com.lumina.backend.user.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -163,5 +165,30 @@ public class RedisUtil {
      */
     public Long removeUserFromZSet(String key, String userId) {
         return redisTemplate.opsForZSet().remove(key, userId);
+    }
+
+
+    /**
+     * User-Agent를 분석하여 기기 유형을 판별합니다.
+     *
+     * @param userAgent HTTP User-Agent 헤더 값
+     * @return "pc" 또는 "mobile"
+     */
+    public String getDeviceType(String userAgent) {
+
+        if (userAgent.contains("mobile") || userAgent.contains("android") || userAgent.contains("iphone")) {
+            return "mobile";
+        }
+
+        return "pc";
+    }
+
+
+    public String getRefreshKey(HttpServletRequest request, Long userId) {
+
+        String userAgent = request.getHeader("User-Agent").toLowerCase();
+        String deviceType = getDeviceType(userAgent);
+
+        return "refresh:" + userId + ":" + deviceType;
     }
 }

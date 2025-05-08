@@ -2,6 +2,7 @@ package com.lumina.backend.user.controller;
 
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.model.response.BaseResponse;
+import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,6 +23,8 @@ public class OAuthController {
 
     private final OAuthService oAuthService;
 
+    private final TokenUtil tokenUtil;
+
 
     /**
      * Google 로그인 페이지로 리다이렉트하는 엔드포인트
@@ -37,9 +40,9 @@ public class OAuthController {
             response.sendRedirect("/oauth2/authorization/google");
         } else if (type.equals("kakao")) {
             response.sendRedirect("/oauth2/authorization/kakao");
-        } else {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "지원하지 않는 로그인 타입입니다: " + type);
         }
+
+        throw new CustomException(HttpStatus.BAD_REQUEST, "지원하지 않는 로그인 타입입니다: " + type);
     }
 
 
@@ -62,7 +65,7 @@ public class OAuthController {
     public ResponseEntity<BaseResponse<Void>> deleteUser(
             HttpServletRequest request, HttpServletResponse response) {
 
-        Long userId = oAuthService.findIdByToken(request);
+        Long userId = tokenUtil.findIdByToken(request);
         oAuthService.deleteUser(userId, request, response);
 
         return ResponseEntity.ok(BaseResponse.withMessage("회원탈퇴 완료"));

@@ -17,12 +17,12 @@ public interface FollowService {
     /**
      * 유저의 팔로워 목록을 조회하는 메서드
      */
-    Map<String, Object> getFollowers(Long myId, Long targetUserId, boolean isMe, int pageNum);
+    Map<String, Object> getFollowers(Long myId, Long targetUserId, int pageNum);
 
     /**
      * 유저의 팔로잉 목록을 조회하는 메서드
      */
-    Map<String, Object> getFollowings(Long myId, Long targetUserId, boolean isMe, int pageNum);
+    Map<String, Object> getFollowings(Long myId, Long targetUserId, int pageNum);
 
     /**
      * 현재 사용자의 팔로워를 삭제하는 메서드
