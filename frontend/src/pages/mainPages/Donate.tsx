@@ -14,7 +14,7 @@ export default function DonatePage() {
     const navigate = useNavigate()
 
     return (
-        <div className="relative flex w-full flex-col px-6 py-6">
+        <div className="relative flex w-full flex-col px-6 py-6 bg-white">
             {/* 검색 모달창 */}
             {isSearchOpen && (
                 <SearchModal onClose={() => setIsSearchOpen(false)} />

@@ -39,7 +39,7 @@ export default function RankingPage() {
 
 
   return (
-  <div className="p-6">
+  <div className="p-6 bg-white">
     {/* 로고 */}
     <img src={LuminaLogo} alt="루미나 로고" className="w-25"/>
 

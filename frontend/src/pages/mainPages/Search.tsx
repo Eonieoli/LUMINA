@@ -179,7 +179,7 @@ export default function Search() {
     };
 
     return (
-        <div className="h-full overflow-y-auto">
+        <div className="h-full overflow-y-auto bg-white">
             <div className="sticky top-0 z-30">
                 <div className="relative flex h-20 items-end px-5 pb-3 bg-white" ref={wrapperRef}>
                     <div className="relative w-full">

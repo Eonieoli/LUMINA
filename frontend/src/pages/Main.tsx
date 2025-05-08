@@ -61,7 +61,7 @@ export default function Main() {
           timeout={300}
           unmountOnExit
         >
-          <div ref={getNodeRef()} className="flex justify-center items-center h-dvh">
+          <div ref={getNodeRef()} className="flex justify-center items-center bg-[#eeeeee] h-dvh">
             <div
               id="scrollable-container"
               className="relative h-dvh overflow-y-scroll w-full min-w-80 md:w-[600px] md:h-[90dvh] pb-20 md:pb-0 md:ml-20 md:border border-gray-300 md:rounded-xl"
