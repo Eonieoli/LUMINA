@@ -219,7 +219,7 @@ export const Comments = ({ postId, children }: CommentsProps) => {
     }
 
     return (
-        <div className={`flex h-full flex-col gap-y-2 p-2 ${children}`}>
+        <div className={`flex h-full w-full flex-col gap-y-2 p-2 ${children}`}>
             <h2 className="flex items-center justify-center text-lg font-semibold">
                 댓글
             </h2>
@@ -327,7 +327,7 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                         </span>
                     </div>
                 ) : null}
-                <div className="flex items-center gap-x-2">
+                <div className="flex w-full items-center gap-x-2">
                     <div className="aspect-square overflow-hidden rounded-full">
                         <img
                             className="h-12 w-12"

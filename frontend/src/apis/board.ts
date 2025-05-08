@@ -173,7 +173,7 @@ export const commentLike = async (postId: number, commentId: number) => {
 // 카테고리 검색
 export const getCategoryExplore = async (pageNum: number, ) => {
     try {
-        const response = await apiClient.get('/post', {
+        const response = await apiClient.get('/post/category', {
             params: {
                 pageNum
             }
@@ -181,6 +181,28 @@ export const getCategoryExplore = async (pageNum: number, ) => {
         return response.data
     } catch (error) {
         console.error("카테고리 검색 API 요청 에러: ", error);
+        throw error
+    }
+}
+
+// 전체 카테고리 조회
+export const getCategories = async () => {
+    try {
+        const response = await apiClient.get('/category');
+        return response.data
+    } catch (error) {
+        console.error("카테고리 전체 조회회 API 에러: ", error);
+        throw error
+    }
+}
+
+// 카테고리 구독
+export const subscribeCategory = async (categoryId: number) => {
+    try {
+        const response = await apiClient.post('/category/' + categoryId);
+        return response.data
+    } catch (error) {
+        console.error("카테고리 구독 요청 API 에러: ", error);
         throw error
     }
 }
