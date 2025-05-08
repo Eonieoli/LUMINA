@@ -148,7 +148,7 @@ export default function MyPage() {
                 <div className="flex flex-col items-center gap-1 mb-4">
                     <img 
                         src={userInfo?.profileImage ?? DefaultProfile} alt="프로필 이미지"
-                        className="w-25 bg-white rounded-full"
+                        className="w-25 aspect-square object-cover bg-white rounded-full"
                     />
                     <p className="font-semibold text-[17px]">{userInfo?.nickname}</p>
                     <p className="text-[14px]">{userInfo?.message}</p>
