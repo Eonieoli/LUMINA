@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/lumina")
+@RequestMapping("/api/v1/lumina/post/{postId}")
 @RequiredArgsConstructor
 public class LuminaController {
 
@@ -29,10 +29,9 @@ public class LuminaController {
     private final TokenUtil tokenUtil;
 
 
-    @PostMapping("/post/{postId}")
+    @PostMapping("")
     public ResponseEntity<BaseResponse<Void>> getPostLumina(
-            HttpServletRequest request,
-            @PathVariable Long postId) {
+            HttpServletRequest request, @PathVariable Long postId) {
 
         Long userId = tokenUtil.findIdByToken(request);
         Long luminaId = userRepository.findIdByNickname("Luna");
@@ -43,10 +42,9 @@ public class LuminaController {
     }
 
 
-    @PostMapping("/post/{postId}/comment/{commentId}")
+    @PostMapping("/comment/{commentId}")
     public ResponseEntity<BaseResponse<Void>> getCommentLumina(
-            HttpServletRequest request,
-            @PathVariable Long postId,
+            HttpServletRequest request, @PathVariable Long postId,
             @PathVariable Long commentId) {
 
         Long userId = tokenUtil.findIdByToken(request);
