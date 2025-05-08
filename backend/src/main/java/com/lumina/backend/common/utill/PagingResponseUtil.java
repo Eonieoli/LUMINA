@@ -18,5 +18,14 @@ public class PagingResponseUtil {
         result.put(contentKey, content);
         return result;
     }
+
+    public static <T> Map<String, Object> toPagingResult(
+            int totalPages, int currentPage, String contentKey, List<T> content) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalPages", totalPages);
+        result.put("currentPage", currentPage);
+        result.put(contentKey, content);
+        return result;
+    }
 }
 

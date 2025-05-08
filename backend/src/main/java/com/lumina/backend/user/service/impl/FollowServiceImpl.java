@@ -139,7 +139,7 @@ public class FollowServiceImpl implements FollowService {
 
         ValidationUtil.validatePageNumber(pageNum);
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 20);
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10);
         Page<Follow> followPage = followFetchFunction.apply(targetUserId, pageRequest);
 
         List<GetFollowsResponse> responses = convertToFollowResponses(
