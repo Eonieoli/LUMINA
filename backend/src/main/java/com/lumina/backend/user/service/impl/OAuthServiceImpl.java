@@ -2,10 +2,7 @@ package com.lumina.backend.user.service.impl;
 
 import com.lumina.backend.common.jwt.JWTUtil;
 import com.lumina.backend.common.service.TokenService;
-import com.lumina.backend.common.utill.CookieUtil;
-import com.lumina.backend.common.utill.RedisUtil;
-import com.lumina.backend.common.utill.TokenValidationUtil;
-import com.lumina.backend.common.utill.FindUtil;
+import com.lumina.backend.common.utill.*;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.repository.UserRepository;
 import com.lumina.backend.user.service.OAuthService;
@@ -28,6 +25,7 @@ public class OAuthServiceImpl implements OAuthService {
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
     private final FindUtil findUtil;
+    private final TokenUtil tokenUtil;
     private final TokenValidationUtil tokenValidationUtil;
 
     private final TokenService tokenService;
@@ -60,10 +58,11 @@ public class OAuthServiceImpl implements OAuthService {
         String nickname = jwtUtil.getNickname(refresh);
         Long userId = userRepository.findIdByNickname(nickname);
         String userKey = redisUtil.getRefreshKey(request, userId);
+        String role = tokenUtil.findRoleByToken(request);
 
         tokenValidationUtil.validateStoredRefreshToken(userKey, refresh);
 
-        return tokenService.reissueTokens(userKey, nickname, request, response);
+        return tokenService.reissueTokens(userKey, nickname, role, response).get("access");
     }
 
 

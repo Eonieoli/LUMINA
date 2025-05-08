@@ -101,7 +101,7 @@ public class CommentServiceImpl implements CommentService {
             Long userId, String role, Long postId, Long commentId) {
 
         Post post = findUtil.getPostById(postId);
-        Comment comment = findUtil.getCommentId(commentId);
+        Comment comment = findUtil.getCommentById(commentId);
 
         ValidationUtil.validateComment(comment, postId);
         ValidationUtil.validateCommentDelete(role, comment, userId);
@@ -126,7 +126,7 @@ public class CommentServiceImpl implements CommentService {
         ValidationUtil.validateId(commentId, "댓글");
 
         Post post = findUtil.getPostById(postId);
-        Comment comment = findUtil.getCommentId(commentId);
+        Comment comment = findUtil.getCommentById(commentId);
         User user = findUtil.getUserById(userId);
 
         ValidationUtil.validateComment(comment, postId);

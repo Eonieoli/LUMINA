@@ -10,13 +10,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class TokenService {
 
     private final JWTUtil jwtUtil;
     private final RedisUtil redisUtil;
-    private final TokenUtil tokenUtil;
 
     @Value("${jwt.access.exp}")
     private String jwtAccessExp;
@@ -27,11 +28,10 @@ public class TokenService {
     @Value("${jwt.redis.exp}")
     private String jwtRedisExp;
 
-    public String reissueTokens(
-            String userKey, String nickname,
-            HttpServletRequest request, HttpServletResponse response) {
 
-        String role = tokenUtil.findRoleByToken(request);
+    public Map<String, String> reissueTokens(
+            String userKey, String nickname,
+            String role, HttpServletResponse response) {
 
         String newAccess = jwtUtil.createJwt("access", nickname, role, Long.parseLong(jwtAccessExp));
         String newRefresh = jwtUtil.createJwt("refresh", nickname, role, Long.parseLong(jwtRefreshExp));
@@ -41,6 +41,9 @@ public class TokenService {
         response.addCookie(CookieUtil.createCookie("access", newAccess));
         response.addCookie(CookieUtil.createCookie("refresh", newRefresh));
 
-        return newAccess;
+        return Map.of(
+                "access", newAccess,
+                "refresh", newRefresh
+        );
     }
 }

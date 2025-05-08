@@ -19,7 +19,6 @@ public class CategoryController {
 
     private final TokenUtil tokenUtil;
 
-    private final OAuthService oAuthService;
     private final CategoryService categoryService;
 
 
@@ -48,13 +47,10 @@ public class CategoryController {
         Long userId = tokenUtil.findIdByToken(request);
         Boolean subscribe = categoryService.toggleCategorySubscribe(userId, categoryId);
 
-        // 결과에 따른 응답 메시지 생성
         BaseResponse<Void> baseResponse = subscribe ?
                 BaseResponse.withMessage("카테고리 구독 완료") :
                 BaseResponse.withMessage("카테고리 구독 취소 완료");
 
-        // 응답 반환
         return ResponseEntity.ok(baseResponse);
     }
-
 }

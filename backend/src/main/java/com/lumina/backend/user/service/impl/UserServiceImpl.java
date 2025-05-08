@@ -39,6 +39,7 @@ public class UserServiceImpl implements UserService {
 
     private final RedisUtil redisUtil;
     private final FindUtil findUtil;
+    private final TokenUtil tokenUtil;
 
     private final S3Service s3Service;
     private final TokenService tokenService;
@@ -128,7 +129,8 @@ public class UserServiceImpl implements UserService {
 
         if (!user.getNickname().equals(request.getNickname())) {
             String userKey = redisUtil.getRefreshKey(httpRequest, userId);
-            tokenService.reissueTokens(userKey, request.getNickname(), httpRequest, response);
+            String role = tokenUtil.findRoleByToken(httpRequest);
+            tokenService.reissueTokens(userKey, request.getNickname(), role, response);
         }
 
         user.updateProfile(profileImageUrl, request.getNickname(), request.getMessage());

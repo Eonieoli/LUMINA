@@ -79,7 +79,7 @@ public class LuminaServiceImpl implements LuminaService {
     public UploadCommentRequest getCommentLumina(
             Long userId, Long commentId) {
 
-        Comment comment = findUtil.getCommentId(commentId);
+        Comment comment = findUtil.getCommentById(commentId);
         String nickname = userRepository.findNicknameByUserId(userId);
 
         Map<String, String> requestPayload = createCommentRequestPayload(userId, commentId, nickname, comment.getCommentContent());

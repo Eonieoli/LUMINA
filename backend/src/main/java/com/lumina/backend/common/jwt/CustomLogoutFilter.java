@@ -41,8 +41,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
      */
     @Override
     public void doFilter(
-            ServletRequest request,
-            ServletResponse response,
+            ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException {
 
         doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
@@ -69,26 +68,20 @@ public class CustomLogoutFilter extends GenericFilterBean {
             return;
         }
 
-        // 2. 쿠키에서 Refresh 토큰 추출
         String refresh = CookieUtil.getCookieValue(request, "refresh");
 
-        // Refresh 토큰이 없으면 Bad Request 응답
         tokenValidationUtil.validateRefreshToken(refresh);
 
-        // 5. Redis에서 토큰 존재 여부 확인
         String nickName = jwtUtil.getNickname(refresh);
         Long userId = userRepository.findIdByNickname(nickName);
         String userKey = redisUtil.getRefreshKey(request, userId);
         tokenValidationUtil.validateStoredRefreshToken(userKey, refresh);
 
-        // 6. Redis에서 해당 키 삭제 (토큰 무효화)
         redisUtil.delete(userKey);
 
-        // 7. access 및 refresh 쿠키 삭제
         CookieUtil.deleteCookie(response, "access");
         CookieUtil.deleteCookie(response, "refresh");
 
-        // 8. 로그아웃 성공 상태 코드 전송
         response.setStatus(HttpServletResponse.SC_OK);
     }
 }
