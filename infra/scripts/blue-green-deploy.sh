@@ -260,6 +260,9 @@ initialize_environment() {
     # frontend-blue와 backend-blue 배포
     docker-compose up -d frontend-blue backend-blue
     
+    # ai-server 배포
+    # docker-compose up -d ai-server
+    
     # 초기 upstream.conf 설정 (백업 서버 포함 후 기동)
     echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
     echo -e "upstream backend {\n    server backend-blue:8080;    # active\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
@@ -309,6 +312,69 @@ cleanup() {
     echo "Cleanup completed!"
 }
 
+# AI 서버 배포 함수
+deploy_ai_server() {
+    echo "============================="
+    echo "Deploying AI Server"
+    echo "============================="
+    
+    # 기존 컨테이너 정리
+    # if container_exists "ai-server"; then
+    #     echo "Stopping and removing existing ai-server container..."
+    #     docker stop "ai-server" >/dev/null 2>&1 || true
+    #     docker rm "ai-server" >/dev/null 2>&1 || true
+    # fi
+    
+    # 이미지 태그 설정
+    local image_tag=""
+    if [ "$ENV" == "dev" ]; then
+        image_tag="develop"
+    else
+        image_tag="latest"
+    fi
+    
+    # AI 서버 컨테이너 시작
+    # echo "Starting new ai-server container..."
+    # docker run -d --name "ai-server" \
+    #     --network lumina-network \
+    #     -p 8000:8000 \
+    #     --restart always \
+    #     --label environment=$ENV \
+    #     "rublin322/lumina-ai:$image_tag"
+    
+    # 건강 상태 확인
+    # echo "Performing health check for ai-server..."
+    # local max_attempts=10
+    # local wait_time=5
+    
+    # for i in $(seq 1 $max_attempts); do
+    #     echo "Health check attempt $i/$max_attempts..."
+        
+    #     if ! container_running "ai-server"; then
+    #         echo "Error: Container ai-server is not running anymore!"
+    #         docker logs --tail 50 "ai-server" || true
+    #         return 1
+    #     fi
+        
+    #     # 2초 타임아웃으로 헬스 체크 (기본 경로로 확인)
+    #     if curl -s -m 2 -o /dev/null -w "%{http_code}" "http://localhost:8000/" | grep -q -E "200|404"; then
+    #         echo "ai-server is healthy!"
+    #         return 0
+    #     fi
+        
+    #     if [ $i -eq $max_attempts ]; then
+    #         echo "Error: Health check failed after $max_attempts attempts"
+    #         docker logs --tail 50 "ai-server"
+    #         return 1
+    #     fi
+        
+    #     echo "Health check failed, waiting $wait_time seconds before next attempt..."
+    #     sleep $wait_time
+    # done
+    
+    return 0
+}
+
 # 메인 함수
 main() {
     # 초기 배포 확인
@@ -341,6 +407,16 @@ main() {
         result=$?
         if [ $result -ne 0 ]; then
             echo "Backend deployment failed!"
+            exit $result
+        fi
+    fi
+    
+    # AI 서버 배포 (backend 또는 all이 지정된 경우에 배포)
+    if [ "$TARGET" == "backend" ] || [ "$TARGET" == "all" ]; then
+        deploy_ai_server
+        result=$?
+        if [ $result -ne 0 ]; then
+            echo "AI Server deployment failed!"
             exit $result
         fi
     fi

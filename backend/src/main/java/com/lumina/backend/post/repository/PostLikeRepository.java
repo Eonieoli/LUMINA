@@ -10,11 +10,13 @@ import java.util.Optional;
 
 public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
 
+    Optional<PostLike> findByUserIdAndPostId(Long userId, Long postId);
+
+
     int countByPostId(Long postId);
 
     boolean existsByUserIdAndPostId(Long userId, Long postId);
 
-    Optional<PostLike> findByUserIdAndPostId(Long userId, Long postId);
 
     @EntityGraph(attributePaths = {"post"})
     Page<PostLike> findByUserId(Long userId, Pageable pageable);

@@ -44,7 +44,10 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
-
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 jwt:
   secret: ${JWT_SECRET_KEY}
   access-token:
@@ -54,6 +57,11 @@ jwt:
 
 server:
   port: 8080
+
+# AI 서버 설정
+ai:
+  server:
+    url: http://ai-server:8000
 
 # Health, Prometheus
 management:

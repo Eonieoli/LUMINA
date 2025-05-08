@@ -2,13 +2,12 @@ package com.lumina.backend.user.service.impl;
 
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.utill.PagingResponseUtil;
-import com.lumina.backend.common.utill.UserUtil;
+import com.lumina.backend.common.utill.FindUtil;
 import com.lumina.backend.common.utill.ValidationUtil;
 import com.lumina.backend.user.model.entity.Follow;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.model.response.GetFollowsResponse;
 import com.lumina.backend.user.repository.FollowRepository;
-import com.lumina.backend.user.repository.UserRepository;
 import com.lumina.backend.user.service.FollowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,10 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,7 +32,7 @@ public class FollowServiceImpl implements FollowService {
 
     private final FollowRepository followRepository;
 
-    private final UserUtil userUtil;
+    private final FindUtil findUtil;
 
 
     /**
@@ -50,12 +47,12 @@ public class FollowServiceImpl implements FollowService {
     public Boolean toggleFollow(
             Long followerId, Long followingId) {
 
-        ValidationUtil.validateUserId(followerId);
-        ValidationUtil.validateUserId(followingId);
+        ValidationUtil.validateId(followerId, "사용자");
+        ValidationUtil.validateId(followingId, "사용자");
         ValidationUtil.validateFollow(followerId, followingId);
 
-        User follower = userUtil.getUserById(followerId);
-        User following = userUtil.getUserById(followingId);
+        User follower = findUtil.getUserById(followerId);
+        User following = findUtil.getUserById(followingId);
 
         return followRepository.findByFollowerIdAndFollowingId(followerId, followingId)
                 .map(existingFollow -> {
@@ -76,11 +73,14 @@ public class FollowServiceImpl implements FollowService {
      * @return Map<String, Object> 팔로워 목록을 포함한 응답
      */
     @Override
-    public Map<String, Object> getFollowers(
-            Long myId, Long targetUserId, int pageNum) {
+    public List<GetFollowsResponse> getFollowers(
+            Long myId, Long targetUserId) {
 
-        return getFollows(myId, targetUserId, pageNum,
-                followRepository::findByFollowingId, "followers");
+        List<Follow> followList = followRepository.findByFollowingId(targetUserId);
+
+        return followList.stream()
+                .map(follow -> convertToFollowResponses(myId, follow.getFollower()))
+                .collect(Collectors.toList());
     }
 
 
@@ -91,11 +91,14 @@ public class FollowServiceImpl implements FollowService {
      * @return Map<String, Object> 팔로잉 목록을 포함한 응답
      */
     @Override
-    public Map<String, Object> getFollowings(
-            Long myId, Long targetUserId, int pageNum) {
+    public List<GetFollowsResponse> getFollowings(
+            Long myId, Long targetUserId) {
 
-        return getFollows(myId, targetUserId, pageNum,
-                followRepository::findByFollowerId, "followings");
+        List<Follow> followList = followRepository.findByFollowerId(targetUserId);
+
+        return followList.stream()
+                .map(follow -> convertToFollowResponses(myId, follow.getFollowing()))
+                .collect(Collectors.toList());
     }
 
 
@@ -109,7 +112,7 @@ public class FollowServiceImpl implements FollowService {
     public void deleteMyFollower(
             Long myId, Long userId) {
 
-        ValidationUtil.validateUserId(userId);
+        ValidationUtil.validateId(userId, "사용자");
 
         Follow follow = followRepository.findByFollowerIdAndFollowingId(userId, myId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "팔로워 관계를 찾을 수 없음"));
@@ -117,38 +120,50 @@ public class FollowServiceImpl implements FollowService {
         followRepository.delete(follow);
     }
 
+    private GetFollowsResponse convertToFollowResponses(Long myId, User follow) {
+        boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, follow.getId());
 
-    private List<GetFollowsResponse> convertToFollowResponses(
-            List<Follow> follows, Long myId,
-            Function<Follow, User> userExtractor) {
-
-        return follows.stream()
-                .map(follow -> {
-                    User user = userExtractor.apply(follow);
-                    boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, user.getId());
-                    return new GetFollowsResponse(
-                            user.getId(),
-                            user.getProfileImage(),
-                            user.getNickname(),
-                            isFollowing
-                    );
-                })
-                .collect(Collectors.toList());
+        return new GetFollowsResponse(
+                follow.getId(),
+                follow.getProfileImage(),
+                follow.getNickname(),
+                isFollowing
+        );
     }
 
-    private Map<String, Object> getFollows(
-            Long myId, Long targetUserId, int pageNum,
-            BiFunction<Long, Pageable, Page<Follow>> followFetchFunction, String keyName) {
 
-        ValidationUtil.validatePageNumber(pageNum);
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 20);
-        Page<Follow> followPage = followFetchFunction.apply(targetUserId, pageRequest);
-
-        List<GetFollowsResponse> responses = convertToFollowResponses(
-                followPage.getContent(), myId,
-                keyName.equals("followers") ? Follow::getFollower : Follow::getFollowing);
-
-        return PagingResponseUtil.toPagingResult(followPage, pageNum, keyName, responses);
-    }
+//    private List<GetFollowsResponse> convertToFollowResponses(
+//            List<Follow> follows, Long myId,
+//            Function<Follow, User> userExtractor) {
+//
+//        return follows.stream()
+//                .map(follow -> {
+//                    User user = userExtractor.apply(follow);
+//                    boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, user.getId());
+//                    return new GetFollowsResponse(
+//                            user.getId(),
+//                            user.getProfileImage(),
+//                            user.getNickname(),
+//                            isFollowing
+//                    );
+//                })
+//                .collect(Collectors.toList());
+//    }
+//
+//    private Map<String, Object> getFollows(
+//            Long myId, Long targetUserId, int pageNum,
+//            BiFunction<Long, Pageable, Page<Follow>> followFetchFunction, String keyName) {
+//
+//        ValidationUtil.validatePageNumber(pageNum);
+//
+//        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10);
+//        Page<Follow> followPage = followFetchFunction.apply(targetUserId, pageRequest);
+//
+//        List<GetFollowsResponse> responses = convertToFollowResponses(
+//                followPage.getContent(), myId,
+//                keyName.equals("followers") ? Follow::getFollower : Follow::getFollowing);
+//
+//        return PagingResponseUtil.toPagingResult(followPage, pageNum, keyName, responses);
+//    }
 }

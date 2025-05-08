@@ -10,9 +10,10 @@ import java.util.Optional;
 
 public interface UserCategoryRepository extends JpaRepository<UserCategory, Long> {
 
-    boolean existsByUserIdAndCategoryId(Long userId, Long categoryId);
-
     Optional<UserCategory> findByUserIdAndCategoryId(Long userId, Long categoryId);
+
+
+    boolean existsByUserIdAndCategoryId(Long userId, Long categoryId);
 
     @Query("SELECT uc.category.id FROM UserCategory uc WHERE uc.user.id = :userId")
     List<Long> findCategoryIdsByUserId(@Param("userId") Long userId);

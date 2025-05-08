@@ -18,16 +18,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final TokenUtil tokenUtil;
-
     private final AdminService adminService;
-    private final OAuthService oAuthService;
+
+    private final TokenUtil tokenUtil;
 
 
     @GetMapping("/user")
     public ResponseEntity<BaseResponse<Map<String, Object>>> getUser(
-            HttpServletRequest request,
-            @RequestParam int pageNum) {
+            HttpServletRequest request, @RequestParam int pageNum) {
 
         Long userId = tokenUtil.findIdByToken(request);
         Map<String, Object> response = adminService.getUser(userId, pageNum);
@@ -38,8 +36,7 @@ public class AdminController {
 
     @DeleteMapping("/user/{userId}")
     public ResponseEntity<BaseResponse<Void>> deleteUser(
-            HttpServletRequest request,
-            @PathVariable Long userId) {
+            HttpServletRequest request, @PathVariable Long userId) {
 
         Long myId = tokenUtil.findIdByToken(request);
         adminService.deleteUser(myId, userId);
@@ -50,8 +47,7 @@ public class AdminController {
 
     @GetMapping("/cur-user")
     public ResponseEntity<BaseResponse<Map<String, Object>>> getCurUser(
-            HttpServletRequest request,
-            @RequestParam int pageNum) {
+            HttpServletRequest request, @RequestParam int pageNum) {
 
         Long userId = tokenUtil.findIdByToken(request);
         Map<String, Object> response = adminService.getCurUser(userId, pageNum);
@@ -62,8 +58,7 @@ public class AdminController {
 
     @GetMapping("/post")
     public ResponseEntity<BaseResponse<Map<String, Object>>> getUserPost(
-            HttpServletRequest request,
-            @RequestParam Long userId,
+            HttpServletRequest request, @RequestParam Long userId,
             @RequestParam int pageNum) {
 
         Long myId = tokenUtil.findIdByToken(request);
@@ -75,8 +70,7 @@ public class AdminController {
 
     @GetMapping("/comment")
     public ResponseEntity<BaseResponse<Map<String, Object>>> getUserComment(
-            HttpServletRequest request,
-            @RequestParam Long userId,
+            HttpServletRequest request, @RequestParam Long userId,
             @RequestParam int pageNum) {
 
         Long myId = tokenUtil.findIdByToken(request);
@@ -88,8 +82,7 @@ public class AdminController {
 
     @DeleteMapping("/post/{postId}")
     public ResponseEntity<BaseResponse<Void>> deletePost(
-            HttpServletRequest request,
-            @PathVariable Long postId) {
+            HttpServletRequest request, @PathVariable Long postId) {
 
         Long myId = tokenUtil.findIdByToken(request);
         adminService.deletePost(myId, postId);
@@ -100,8 +93,7 @@ public class AdminController {
 
     @DeleteMapping("/post/{postId}/comment/{commentId}")
     public ResponseEntity<BaseResponse<Void>> deleteComment(
-            HttpServletRequest request,
-            @PathVariable Long postId,
+            HttpServletRequest request, @PathVariable Long postId,
             @PathVariable Long commentId) {
 
         Long myId = tokenUtil.findIdByToken(request);

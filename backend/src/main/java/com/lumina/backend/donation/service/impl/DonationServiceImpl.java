@@ -1,7 +1,10 @@
 package com.lumina.backend.donation.service.impl;
 
 import com.lumina.backend.common.exception.CustomException;
+import com.lumina.backend.common.utill.FindUtil;
+import com.lumina.backend.common.utill.PagingResponseUtil;
 import com.lumina.backend.common.utill.RedisUtil;
+import com.lumina.backend.common.utill.ValidationUtil;
 import com.lumina.backend.donation.model.entity.Donation;
 import com.lumina.backend.donation.model.entity.UserDonation;
 import com.lumina.backend.donation.model.response.GetDetailDonationResponse;
@@ -11,6 +14,7 @@ import com.lumina.backend.donation.model.response.SearchDonationResponse;
 import com.lumina.backend.donation.repository.DonationRepository;
 import com.lumina.backend.donation.repository.UserDonationRepository;
 import com.lumina.backend.donation.service.DonationService;
+import com.lumina.backend.post.model.entity.PostLike;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.donation.model.request.DoDonationRequest;
 import com.lumina.backend.user.repository.UserRepository;
@@ -22,10 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,74 +38,33 @@ public class DonationServiceImpl implements DonationService {
     private final UserRepository userRepository;
 
     private final RedisUtil redisUtil;
+    private final FindUtil findUtil;
 
 
     @Override
-    public List<GetDonationResponse> getDonation(
-            Long userId) {
+    public List<GetDonationResponse> getDonation(Long userId) {
 
-        List<Donation> donations = donationRepository.findByStatusTrue();
-
-        List<GetDonationResponse> donationList = donations.stream()
-                .map(donation -> {
-                    Boolean isSubscribe = userDonationRepository.existsByUserIdAndDonationIdAndRegistration(
-                            userId, donation.getId(), "USER");
-                    return new GetDonationResponse(
-                            donation.getId(), donation.getDonationName(), isSubscribe
-                    );
-                })
+        return donationRepository.findByStatusTrue().stream()
+                .map(donation -> mapToGetDonationResponse(userId, donation))
                 .collect(Collectors.toList());
-
-        return donationList;
     }
 
 
     @Override
     @Transactional
-    public void doDonation(
-            Long userId, DoDonationRequest request) {
+    public void doDonation(Long userId, DoDonationRequest request) {
 
-        if (request.getDonationId() == null) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "기부처는 필수 입력값입니다.");
-        }
+        ValidationUtil.validateRequiredField(request.getDonationId(), "기부처");
+        ValidationUtil.validateRequiredField(request.getPoint(), "포인트");
 
-        if (request.getPoint() == null) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "point는 필수 입력값입니다.");
-        }
+        User user = findUtil.getUserById(userId);
+        Donation donation = findUtil.getDonationById(request.getDonationId());
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없음: " + userId));
+        ValidationUtil.validateUserPoint(user, request.getPoint());
 
-        Donation donation = donationRepository.findById(request.getDonationId())
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "기부처를 찾을 수 없음: " + request.getDonationId()));
-
-        if (user.getPoint() < request.getPoint()) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "보유 point가 부족합니다.");
-        }
-
-        UserDonation existUserDonation = userDonationRepository.findByUserIdAndDonationIdAndRegistration(userId, donation.getId(), "DONATION")
-                .orElse(null);
-
-        if (existUserDonation != null) {
-            existUserDonation.updateUserDonation(request.getPoint());
-            donation.updateDonation(request.getPoint(), 0);
-        } else {
-            UserDonation userDonation = new UserDonation();
-            userDonation.registerDonation(user, donation, request.getPoint());
-            userDonationRepository.save(userDonation);
-            donation.updateDonation(request.getPoint(), 1);
-        }
-        donationRepository.save(donation);
-
-        user.updatePoint(-request.getPoint());
-        user.updateSumPoint(request.getPoint());
-        user.updatePositiveness(request.getPoint() / 100);
-        User savedUser = userRepository.save(user);
-
-        String rankKey = "sum-point:rank";
-        String userKey = "user:" + userId;
-
-        redisUtil.addSumPointToZSetWithTTL(rankKey, userKey, savedUser.getSumPoint());
+        processDonation(user, donation, request.getPoint());
+        updateUserAfterDonation(user, request.getPoint());
+        updateDonationRankingInRedis(userId, user.getSumPoint());
     }
 
 
@@ -119,58 +79,29 @@ public class DonationServiceImpl implements DonationService {
     @Transactional
     public Boolean toggleDonationSubscribe(Long userId, Long donationId) {
 
-        if (donationId == null || donationId <= 0) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 기부처 ID입니다.");
-        }
+        ValidationUtil.validateId(donationId, "기부처");
 
-        Donation donation = donationRepository.findById(donationId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 기부처를 찾을 수 없습니다. 기부처 ID: " + donationId));
+        Donation donation = findUtil.getDonationById(donationId);
+        User user = findUtil.getUserById(userId);
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
-
-        UserDonation existUserDonation = userDonationRepository.findByUserIdAndDonationIdAndRegistration(userId, donationId, "USER")
-                .orElse(null);
-
-        if (existUserDonation != null) {
-            // 기존 구독 관계가 있으면 구독 취소
-            userDonationRepository.delete(existUserDonation);
-            return false;
-        } else {
-            UserDonation userDonation = new UserDonation(user, donation, "USER");
-            userDonationRepository.save(userDonation);
-        }
-        return true;
+        return userDonationRepository.findByUserIdAndDonationIdAndRegistration(userId, donationId, "USER")
+                .map(existUserDonation -> {
+                    userDonationRepository.delete(existUserDonation);
+                    return false;
+                })
+                .orElseGet(() -> {
+                    userDonationRepository.save(new UserDonation(user, donation, "USER"));
+                    return true;
+                });
     }
 
 
     @Override
     public Map<String, Object> getSubscribeDonation(Long userId) {
 
-        List<UserDonation> userDonations = userDonationRepository.findByUserIdAndRegistration(userId, "USER");
-        List<UserDonation> aiDonations = userDonationRepository.findByUserIdAndRegistration(userId, "AI");
-
-        List<GetSubscribeDonationResponse> userDonatioinList = userDonations.stream()
-                .map(userDonation -> {
-                    Donation donation = userDonation.getDonation();
-                    return new GetSubscribeDonationResponse(
-                            donation.getId(), donation.getDonationName()
-                    );
-                })
-                .collect(Collectors.toList());
-
-        List<GetSubscribeDonationResponse> aiDonatioinList = aiDonations.stream()
-                .map(aiDonation -> {
-                    Donation donation = aiDonation.getDonation();
-                    return new GetSubscribeDonationResponse(
-                            donation.getId(), donation.getDonationName()
-                    );
-                })
-                .collect(Collectors.toList());
-
         Map<String, Object> result = new HashMap<>();
-        result.put("user", userDonatioinList);
-        result.put("ai", aiDonatioinList);
+        result.put("user", getDonationResponseList(userId, "USER"));
+        result.put("ai", getDonationResponseList(userId, "AI"));
 
         return result;
     }
@@ -183,13 +114,11 @@ public class DonationServiceImpl implements DonationService {
      * @return ResponseEntity<BaseResponse<Map<String, Object>>> 검색된 기부처 목록을 포함한 응답
      */
     @Override
-    public Map<String, Object> searchDonation(
-            String keyword, int pageNum) {
+    public Map<String, Object> searchDonation(String keyword, int pageNum) {
 
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Donation> donationPage = donationRepository.findByDonationNameContaining(keyword, pageRequest);
 
-        // 조회된 사용자 목록을 SearchDonationResponse DTO로 변환
         List<SearchDonationResponse> donations = donationPage.getContent().stream()
                 .map(donation -> {
                     return new SearchDonationResponse(
@@ -199,45 +128,79 @@ public class DonationServiceImpl implements DonationService {
                 })
                 .collect(Collectors.toList());
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("totalPages", donationPage.getTotalPages());
-        result.put("currentPage", pageNum);
-        result.put("donations", donations);
-
-        // 3. 성공 응답 생성 및 반환
-        return result;
+        return PagingResponseUtil.toPagingResult(donationPage, pageNum, "donations", donations);
     }
 
 
     @Override
-    public GetDetailDonationResponse getDetailDonation(
-            Long userId, Long donationId) {
+    public GetDetailDonationResponse getDetailDonation(Long userId, Long donationId) {
 
-        if (donationId == null || donationId <= 0) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "유효하지 않은 기부처 ID입니다.");
-        }
+        ValidationUtil.validateId(donationId, "기부처");
 
-        Donation donation = donationRepository.findById(donationId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 기부처를 찾을 수 없습니다. 기부처 ID: " + donationId));
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다. 사용자 ID: " + userId));
-
+        Donation donation = findUtil.getDonationById(donationId);
         UserDonation existUserDonation = userDonationRepository.findByUserIdAndDonationIdAndRegistration(userId, donationId, "DONATION")
                 .orElse(null);
 
-        int myDonationCnt = 0;
-        int mySumDonation = 0;
-        if (existUserDonation != null) {
-            myDonationCnt = existUserDonation.getDonationCnt();
-            mySumDonation = existUserDonation.getDonationSum();
-        }
-
+        int myDonationCnt = existUserDonation != null ? existUserDonation.getDonationCnt() : 0;
+        int mySumDonation = existUserDonation != null ? existUserDonation.getDonationSum() : 0;
         Boolean isSubscribe = userDonationRepository.existsByUserIdAndDonationIdAndRegistration(
                 userId, donationId, "USER");
 
         return new GetDetailDonationResponse(
                 donationId, donation.getDonationName(), donation.getSumPoint(),
                 donation.getSumUser(), myDonationCnt, mySumDonation, isSubscribe);
+    }
+
+
+    private GetDonationResponse mapToGetDonationResponse(Long userId, Donation donation) {
+        boolean isSubscribe = userDonationRepository.existsByUserIdAndDonationIdAndRegistration(
+                userId, donation.getId(), "USER");
+
+        return new GetDonationResponse(
+                donation.getId(),
+                donation.getDonationName(),
+                isSubscribe
+        );
+    }
+
+    private void processDonation(User user, Donation donation, int point) {
+        Optional<UserDonation> optionalUserDonation =
+                userDonationRepository.findByUserIdAndDonationIdAndRegistration(user.getId(), donation.getId(), "DONATION");
+
+        if (optionalUserDonation.isPresent()) {
+            optionalUserDonation.get().updateUserDonation(point);
+            donation.updateDonation(point, 0);
+        } else {
+            UserDonation newDonation = new UserDonation();
+            newDonation.registerDonation(user, donation, point);
+            userDonationRepository.save(newDonation);
+            donation.updateDonation(point, 1);
+        }
+
+        donationRepository.save(donation);
+    }
+
+    private void updateUserAfterDonation(User user, int point) {
+        user.updatePoint(-point);
+        user.updateSumPoint(point);
+        user.updatePositiveness(point / 100);
+        userRepository.save(user);
+    }
+
+    private void updateDonationRankingInRedis(Long userId, int sumPoint) {
+        String rankKey = "sum-point:rank";
+        String userKey = "user:" + userId;
+        redisUtil.addSumPointToZSetWithTTL(rankKey, userKey, sumPoint);
+    }
+
+    private List<GetSubscribeDonationResponse> getDonationResponseList(Long userId, String registration) {
+        return userDonationRepository.findByUserIdAndRegistration(userId, registration).stream()
+                .map(userDonation -> {
+                    Donation donation = userDonation.getDonation();
+                    return new GetSubscribeDonationResponse(
+                            donation.getId(), donation.getDonationName()
+                    );
+                })
+                .collect(Collectors.toList());
     }
 }

@@ -1,4 +1,20 @@
 services:
+  ai-server:
+    container_name: ai-server
+    build:
+      context: ../../ai
+      dockerfile: Dockerfile
+    image: rublin322/lumina-ai:develop
+    restart: always
+    ports:
+      - "8000:8000"
+    networks:
+      - lumina-network
+    labels:
+      com.docker.compose.service: "ai-server"
+      com.docker.compose.project: "lumina"
+      environment: "development"
+
   frontend-blue:
     container_name: frontend-blue
     build:
