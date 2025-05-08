@@ -244,3 +244,8 @@ $RECYCLE.BIN/
 ### Miscellaneous ###
 HELP.md
 .htpasswd
+
+
+# 빠담 legacy
+ai/finetuned-kcelectra/
+ai/goodness-electra-v3/
