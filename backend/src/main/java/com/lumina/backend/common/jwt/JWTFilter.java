@@ -5,6 +5,7 @@ import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.common.service.CustomHttpServletRequestWrapper;
 import com.lumina.backend.common.utill.CookieUtil;
+import com.lumina.backend.common.utill.TokenValidationUtil;
 import com.lumina.backend.user.model.dto.CustomOAuth2User;
 import com.lumina.backend.user.model.dto.UserDto;
 import com.lumina.backend.user.service.OAuthService;
@@ -31,9 +32,12 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
 
-    private final JWTUtil jwtUtil;
-    private final OAuthService oAuthService;
     private final ObjectMapper objectMapper;
+
+    private final JWTUtil jwtUtil;
+    private final TokenValidationUtil tokenValidationUtil;
+
+    private final OAuthService oAuthService;
 
 
     /**
@@ -75,7 +79,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         HttpServletRequest requestToUse = request;
         try {
-            // 쿠키에서 액세스 토큰 추출
+
             String accessToken = CookieUtil.getCookieValue(request, "access");
 
             // 개발용
@@ -87,17 +91,12 @@ public class JWTFilter extends OncePerRequestFilter {
             }
             // 여기까지
 
-            // 액세스 토큰이 없으면 다음 필터로 진행
-            if (accessToken == null) {
-                throw new CustomException(HttpStatus.UNAUTHORIZED, "인증 토큰 없음");
-            }
+            tokenValidationUtil.validateAccessToken(accessToken);
 
             try {
-                // 토큰 만료 검증
                 jwtUtil.isExpired(accessToken);
             } catch (ExpiredJwtException e) {
                 try {
-                    // 토큰 만료 시 재발급 처리
                     String newAccessToken = oAuthService.reissue(request, response);
 
                     CustomHttpServletRequestWrapper updatedRequest = new CustomHttpServletRequestWrapper(request);
@@ -106,36 +105,19 @@ public class JWTFilter extends OncePerRequestFilter {
                     accessToken = newAccessToken;
                     requestToUse = updatedRequest; // 재발급된 경우 updatedRequest를 사용
                 } catch (CustomException ce) {
-                    // CustomException 처리
                     response.setStatus(ce.getStatus().value());
                     response.setContentType("application/json;charset=UTF-8");
                     response.getWriter().write(objectMapper.writeValueAsString(BaseResponse.error(ce.getMessage())));
-                    return; // 필터 체인 종료
+                    return;
                 }
             }
 
-            // 토큰 카테고리 검증
-            String category = jwtUtil.getCategory(accessToken);
-            if (!category.equals("access")) {
-                throw new CustomException(HttpStatus.UNAUTHORIZED, "유효하지 않은 액세스 토큰");
-            }
+            CustomOAuth2User customOAuth2User = new CustomOAuth2User(new UserDto(
+                    jwtUtil.getSocialId(accessToken),
+                    jwtUtil.getNickname(accessToken),
+                    jwtUtil.getRole(accessToken)
+            ));
 
-            // 토큰에서 사용자 정보 추출
-            String socialId = jwtUtil.getSocialId(accessToken);
-            String nickname = jwtUtil.getNickname(accessToken);
-            String role = jwtUtil.getRole(accessToken);
-
-            // UserDto 생성 및 설정
-            UserDto userDto = new UserDto(
-                    socialId,
-                    nickname,
-                    role
-            );
-
-            // CustomOAuth2User 객체 생성
-            CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDto);
-
-            // 인증 객체 생성 및 SecurityContext에 설정
             Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
