@@ -2,7 +2,7 @@ import { createPost } from '@/apis/board';
 import { elizaBoard } from '@/apis/eliza';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-// import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 
 export default function PostCreate() {
     const [image, setImage] = useState<File | null>(null);
@@ -15,29 +15,25 @@ export default function PostCreate() {
 
     const postUpload = async () => {
         if (!content.trim()) {
-            alert('내용을 입력해주세요.');
+            toast.error('내용을 입력해주세요.');
             return;
         }
 
         try {
-            await createPost({
+            const response = await createPost({
                 postImageFile: image,
                 categoryName: category,
                 hashtag: tags,
                 postContent: content,
-            }).then(async (res) => {
-                await elizaBoard(res.data.postId);
-                // toast.promise(elizaBoard(res.data.postId), {
-                //     loading: '게시물 생성 중 입니다...',
-                //     success: '게시물이 생성되었습니다.',
-                //     error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
-                // })
             });
+
+            elizaBoard(response.data.postId);
+            toast.success('업로드 성공');
 
             navigate('/');
         } catch (error) {
             console.error('게시물 업로드 실패:', error);
-            alert('게시물 업로드에 실패했습니다.');
+            toast.error('게시물 업로드 실패');
         }
     };
 
