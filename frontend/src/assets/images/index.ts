@@ -8,6 +8,7 @@ import HeartDefaultIcon from './board/heart_default.svg';
 import HeartFilledIcon from './board/heart_filled.svg';
 import ChatIcon from './board/chat.svg';
 import SendIcon from './board/send.svg';
+import XIcon from './board/Ic_x.png'
 
 // 헤더 관련 에셋
 import BellIcon from './header/bell.svg';
@@ -64,5 +65,6 @@ export {
     MainBackgroundShort,
     WinkLuna,
     ComputerHandsupLuna,
-    Hamburger
+    Hamburger,
+    XIcon
 }

@@ -47,3 +47,15 @@ export const getFollowings = async (profileUserId: number) => {
     throw error
   }
 }
+
+// 내가 나의 팔로워를 조회했을 때 팔로워 삭제하기
+export const deleteFollwer = async (userId: number) => {
+  try {
+    await apiClient.delete(`/follower/${userId}`)
+    console.log(`${userId}님 팔로워에서 삭제`)
+  }
+  catch (error) {
+    console.log("내 팔로워 삭제 실패", error)
+    throw error
+  }
+}

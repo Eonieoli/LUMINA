@@ -1,4 +1,4 @@
-import { getFollowers, getFollowings, followToggle,  } from "@/apis/follow"
+import { getFollowers, getFollowings, followToggle, deleteFollwer} from "@/apis/follow"
 import { useEffect, useState} from "react"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { BackIcon, XIcon } from "@/assets/images"
@@ -86,8 +86,8 @@ export default function FollowPage () {
   }
   
   // 내가 나의 팔로워 목록을 조회했을 때 특정 팔로워를 삭제
-  const DeleteUser = () => {
-    console.log("삭제한다!")
+  const DeleteUser = (userId:number) => {
+    deleteFollwer(userId)
   }
 
 
@@ -160,7 +160,7 @@ export default function FollowPage () {
                             onClick={() => handlefollowToggle(follower.userId)}/> 
                         }
                         { myUserId === userId && (
-                          <div className=" h-5 flex items-center justify-center" onClick={DeleteUser}>
+                          <div className=" h-5 flex items-center justify-center" onClick={() => DeleteUser(userId)}>
                             <img src={XIcon} alt="취소" className="w-2" />
                           </div>
                         )}
