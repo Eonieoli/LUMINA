@@ -11,12 +11,15 @@ import java.util.Optional;
 
 public interface UserDonationRepository extends JpaRepository<UserDonation, Long> {
 
+    Optional<UserDonation> findByUserIdAndDonationIdAndRegistration(Long userId, Long donationId, String registration);
+
+
     boolean existsByUserIdAndDonationIdAndRegistration(Long userId, Long donationId, String registration);
 
-    Optional<UserDonation> findByUserIdAndDonationIdAndRegistration(Long userId, Long donationId, String registration);
+    void deleteByUserIdAndRegistration(Long userId, String registration);
+
 
     @EntityGraph(attributePaths = {"donation"})
     List<UserDonation> findByUserIdAndRegistration(Long userId, String registration);
 
-    void deleteByUserIdAndRegistration(Long userId, String registration);
 }

@@ -3,6 +3,7 @@ package com.lumina.backend.common.utill;
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.post.model.entity.Comment;
 import com.lumina.backend.post.model.entity.Post;
+import com.lumina.backend.user.model.entity.User;
 import org.springframework.http.HttpStatus;
 
 public class ValidationUtil {
@@ -17,6 +18,18 @@ public class ValidationUtil {
     // 필수 입력값 검사
     public static void validateRequiredField(String value, String fieldName) {
         if (value == null || value.trim().isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, fieldName + "은(는) 필수 입력값입니다.");
+        }
+    }
+
+    public static void validateRequiredField(Long value, String fieldName) {
+        if (value == null) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, fieldName + "은(는) 필수 입력값입니다.");
+        }
+    }
+
+    public static void validateRequiredField(Integer value, String fieldName) {
+        if (value == null) {
             throw new CustomException(HttpStatus.BAD_REQUEST, fieldName + "은(는) 필수 입력값입니다.");
         }
     }
@@ -54,6 +67,13 @@ public class ValidationUtil {
     public static void validateCommentDelete(String role, Comment comment, Long userId) {
         if (role.equals("ROLE_USER") && !comment.getUser().getId().equals(userId)) {
             throw new CustomException(HttpStatus.FORBIDDEN, "사진 삭제 권한이 없습니다.");
+        }
+    }
+
+    //보유 포인트 검사
+    public static void validateUserPoint(User user, int point) {
+        if (user.getPoint() < point) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "보유 point가 부족합니다.");
         }
     }
 }
