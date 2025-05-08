@@ -56,4 +56,11 @@ public class FindUtil {
         return donationRepository.findById(donationId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "기부처를 찾을 수 없음: " + donationId));
     }
+
+    public Category getCategoryById(Long categoryId) {
+
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 카테고리를 찾을 수 없습니다. 카테고리 ID: " + categoryId));
+    }
 }
+
