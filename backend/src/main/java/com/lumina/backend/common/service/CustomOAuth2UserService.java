@@ -38,67 +38,48 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 
-        // 부모 클래스의 loadUser 메서드를 호출하여 기본 사용자 정보를 가져옵니다.
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        // 클라이언트 등록 ID 확인 (예: google, kakao 등)
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        OAuth2Response oAuth2Response = null;
+        OAuth2Response oAuth2Response = parseOAuth2Response(registrationId, oAuth2User.getAttributes());
 
-        // Google 로그인 처리
-        if (registrationId.equals("google")) {
-            oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
-        }
-        // Kakao 로그인 처리
-        else if (registrationId.equals("kakao")) {
-            oAuth2Response = new KakaoResponse((Map<String, Object>) oAuth2User.getAttributes());
-        }
-        else {
-            return null; // 지원하지 않는 OAuth 제공자일 경우 null 반환
-        }
+        User user = userRepository.findBySocialId(oAuth2Response.getProviderId())
+                .orElseGet(() -> registerNewUser(oAuth2Response, registrationId));
 
-        // 이름을 "이름_google" 또는 "이름_kakao" 형식으로 변환
-        String formattedName = oAuth2Response.getName() + "_" + registrationId;
-
-        // 소셜 ID로 기존 사용자 조회
-        User existData = userRepository.findBySocialId(oAuth2Response.getProviderId())
-                .orElse(null);
-
-        if (existData == null) {
-            // 기존 데이터가 없을 경우 새 사용자 생성 및 저장
-            User user = new User(
-                    oAuth2Response.getProviderId(),
-                    oAuth2Response.getProvider(),
-                    oAuth2Response.getProfileImage(),
-                    "상태메시지를 작성해주세요!",
-                    0,
-                    0,
-                    0,
-                    0,
-                    "ROLE_USER",
-                    true
-            );
-
-            User savedUser = userRepository.save(user);
-            String nickname = formattedName + savedUser.getId();
-            savedUser.createNickname(nickname);
-            userRepository.save(savedUser);
-
-            String rankKey = "sum-point:rank";
-            String userKey = "user:" + savedUser.getId();
-
-            redisUtil.addSumPointToZSetWithTTL(rankKey, userKey, 0);
-        }
-
-        // 사용자 정보를 UserDto에 매핑 (새 사용자든 기존 사용자든 동일한 처리)
-        String nickname = userRepository.findNicknameBySocialId(oAuth2Response.getProviderId());
-        UserDto userDto = new UserDto(
-                oAuth2Response.getProviderId(),
-                nickname,
-                "ROLE_USER"
-        );
+        UserDto userDto = new UserDto(oAuth2Response.getProviderId(), user.getNickname(), "ROLE_USER");
 
         return new CustomOAuth2User(userDto);
+    }
+
+    private OAuth2Response parseOAuth2Response(String registrationId, Map<String, Object> attributes) {
+        if (registrationId.equals("google")) {
+            return new GoogleResponse(attributes);
+        }
+        else if (registrationId.equals("kakao")) {
+            return new KakaoResponse(attributes);
+        }
+        throw new CustomException(HttpStatus.BAD_REQUEST, "지원하지 않는 OAuth 제공자입니다.");
+    }
+
+    private User registerNewUser(OAuth2Response oAuth2Response, String registrationId) {
+        User user = new User(
+                oAuth2Response.getProviderId(),
+                oAuth2Response.getProvider(),
+                oAuth2Response.getProfileImage(),
+                "상태메시지를 작성해주세요!",
+                0, 0, 0, 0,
+                "ROLE_USER",
+                true
+        );
+
+        User savedUser = userRepository.save(user);
+        String nickname = oAuth2Response.getName() + "_" + registrationId + savedUser.getId();
+        savedUser.createNickname(nickname);
+        userRepository.save(savedUser);
+
+        redisUtil.addSumPointToZSetWithTTL("sum-point:rank", "user:" + savedUser.getId(), 0);
+
+        return savedUser;
     }
 }
 

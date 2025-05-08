@@ -38,4 +38,15 @@ public class TokenValidationUtil {
             throw new CustomException(HttpStatus.BAD_REQUEST, "Redis의 값과 다름");
         }
     }
+
+    public void validateAccessToken(String access) {
+
+        if (access == null) {
+            throw new CustomException(HttpStatus.UNAUTHORIZED, "인증 토큰 없음");
+        }
+
+        if (!"access".equals(jwtUtil.getCategory(access))) {
+            throw new CustomException(HttpStatus.UNAUTHORIZED, "AccessToken이 아님");
+        }
+    }
 }
