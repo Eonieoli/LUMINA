@@ -9,6 +9,9 @@ import { Comments } from './boards/Comments';
 import { BottomSheet } from './boards/BottomSheet';
 import { Replies } from './boards/Replies';
 
+// 마이페이지
+import HamburgerSheet from './mypage/Hamburger';
+
 export {
     Navbar,
     Header,
@@ -18,4 +21,5 @@ export {
     Comments,
     BottomSheet,
     Replies,
+    HamburgerSheet,
 };

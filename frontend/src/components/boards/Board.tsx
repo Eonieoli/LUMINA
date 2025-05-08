@@ -207,7 +207,7 @@ export const Board = ({
                     </div>
                 </div>
                 ) : (
-                <BottomSheet onClose={() => setShowComments(false)}>
+                <BottomSheet isVisible={showComments} onClose={() => setShowComments(false)}>
                     <Comments postId={postId} />
                 </BottomSheet>
                 )

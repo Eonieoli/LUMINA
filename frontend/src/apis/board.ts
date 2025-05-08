@@ -185,6 +185,28 @@ export const getCategoryExplore = async (pageNum: number, ) => {
     }
 }
 
+// 전체 카테고리 조회
+export const getCategories = async () => {
+    try {
+        const response = await apiClient.get('/category');
+        return response.data
+    } catch (error) {
+        console.error("카테고리 전체 조회회 API 에러: ", error);
+        throw error
+    }
+}
+
+// 카테고리 구독
+export const subscribeCategory = async (categoryId: number) => {
+    try {
+        const response = await apiClient.post('/category/' + categoryId);
+        return response.data
+    } catch (error) {
+        console.error("카테고리 구독 요청 API 에러: ", error);
+        throw error
+    }
+}
+
 // 유저명으로 유저 검색
 export const getUser = async (keyword: string) => {
     try {
