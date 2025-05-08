@@ -114,7 +114,7 @@ export const Board = ({
 
     return (
         <>
-            <div className="flex w-full flex-col gap-y-2 border-y-3 border-gray-200 px-5 py-2">
+            <div className="flex w-full flex-col gap-y-2 border-b-3 border-gray-200 px-5 py-2">
                 {/* 사용자 프로필 */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-x-4" onClick={() => profileClick(userId)}>

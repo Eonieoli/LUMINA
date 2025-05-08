@@ -68,11 +68,16 @@ export default function PostCreate() {
             {/* <Toaster /> */}
             {/* 헤더 */}
             <div className="flex items-center justify-between">
-                <Link to="/">x</Link>
+                <Link to="/">
+                    <div className='flex relative w-4 h-full'>
+                        <div className='absolute top-0 w-4 h-[1.5px] bg-black rotate-45'></div>
+                        <div className='absolute top-0 w-4 h-[1.5px] bg-black -rotate-45'></div>
+                    </div>
+                </Link>
                 <h1 className="text-lg font-semibold">새 게시물</h1>
                 <button
                     onClick={postUpload}
-                    className="font-semibold text-blue-500"
+                    className="font-semibold text-blue-500 cursor-pointer"
                 >
                     저장
                 </button>
