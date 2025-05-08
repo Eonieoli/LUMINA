@@ -1,15 +1,42 @@
 import torch
+import os
+import logging
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+# 로깅 설정
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# ✅ 로컬 모델 경로
-model_dir = "./finetuned-kcelectra"
+# ✅ Hugging Face에서 모델 가져오기
+# 환경 변수로 모델 ID 설정 가능, 기본값은 woobae/kcelectra-swear-detector
+MODEL_ID = os.environ.get("ABUSE_MODEL_ID", "woobae/kcelectra-swear-detector")
+FALLBACK_MODEL_ID = os.environ.get("FALLBACK_MODEL_ID", "monologg/koelectra-base-v3-discriminator")
+
+# ✅ 모델, 토크나이저 로드 함수
+def load_model():
+    global tokenizer, model
+    try:
+        logger.info(f"모델 로드 시도: {MODEL_ID}")
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+        model = AutoModelForSequenceClassification.from_pretrained(MODEL_ID).to(device)
+        model.eval()
+        logger.info(f"모델 로드 성공: {MODEL_ID}")
+    except Exception as e:
+        logger.error(f"모델 로드 실패: {e}")
+        logger.info(f"대체 모델 사용: {FALLBACK_MODEL_ID}")
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(FALLBACK_MODEL_ID)
+            model = AutoModelForSequenceClassification.from_pretrained(FALLBACK_MODEL_ID).to(device)
+            model.eval()
+            logger.info(f"대체 모델 로드 성공")
+        except Exception as fallback_error:
+            logger.error(f"대체 모델도 로드 실패: {fallback_error}")
+            raise RuntimeError("모델 로드 실패")
 
 # ✅ 모델, 토크나이저 로드
-tokenizer = AutoTokenizer.from_pretrained(model_dir)
-model = AutoModelForSequenceClassification.from_pretrained(model_dir).to(device)
-model.eval()
+load_model()
 
 # ✅ 기본 Threshold 설정
 THRESHOLD_DEFAULT = 0.53
