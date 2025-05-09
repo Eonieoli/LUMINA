@@ -1,8 +1,8 @@
 import { AutoClientInterface } from "@elizaos/client-auto";
 import { DiscordClientInterface } from "@elizaos/client-discord";
 import { Character, IAgentRuntime } from "@elizaos/core";
-import { LunaClientInterface } from "./luna-client.ts";
-import { LocalLLMInterface } from "./local-llm-server.ts";
+import { LunaClientInterface } from "./luna-client";
+import { LocalLLMInterface } from "./local-llm-server";
 
 export async function initializeClients(
   character: Character,
