@@ -37,13 +37,8 @@ export default function DonationDetailPage() {
         console.log("useParams 값:", donationId)
         return
       } 
-
-      try {
-        const response = await getDonationDetail(donationId)
-        setDonation(response)
-      }
-      catch(error) {
-      }
+      const response = await getDonationDetail(donationId)
+      setDonation(response)
     }
     fetchDetail()
   },[donationId])
@@ -51,11 +46,8 @@ export default function DonationDetailPage() {
   // 구독하기 버튼을 클릭했을 때
   const handleToggleSubscribe = async () => {
     if(!donation) return
-    try {
-      await toggleDonationSubscribe(donation.donationId)
-      setDonation(prev => prev ? {...prev, isSubscribe: !prev.isSubscribe}: null)
-    }
-    catch (error){}
+    await toggleDonationSubscribe(donation.donationId)
+    setDonation(prev => prev ? {...prev, isSubscribe: !prev.isSubscribe}: null)
   }
 
   // 기부하기 버튼을 클릭했을 때
@@ -73,7 +65,7 @@ export default function DonationDetailPage() {
         <button onClick={goToDonate} className="w-full h-full p-3">기부하기</button>
       }
     >
-      <div className="w-full h-full flex flex-col justify-center">
+      <div className="w-full flex flex-col justify-center">
         {/* 기부처 상단 정보 */}
         <div className="flex flex-col justify-center items-center mb-6">
 
@@ -96,7 +88,7 @@ export default function DonationDetailPage() {
         </div>
 
         {/* 기부처 하단 정보 */}
-        <div className="w-full border-gray-200 rounded-2xl p-5 border-2 text-gray-600 font-medium text-[17px]">
+        <div className="w-full border-gray-200 rounded-2xl p-5 border-2 text-gray-600 font-medium text-[17px] bg-red">
           
           <div className="flex justify-between">
             <p className="font-semibold">총 기부 금액 </p>

@@ -73,22 +73,22 @@ export default function SearchModal({ onClose }: SearchModalProps) {
                 autoFocus={true}
             />
 
-      {/* 실시간 일치하는 기부처 렌더링 */}
-      <ul className="mt-4 space-y-2" >
-        {imediateSearchResult.map((donation) => (
-          <li
-            key={donation.donationId}  
-            className="text-[16px] text-gray-600 cursor-pointer hover:bg-gray-100 px-2 py-2 rounded"
-            onClick={() => {
-              onClose()
-              // 상세페이지로 이동하도록 추후 수정 예정
-              navigate(`/donate/${donation.donationId}`)
-            }} 
-          >
-            {donation.donationName}
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
+        {/* 실시간 일치하는 기부처 렌더링 */}
+        <ul className="mt-4 space-y-2" >
+            {imediateSearchResult.map((donation) => (
+            <li
+                key={donation.donationId}  
+                className="text-[16px] text-gray-600 cursor-pointer hover:bg-gray-100 px-2 py-2 rounded"
+                onClick={() => {
+                onClose()
+                // 상세페이지로 이동하도록 추후 수정 예정
+                navigate(`/donate/${donation.donationId}`)
+                }} 
+            >
+                {donation.donationName}
+            </li>
+            ))}
+        </ul>
+        </div>
+    )
 }

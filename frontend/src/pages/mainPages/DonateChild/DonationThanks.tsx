@@ -3,22 +3,16 @@ import DonationLayout from "./DonationLayout";
 import { ComputerHandsupLuna } from "@/assets/images";
 import { getPointInfo } from "@/apis/donation";
 import { useNavigate } from "react-router-dom";
-// import { useLocation } from "react-router-dom";
 
 export default function DonationThanks () {
 
   const [nickname, setNickkname] = useState<string>("Lumina")
-  // const location = useLocation()
   const navigate = useNavigate()
-  // const donationId = location.state?.donationId
 
   useEffect(() => {
     const fetchNicknameInfo = async () => {
-      try {
-        const response = await getPointInfo()
-        setNickkname(response.nickname)
-      }
-      catch(error){}
+      const response = await getPointInfo()
+      setNickkname(response.nickname)
     }
     fetchNicknameInfo()
   },[])
