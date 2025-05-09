@@ -4,6 +4,9 @@ import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.service.S3Service;
 import com.lumina.backend.common.service.TokenService;
 import com.lumina.backend.common.utill.*;
+import com.lumina.backend.post.model.entity.Comment;
+import com.lumina.backend.post.model.entity.Post;
+import com.lumina.backend.post.repository.CommentRepository;
 import com.lumina.backend.post.repository.PostRepository;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
@@ -24,10 +27,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +42,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
     private final RedisUtil redisUtil;
     private final FindUtil findUtil;
@@ -207,6 +214,24 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    @Override
+    public List<GetMyReward> getMyReward(Long userId) {
+
+        List<GetMyReward> postRewards = postRepository.findByUserId(userId).stream()
+                .map(post -> toRewardDto(post, null))
+                .toList();
+
+        List<GetMyReward> commentRewards = commentRepository.findByUserId(userId).stream()
+                .map(comment -> toRewardDto(comment.getPost(), comment))
+                .toList();
+
+        return Stream.concat(postRewards.stream(), commentRewards.stream())
+                .sorted(Comparator.comparing(GetMyReward::getCreatedAt).reversed())
+                .collect(Collectors.toList());
+    }
+
+
+
     private int getUserRankFromRedis(Long userId) {
 
         String rankKey = "sum-point:rank";
@@ -243,5 +268,31 @@ public class UserServiceImpl implements UserService {
                 user.getSumPoint(),
                 rank
         );
+    }
+
+    private GetMyReward toRewardDto(Post post, Comment comment) {
+
+        // Post 보상
+        if (comment == null) {
+            int reward = post.getPostReward();
+            return GetMyReward.builder()
+                    .postId(post.getId())
+                    .content(post.getPostContent())
+                    .point(reward >= 0 ? reward : null)
+                    .positiveness(reward < 0 ? reward : null)
+                    .createdAt(post.getCreatedAt())
+                    .build();
+        }
+        // Comment 보상
+        int reward = comment.getCommentReward();
+        return GetMyReward.builder()
+                .postId(post.getId())
+                .commentId(comment.getId())
+                .content(comment.getCommentContent())
+                .point(reward >= 0 ? reward : null)
+                .positiveness(reward < 0 ? reward : null)
+                .createdAt(comment.getCreatedAt())
+                .build();
+
     }
 }
