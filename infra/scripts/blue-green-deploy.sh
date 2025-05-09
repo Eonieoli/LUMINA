@@ -319,11 +319,11 @@ deploy_ai_server() {
     echo "============================="
     
     # 기존 컨테이너 정리
-    # if container_exists "ai-server"; then
-    #     echo "Stopping and removing existing ai-server container..."
-    #     docker stop "ai-server" >/dev/null 2>&1 || true
-    #     docker rm "ai-server" >/dev/null 2>&1 || true
-    # fi
+    if container_exists "ai-server"; then
+        echo "Stopping and removing existing ai-server container..."
+        docker stop "ai-server" >/dev/null 2>&1 || true
+        docker rm "ai-server" >/dev/null 2>&1 || true
+    fi
     
     # 이미지 태그 설정
     local image_tag=""
@@ -334,43 +334,43 @@ deploy_ai_server() {
     fi
     
     # AI 서버 컨테이너 시작
-    # echo "Starting new ai-server container..."
-    # docker run -d --name "ai-server" \
-    #     --network lumina-network \
-    #     -p 8000:8000 \
-    #     --restart always \
-    #     --label environment=$ENV \
-    #     "rublin322/lumina-ai:$image_tag"
+    echo "Starting new ai-server container..."
+    docker run -d --name "ai-server" \
+        --network lumina-network \
+        -p 8000:8000 \
+        --restart always \
+        --label environment=$ENV \
+        "rublin322/lumina-ai:$image_tag"
     
     # 건강 상태 확인
-    # echo "Performing health check for ai-server..."
-    # local max_attempts=10
-    # local wait_time=5
+    echo "Performing health check for ai-server..."
+    local max_attempts=10
+    local wait_time=5
     
-    # for i in $(seq 1 $max_attempts); do
-    #     echo "Health check attempt $i/$max_attempts..."
+    for i in $(seq 1 $max_attempts); do
+        echo "Health check attempt $i/$max_attempts..."
         
-    #     if ! container_running "ai-server"; then
-    #         echo "Error: Container ai-server is not running anymore!"
-    #         docker logs --tail 50 "ai-server" || true
-    #         return 1
-    #     fi
+        if ! container_running "ai-server"; then
+            echo "Error: Container ai-server is not running anymore!"
+            docker logs --tail 50 "ai-server" || true
+            return 1
+        fi
         
-    #     # 2초 타임아웃으로 헬스 체크 (기본 경로로 확인)
-    #     if curl -s -m 2 -o /dev/null -w "%{http_code}" "http://localhost:8000/" | grep -q -E "200|404"; then
-    #         echo "ai-server is healthy!"
-    #         return 0
-    #     fi
+        # 2초 타임아웃으로 헬스 체크 (기본 경로로 확인)
+        if curl -s -m 2 -o /dev/null -w "%{http_code}" "http://localhost:8000/" | grep -q -E "200|404"; then
+            echo "ai-server is healthy!"
+            return 0
+        fi
         
-    #     if [ $i -eq $max_attempts ]; then
-    #         echo "Error: Health check failed after $max_attempts attempts"
-    #         docker logs --tail 50 "ai-server"
-    #         return 1
-    #     fi
+        if [ $i -eq $max_attempts ]; then
+            echo "Error: Health check failed after $max_attempts attempts"
+            docker logs --tail 50 "ai-server"
+            return 1
+        fi
         
-    #     echo "Health check failed, waiting $wait_time seconds before next attempt..."
-    #     sleep $wait_time
-    # done
+        echo "Health check failed, waiting $wait_time seconds before next attempt..."
+        sleep $wait_time
+    done
     
     return 0
 }
