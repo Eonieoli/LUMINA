@@ -9,7 +9,8 @@ import {
   DonationDetailPage,
   DonationThanksPage,
   DonationSearchResultPage,
-  DonationInputPage
+  DonationInputPage,
+  FollowPage,
 } from "@/pages/mainPages";
 import { Navbar } from "@/components";
 import { useState, createRef, RefObject } from "react";
@@ -77,6 +78,7 @@ export default function Main() {
                 <Route path="donate/:donationId" element={<DonationDetailPage />} />
                 <Route path="donate/:donationId/point" element={<DonationInputPage />} />
                 <Route path="donate/thanks" element={<DonationThanksPage />} />
+                <Route path="mypage/:profileUserId/follow" element={<FollowPage/>} /> 
               </Routes>
             </div>
           </div>

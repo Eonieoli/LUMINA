@@ -182,7 +182,7 @@ export const Board = ({
                     </div>
                     <div
                         onClick={() => setShowComments(true)}
-                        className="flex gap-x-1"
+                        className="flex cursor-pointer gap-x-1"
                     >
                         <img src={ChatIcon} alt="댓글" />
                         <span>{commentCnt}</span>

@@ -8,6 +8,7 @@ import DonationDetailPage from './DonateChild/DonationDetail';
 import DonationSearchResultPage from './DonateChild/DonationSearchResult';
 import DonationThanksPage from './DonateChild/DonationThanks';
 import DonationInputPage from './DonateChild/DonationInput';
+import FollowPage from './MyPageChild/follow';
 
 export {
     HomePage,
@@ -19,5 +20,6 @@ export {
     DonationDetailPage,
     DonationSearchResultPage,
     DonationThanksPage,
-    DonationInputPage
+    DonationInputPage,
+    FollowPage
 }

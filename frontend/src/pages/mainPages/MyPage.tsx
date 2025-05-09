@@ -4,8 +4,8 @@ import UserProfileFourInfo from "@/components/profile/fourInfo";
 import ProfileBtn from "@/components/profile/button";
 import { Post } from "./Home";
 import { getUserPosts } from "@/apis/board";
+import { useNavigate, useParams } from "react-router-dom";
 import { Board, HamburgerSheet } from "@/components";
-import { useParams } from "react-router-dom";
 import { getUserProfile } from "@/apis/auth";
 import { useAuthStore } from '@/stores/auth';
 import { followToggle } from "@/apis/follow";
@@ -19,12 +19,14 @@ interface MypageProps {
     grade: number
     rank: number
     postCnt: number
-    followCnt: number
+    followerCnt: number
     followingCnt: number
-    isFollowing: Boolean
+    isFollowing: boolean
 }
 
 export default function MyPage() {
+
+    const navigate = useNavigate()
 
     // 나의 아이디 
     const authData = useAuthStore();
@@ -56,13 +58,10 @@ export default function MyPage() {
         if(!profileUserId) return
 
         const fetchProfile= async () =>  {
-            try {
-                const response = await getUserProfile(profileUserId)
-                setUserInfo(response.data)
-                console.log("나의 아이디", myUserId)
-                return response.data
-            }
-            catch (error) {}
+            const response = await getUserProfile(profileUserId)
+            setUserInfo(response.data)
+            console.log("나의 아이디", myUserId)
+            return response.data
         }
         fetchProfile()
     }, [userId])
@@ -116,12 +115,17 @@ export default function MyPage() {
 
     //팔로우 팔로잉 버튼을 눌렀다면
     const handlefollowToggle = async() => {
-        try{
-            await followToggle(profileUserId)
-            const response = await getUserProfile(profileUserId)
-            setUserInfo(response.data)
-        }
-        catch(error) {}
+        await followToggle(profileUserId)
+        const response = await getUserProfile(profileUserId)
+        setUserInfo(response.data)
+    }
+
+    // 팔로워 팔로잉 페이지 버튼을 눌렀다면 
+    const goToFollowInfo = (info:string) => {
+        console.log(`${profileUserId}`,"의 팔로워를 조회해볼게")
+        navigate(`/mypage/${profileUserId}/follow`, {
+            state: {nickname: userInfo?.nickname, followers: userInfo?.followerCnt, followings: userInfo?.followingCnt, info}
+        })
     }
 
     // 햄버거 닫기
@@ -139,14 +143,14 @@ export default function MyPage() {
                 {/* 이름, 햄버거바*/}
                 <div className="flex items-center justify-between h-8 mb-4">
                     <p className="text-xl font-semibold">{userInfo?.nickname}</p>
-                    <img onClick={() => setIsHamburgerOpened(!isHamburgerOpened)} src={Hamburger} alt="햄버거버튼" className="h-4" />
+                    <img onClick={() => setIsHamburgerOpened(!isHamburgerOpened)} src={Hamburger} alt="햄버거버튼" className="h-4 cursor-pointer" />
                 </div>
 
                 {/* 프로필 사진, 이름, 상태메세지 */}
                 <div className="flex flex-col items-center gap-1 mb-4">
                     <img 
                         src={userInfo?.profileImage ?? DefaultProfile} alt="프로필 이미지"
-                        className="w-25 bg-white rounded-full"
+                        className="w-25 aspect-square object-cover bg-white rounded-full"
                     />
                     <p className="font-semibold text-[17px]">{userInfo?.nickname}</p>
                     <p className="text-[14px]">{userInfo?.message}</p>
@@ -154,10 +158,10 @@ export default function MyPage() {
 
                 {/* 게시물, 팔로워, 팔로잉, lu */}
                 <div className="flex justify-evenly mb-4">
-                    <UserProfileFourInfo title="게시물" titleNumber={userInfo?.postCnt ?? 0}/>
-                    <UserProfileFourInfo title="팔로워" titleNumber={userInfo?.followCnt ?? 0}/>
-                    <UserProfileFourInfo title="팔로잉" titleNumber={userInfo?.followingCnt ?? 0}/>
-                    <UserProfileFourInfo title="선행도" titleNumber={userInfo?.positiveness ?? 0}/>
+                    <UserProfileFourInfo title="게시물" titleNumber={userInfo?.postCnt ?? 0} isBtn={false}/>
+                    <UserProfileFourInfo title="팔로워" titleNumber={userInfo?.followerCnt ?? 0 } isBtn={true} onClick={()=> goToFollowInfo("followers")} />
+                    <UserProfileFourInfo title="팔로잉" titleNumber={userInfo?.followingCnt ?? 0} isBtn={true} onClick={() => goToFollowInfo("followings")}/>
+                    <UserProfileFourInfo title="선행도" titleNumber={userInfo?.positiveness ?? 0} isBtn={false}/>
                 </div>
 
                 {/* 버튼 */}

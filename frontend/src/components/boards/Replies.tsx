@@ -6,6 +6,7 @@ import {
 } from '@/assets/images';
 import { useAuthStore } from '@/stores/auth';
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface reply {
     commentId: number;
@@ -31,6 +32,7 @@ export const Replies = ({
     const [isRepliesOpened, setIsRepliesOpened] = useState(false);
     const [replies, setReplies] = useState<reply[]>([]);
     const authStore = useAuthStore();
+    const navigate = useNavigate();
 
     const fetchReplies = useCallback(async () => {
         try {
@@ -90,6 +92,10 @@ export const Replies = ({
         }
     };
 
+    const goProfile = (userId: number) => {
+        navigate(`/mypage/${userId}`);
+    }
+
     return (
         <div className="col-start-2">
             {isRepliesOpened ? (
@@ -106,8 +112,8 @@ export const Replies = ({
                             className="grid grid-cols-[auto_1fr] items-center gap-2 border-b border-gray-200 pb-2"
                         >
                             <div className="h-full items-center">
-                                <img
-                                    className="w-6 rounded-full"
+                                <img onClick={() => goProfile(reply.userId)}
+                                    className="w-6 rounded-full cursor-pointer"
                                     src={
                                         reply.profileImage
                                             ? reply.profileImage
@@ -118,7 +124,7 @@ export const Replies = ({
                             </div>
                             <div className="grid grid-cols-[1fr_auto] items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium">
+                                    <p onClick={() => goProfile(reply.userId)} className="text-sm font-medium cursor-pointer">
                                         {reply.nickname}
                                     </p>
                                     <p className="text-xs">
