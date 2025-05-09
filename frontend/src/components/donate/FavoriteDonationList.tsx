@@ -50,25 +50,31 @@ export default function FavoriteDonationList() {
             </div>
 
             {/* 슬라이더 */}
-            <Swiper
-                pagination={{ clickable: true }}
-                modules={[Pagination]}
-                className="mySwiper w-full"
-            >
-                {slides.map((group, index) => (
-                    <SwiperSlide key={index}>
-                        <div className="grid grid-cols-2 gap-4 pb-10">
-                            {group.map((donation) => (
-                                <DonationCard
-                                    key={donation.donationId}
-                                    donationId={donation.donationId}
-                                    donationName={donation.donationName}
-                                />
-                            ))}
-                        </div>
-                    </SwiperSlide>
-                ))}
-            </Swiper>
+            {slides.length === 0 ? (
+                <div className="w-full h-20 flex items-center justify-center text-gray-400 text-[15px]">
+                기부처를 구독해보세요!
+                </div>
+            ) : (
+                <Swiper
+                    pagination={{ clickable: true }}
+                    modules={[Pagination]}
+                    className="mySwiper w-full"
+                >
+                    {slides.map((group, index) => (
+                        <SwiperSlide key={index}>
+                            <div className="grid grid-cols-2 gap-4 pb-10">
+                                {group.map((donation) => (
+                                    <DonationCard
+                                        key={donation.donationId}
+                                        donationId={donation.donationId}
+                                        donationName={donation.donationName}
+                                    />
+                                ))}
+                            </div>
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
+            )}
         </div>
     );
 }

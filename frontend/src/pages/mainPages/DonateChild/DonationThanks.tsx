@@ -7,12 +7,14 @@ import { useNavigate } from "react-router-dom";
 export default function DonationThanks () {
 
   const [nickname, setNickkname] = useState<string>("Lumina")
+  const [userId, setUserId] = useState<number>(0)
   const navigate = useNavigate()
 
   useEffect(() => {
     const fetchNicknameInfo = async () => {
       const response = await getPointInfo()
       setNickkname(response.nickname)
+      setUserId(response.userId)
     }
     fetchNicknameInfo()
   },[])
@@ -26,23 +28,23 @@ export default function DonationThanks () {
           // onClick={() => {
           //   if (donationId) navigate(`/donate/${donationId}`);
           // }}
-          onClick={() => navigate('/mypage')}
+          onClick={() => navigate(`/mypage/${userId}`)}
         >
           확인
         </button>
       }
     >
-      <div className="flex flex-col items-center h-full justify-center">
-        <div className="text-[20px]">
-          {nickname}님의
-          <span className="font-bold">
-            <span className="text-[#5D56F1]"> 기부</span>
-            에 감사
-          </span>
-          드립니다.
+        <div className="flex flex-col h-full items-center justify-center">
+          <div className="text-[20px]">
+            {nickname}님의
+            <span className="font-bold">
+              <span className="text-[#5D56F1]"> 기부</span>
+              에 감사
+            </span>
+            드립니다.
+          </div>
+          <img src={ComputerHandsupLuna} alt="루나 이미지" className="w-1/2 mt-10" />
         </div>
-        <img src={ComputerHandsupLuna} alt="루나 이미지" className="w-2/3 mt-15" />
-      </div>
     </DonationLayout>
   )
 }

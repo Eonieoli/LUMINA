@@ -11,7 +11,7 @@ export default function ProfileBtn ({text, textColor, bgColor, onClick}: profile
       onClick={onClick}
       className={`${textColor} ${bgColor} border-2 w-1/3 rounded-[13px] p-1 cursor-pointer text-center text-[15px]`}
     >
-      <button>{text}</button>
+      <button className="cursor-pointer">{text}</button>
     </div>
   )
 }
