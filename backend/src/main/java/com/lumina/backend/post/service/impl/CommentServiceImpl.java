@@ -3,6 +3,7 @@ package com.lumina.backend.post.service.impl;
 import com.lumina.backend.category.repository.CategoryRepository;
 import com.lumina.backend.category.repository.UserCategoryRepository;
 import com.lumina.backend.common.exception.CustomException;
+import com.lumina.backend.common.service.AiService;
 import com.lumina.backend.common.service.S3Service;
 import com.lumina.backend.common.utill.FindUtil;
 import com.lumina.backend.common.utill.PagingResponseUtil;
@@ -43,6 +44,8 @@ public class CommentServiceImpl implements CommentService {
 
     private final FindUtil findUtil;
 
+    private final AiService aiService;
+
 
     @Override
     @Transactional
@@ -53,7 +56,8 @@ public class CommentServiceImpl implements CommentService {
         User user = findUtil.getUserById(userId);
         Post post = findUtil.getPostById(postId);
 
-        Comment comment = createComment(user, post, request);
+        int appliedReward = aiService.textReward(user, request.getCommentContent());
+        Comment comment = createComment(user, post, appliedReward, request);
         Comment savedComment = commentRepository.save(comment);
 
         return new UploadCommentResponse(savedComment.getId());
@@ -145,9 +149,9 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
-    private Comment createComment(User user, Post post, UploadCommentRequest request) {
+    private Comment createComment(User user, Post post, int appliedReward, UploadCommentRequest request) {
         if (request.getParentCommentId() == null) {
-            return new Comment(user, post, request.getCommentContent());
+            return new Comment(user, post, request.getCommentContent(), appliedReward);
         }
 
         Comment parentComment = commentRepository.findById(request.getParentCommentId())
@@ -158,7 +162,7 @@ public class CommentServiceImpl implements CommentService {
 
         ValidationUtil.validateComment(parentComment, post.getId());
 
-        return new Comment(user, post, parentComment, request.getCommentContent());
+        return new Comment(user, post, parentComment, request.getCommentContent(), appliedReward);
     }
 
     private GetCommentResponse toGetCommentResponse(Long userId, Comment comment) {

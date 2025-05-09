@@ -65,12 +65,11 @@ public class PostServiceImpl implements PostService {
         User user = findUtil.getUserById(userId);
         Category category = findUtil.getCategoryByCategoryName(request.getCategoryName());
 
-        Post post = createPost(user, category, request);
+        int appliedReward = aiService.textReward(user, request.getPostContent());
+        Post post = createPost(user, category, appliedReward, request);
         Post savedPost = postRepository.save(post);
 
         savePostHashtags(request.getHashtag(), savedPost);
-
-        aiService.textReward(user, request.getPostContent());
 
         return new UploadPostResponse(savedPost.getId());
     }
@@ -186,12 +185,12 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    private Post createPost(User user, Category category, UploadPostRequest request) throws IOException {
+    private Post createPost(User user, Category category, int appliedReward, UploadPostRequest request) throws IOException {
         if (request.getPostImageFile() != null && !request.getPostImageFile().isEmpty()) {
             String postImage = s3Service.uploadImageFile(request.getPostImageFile(), "post/");
-            return new Post(user, category, postImage, request.getPostContent(), 0);
+            return new Post(user, category, postImage, request.getPostContent(), 0, appliedReward);
         } else {
-            return new Post(user, category, request.getPostContent(), 0);
+            return new Post(user, category, request.getPostContent(), 0, appliedReward);
         }
     }
 
