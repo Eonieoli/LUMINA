@@ -3,7 +3,7 @@ import { IAgentRuntime, elizaLogger } from "@elizaos/core";
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import { LocalLLMClient } from "./local-llm.ts";
+import { LocalLLMClient } from "./local-llm";
 
 export class LocalLLMInterface {
   private runtime: IAgentRuntime;
