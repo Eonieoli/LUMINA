@@ -122,18 +122,26 @@ body {
 .fade-enter {
     opacity: 0;
     /* transform: translateY(5px); */
-  }
-  .fade-enter-active {
+}
+.fade-enter-active {
     opacity: 1;
     /* transform: translateY(0); */
     transition: opacity 300ms, transform 300ms;
-  }
-  .fade-exit {
+}
+.fade-exit {
     opacity: 1;
-  }
-  .fade-exit-active {
+}
+.fade-exit-active {
     opacity: 0;
     /* transform: translateY(-5px); */
     transition: opacity 300ms, transform 300ms;
-  }
-  
+}
+
+/* 스와이퍼 카드 하단 버튼 색 변경  */
+.swiper-pagination-bullet {
+    background-color: #9C97FA !important; 
+    opacity: 1;
+}
+.swiper-pagination-bullet-active {
+    background-color: #5D56F1 !important;
+}
