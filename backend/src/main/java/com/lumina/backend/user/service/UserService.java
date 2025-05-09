@@ -31,4 +31,6 @@ public interface UserService {
     Map<String, Object> searchUser(String keyword, int pageNum);
 
     List<GetSumPointRankResponse> getSumPointRank(Long userId);
+
+    List<GetMyReward> getMyReward(Long userId);
 }

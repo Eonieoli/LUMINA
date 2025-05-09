@@ -4,6 +4,7 @@ import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
+import com.lumina.backend.user.model.response.GetMyReward;
 import com.lumina.backend.user.model.response.GetUserPointResponse;
 import com.lumina.backend.user.model.response.GetUserProfileResponse;
 import com.lumina.backend.user.service.OAuthService;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -115,5 +117,16 @@ public class UserController {
         Map<String, Object> response = userService.searchUser(keyword, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("유저 검색 성공", response));
+    }
+
+
+    @GetMapping("/reward")
+    public ResponseEntity<BaseResponse<List<GetMyReward>>> getMyReward(
+            HttpServletRequest request) {
+
+        Long userId = tokenUtil.findIdByToken(request);
+        List<GetMyReward> response = userService.getMyReward(userId);
+
+        return ResponseEntity.ok(BaseResponse.success("리워드 조회 성공", response));
     }
 }
