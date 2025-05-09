@@ -1,6 +1,5 @@
 import { AutoClientInterface } from "@elizaos/client-auto";
 import { DiscordClientInterface } from "@elizaos/client-discord";
-// Telegram 및 Twitter 클라이언트 임포트 제거됨
 import { Character, IAgentRuntime } from "@elizaos/core";
 import { LunaClientInterface } from "./luna-client";
 import { LocalLLMInterface } from "./local-llm-server";
