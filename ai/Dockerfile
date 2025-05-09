@@ -5,6 +5,7 @@ WORKDIR /app
 # 필요한 시스템 패키지 설치
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # 필요한 Python 패키지 설치
