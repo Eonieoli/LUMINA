@@ -3,6 +3,7 @@ package com.lumina.backend.user.controller;
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.user.model.request.ToggleFollowRequest;
+import com.lumina.backend.user.model.response.GetFollowsResponse;
 import com.lumina.backend.user.service.FollowService;
 import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -52,13 +54,12 @@ public class FollowController {
      * @return ResponseEntity<BaseResponse<Map<String, Object>>> 팔로워 목록 정보
      */
     @GetMapping("/follower")
-    public ResponseEntity<BaseResponse<Map<String, Object>>> getFollowers(
-            HttpServletRequest request, @RequestParam(required = false) Long userId,
-            @RequestParam int pageNum) {
+    public ResponseEntity<BaseResponse<List<GetFollowsResponse>>> getFollowers(
+            HttpServletRequest request, @RequestParam(required = false) Long userId) {
 
         Long myId = tokenUtil.findIdByToken(request);
         Long targetUserId = (userId != null) ? userId : myId;
-        Map<String, Object> response = followService.getFollowers(myId, targetUserId, pageNum);
+        List<GetFollowsResponse> response = followService.getFollowers(myId, targetUserId);
 
         return ResponseEntity.ok(BaseResponse.success("팔로워 조회 성공", response));
     }
@@ -71,13 +72,12 @@ public class FollowController {
      * @return ResponseEntity<BaseResponse<Map<String, Object>>> 팔로잉 목록 정보
      */
     @GetMapping("/following")
-    public ResponseEntity<BaseResponse<Map<String, Object>>> getFollowings(
-            HttpServletRequest request, @RequestParam(required = false) Long userId,
-            @RequestParam int pageNum) {
+    public ResponseEntity<BaseResponse<List<GetFollowsResponse>>> getFollowings(
+            HttpServletRequest request, @RequestParam(required = false) Long userId) {
 
         Long myId = tokenUtil.findIdByToken(request);
         Long targetUserId = (userId != null) ? userId : myId;
-        Map<String, Object> response = followService.getFollowings(myId, targetUserId, pageNum);
+        List<GetFollowsResponse> response = followService.getFollowings(myId, targetUserId);
 
         return ResponseEntity.ok(BaseResponse.success("팔로잉 조회 성공", response));
     }

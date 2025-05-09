@@ -6,7 +6,6 @@ import com.lumina.backend.common.jwt.CustomLogoutFilter;
 import com.lumina.backend.common.jwt.JWTFilter;
 import com.lumina.backend.common.jwt.JWTUtil;
 import com.lumina.backend.common.service.CustomOAuth2UserService;
-import com.lumina.backend.common.utill.CookieUtil;
 import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.common.utill.TokenValidationUtil;
 import com.lumina.backend.user.repository.UserRepository;
@@ -56,14 +55,12 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                // CORS 설정
                 .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
 
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
 
                         CorsConfiguration configuration = new CorsConfiguration();
-
 
                         configuration.setAllowedOrigins(List.of(
                                 "http://localhost:5173",

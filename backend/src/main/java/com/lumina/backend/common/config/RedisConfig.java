@@ -34,7 +34,7 @@ public class RedisConfig {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName(host);
         config.setPort(port);
-        config.setPassword(RedisPassword.of(password));  // 비밀번호 설정
+        config.setPassword(RedisPassword.of(password));
         config.setDatabase(0);
 
         return new LettuceConnectionFactory(config);
@@ -50,7 +50,7 @@ public class RedisConfig {
      */
     @Bean(name = "redisTemplate")
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        // RedisTemplate 생성 및 설정
+
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
 

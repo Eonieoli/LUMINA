@@ -1,9 +1,8 @@
 import { AutoClientInterface } from "@elizaos/client-auto";
 import { DiscordClientInterface } from "@elizaos/client-discord";
-import { TelegramClientInterface } from "@elizaos/client-telegram";
-import { TwitterClientInterface } from "@elizaos/client-twitter";
 import { Character, IAgentRuntime } from "@elizaos/core";
-import { LunaClientInterface } from "./luna-client.ts";
+import { LunaClientInterface } from "./luna-client";
+import { LocalLLMInterface } from "./local-llm-server";
 
 export async function initializeClients(
   character: Character,
@@ -21,21 +20,24 @@ export async function initializeClients(
     clients.push(await DiscordClientInterface.start(runtime));
   }
 
-  if (clientTypes.includes("telegram")) {
-    const telegramClient = await TelegramClientInterface.start(runtime);
-    if (telegramClient) clients.push(telegramClient);
-  }
+  // Telegram 및 Twitter 클라이언트 초기화 부분 제거됨
 
-  if (clientTypes.includes("twitter")) {
-    const twitterClients = await TwitterClientInterface.start(runtime);
-    clients.push(twitterClients);
-  }
-
-  // Luna LLM
+  //luna
   if (runtime.character.name === "luna") {
-    console.log("Luna 에이전트용 커스텀 클라이언트 시작...");
-    const lunaClient = await LunaClientInterface.start(runtime);
-    if (lunaClient) clients.push(lunaClient);
+    console.log("Luna 에이전트 클라이언트 초기화 중");
+
+    //환경변수로 어떤 LLM 사용할 지 결정
+    const useLLMType = process.env.USE_LLM_TYPE || "openrouter";
+
+    if (useLLMType === "local") {
+      console.log("Local LLM 클라이언트 시작");
+      const localLLMClient = await LocalLLMInterface.start(runtime);
+      if (localLLMClient) clients.push(localLLMClient);
+    } else {
+      console.log("openrouter LLM 클라이언트 시작");
+      const lunaClient = await LunaClientInterface.start(runtime);
+      if (lunaClient) clients.push(lunaClient);
+    }
   }
 
   if (character.plugins?.length > 0) {

@@ -40,9 +40,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
+        // OAuth2 제공자별 응답 파싱
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuth2Response oAuth2Response = parseOAuth2Response(registrationId, oAuth2User.getAttributes());
 
+        // 기존 사용자 조회 또는 신규 회원 가입
         User user = userRepository.findBySocialId(oAuth2Response.getProviderId())
                 .orElseGet(() -> registerNewUser(oAuth2Response, registrationId));
 
@@ -51,6 +53,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         return new CustomOAuth2User(userDto);
     }
 
+
+    /**
+     * OAuth2 제공자별 응답을 파싱합니다.
+     *
+     * @param registrationId 제공자 ID (google, kakao 등)
+     * @param attributes 사용자 속성 정보
+     * @return OAuth2Response 객체
+     */
     private OAuth2Response parseOAuth2Response(String registrationId, Map<String, Object> attributes) {
         if (registrationId.equals("google")) {
             return new GoogleResponse(attributes);
@@ -61,6 +71,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         throw new CustomException(HttpStatus.BAD_REQUEST, "지원하지 않는 OAuth 제공자입니다.");
     }
 
+    /**
+     * 신규 사용자를 등록합니다.
+     *
+     * @param oAuth2Response OAuth2 응답 정보
+     * @param registrationId 제공자 ID
+     * @return 저장된 User 엔티티
+     */
     private User registerNewUser(OAuth2Response oAuth2Response, String registrationId) {
         User user = new User(
                 oAuth2Response.getProviderId(),
@@ -72,11 +89,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 true
         );
 
+        // 닉네임 생성 및 저장
         User savedUser = userRepository.save(user);
         String nickname = oAuth2Response.getName() + "_" + registrationId + savedUser.getId();
         savedUser.createNickname(nickname);
         userRepository.save(savedUser);
 
+        // 랭킹 집합에 0점으로 추가
         redisUtil.addSumPointToZSetWithTTL("sum-point:rank", "user:" + savedUser.getId(), 0);
 
         return savedUser;

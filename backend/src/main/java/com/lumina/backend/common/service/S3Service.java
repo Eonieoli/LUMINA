@@ -54,7 +54,6 @@ public class S3Service {
             // 업로드된 파일의 URL 반환
             return getFileUrl(folderName, fileName);
         } catch (Exception e) {
-            // 업로드 실패 시 에러 로그 출력 및 예외 발생
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드 실패: " + e);
         }
     }
@@ -121,30 +120,27 @@ public class S3Service {
     }
 
 
-
     /**
      * 파일명에서 확장자를 추출하는 메서드
      *
      * @param originalFileName 원본 파일명
      * @return String 파일 확장자 (점 포함)
      */
-    private String getFileExtension(
-            String originalFileName) {
+    private String getFileExtension(String originalFileName) {
 
-        // 1. null 또는 빈 문자열 체크
         if (originalFileName == null || originalFileName.isEmpty()) {
             return "";
         }
 
-        // 2. 마지막 점(.) 위치 찾기
+        // 마지막 점(.) 위치 찾기
         int extensionIndex = originalFileName.lastIndexOf('.');
 
-        // 3. 유효성 검사 (점이 없거나, 첫 문자에 있을 경우 제외)
+        // 유효성 검사 (점이 없거나, 첫 문자에 있을 경우 제외)
         if (extensionIndex <= 0 || extensionIndex >= originalFileName.length() - 1) {
             return "";
         }
 
-        // 4. 소문자로 통일하여 반환 (선택사항)
+        // 소문자로 통일하여 반환
         return originalFileName.substring(extensionIndex);
     }
 }

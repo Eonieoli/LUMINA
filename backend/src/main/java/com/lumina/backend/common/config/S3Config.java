@@ -8,9 +8,6 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
-/**
- * AWS S3와의 연동을 위한 설정을 정의하는 설정 클래스
- */
 @Configuration
 public class S3Config {
 
@@ -32,6 +29,7 @@ public class S3Config {
      */
     @Bean
     public S3Client s3Client() {
+
         // AWS 자격 증명 객체 생성
         AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
 

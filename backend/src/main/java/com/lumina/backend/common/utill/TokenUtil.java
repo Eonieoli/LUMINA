@@ -35,7 +35,6 @@ public class TokenUtil {
         }
         //여기까지
 
-        // JWT에서 닉네임 추출
         String nickname = jwtUtil.getNickname(access);
 
         return userRepository.findIdByNickname(nickname);

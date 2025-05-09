@@ -6,7 +6,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class CookieUtil {
 
-    private CookieUtil() {}
+    private CookieUtil() {} // 인스턴스화 방지
+
 
     /**
      * 쿠키를 생성합니다.
@@ -44,6 +45,13 @@ public class CookieUtil {
     }
 
 
+    /**
+     * 요청에서 특정 이름의 쿠키 값을 반환합니다.
+     *
+     * @param request HTTP 요청 객체
+     * @param name    쿠키 이름
+     * @return        쿠키 값, 없으면 null
+     */
     public static String getCookieValue(HttpServletRequest request, String name) {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -54,5 +62,4 @@ public class CookieUtil {
         }
         return null;
     }
-
 }

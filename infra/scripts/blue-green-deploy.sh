@@ -119,6 +119,12 @@ deploy_service() {
         fi
     fi
     
+    # 이전 컬러의 컨테이너가 있을 경우 연결 정리를 위한 대기 시간 추가
+    if container_running "$service-$current_color"; then
+        echo "Waiting for previous $service-$current_color to stabilize connections..."
+        sleep 30  # 30초 대기
+    fi
+    
     # 기존 컨테이너 정리
     if container_exists "$service-$target_color"; then
         echo "Removing existing $service-$target_color container..."
@@ -148,12 +154,12 @@ deploy_service() {
     
     # 건강 상태 확인
     echo "Performing health check for $service-$target_color..."
-    local max_attempts=10
-    local wait_time=5
+    local max_attempts=20
+    local wait_time=10
     local endpoint="/"
     
     if [ "$service" == "backend" ]; then
-        endpoint="/actuator/health"
+    endpoint="/actuator/health"
     fi
     
     for i in $(seq 1 $max_attempts); do
@@ -261,7 +267,7 @@ initialize_environment() {
     docker-compose up -d frontend-blue backend-blue
     
     # ai-server 배포
-    docker-compose up -d ai-server
+    # docker-compose up -d ai-server
     
     # 초기 upstream.conf 설정 (백업 서버 포함 후 기동)
     echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
@@ -356,8 +362,8 @@ deploy_ai_server() {
             return 1
         fi
         
-        # 2초 타임아웃으로 헬스 체크 (기본 경로로 확인)
-        if curl -s -m 2 -o /dev/null -w "%{http_code}" "http://localhost:8000/" | grep -q -E "200|404"; then
+        # 2초 타임아웃으로 헬스 체크 (/health 엔드포인트 확인)
+        if curl -s -m 2 -o /dev/null -w "%{http_code}" "http://localhost:8000/health" | grep -q "200"; then
             echo "ai-server is healthy!"
             return 0
         fi
