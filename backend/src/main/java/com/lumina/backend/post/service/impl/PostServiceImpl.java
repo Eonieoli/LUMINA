@@ -3,6 +3,7 @@ package com.lumina.backend.post.service.impl;
 import com.lumina.backend.category.model.entity.Category;
 import com.lumina.backend.category.repository.CategoryRepository;
 import com.lumina.backend.category.repository.UserCategoryRepository;
+import com.lumina.backend.common.service.AiService;
 import com.lumina.backend.common.service.S3Service;
 import com.lumina.backend.common.utill.FindUtil;
 import com.lumina.backend.common.utill.PagingResponseUtil;
@@ -42,6 +43,7 @@ public class PostServiceImpl implements PostService {
     private final UserCategoryRepository userCategoryRepository;
 
     private final S3Service s3Service;
+    private final AiService aiService;
 
     private final FindUtil findUtil;
 
@@ -67,6 +69,8 @@ public class PostServiceImpl implements PostService {
         Post savedPost = postRepository.save(post);
 
         savePostHashtags(request.getHashtag(), savedPost);
+
+        aiService.textReward(user, request.getPostContent());
 
         return new UploadPostResponse(savedPost.getId());
     }

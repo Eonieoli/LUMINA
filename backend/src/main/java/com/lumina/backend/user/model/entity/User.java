@@ -126,6 +126,7 @@ public class User extends BaseEntity {
      */
     public void updatePositiveness(Integer positiveness) {
         this.positiveness += positiveness;
+        this.positiveness = Math.max(-100, Math.min(100, this.positiveness));
     }
 
     /**
