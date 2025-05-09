@@ -3,8 +3,6 @@ package com.lumina.backend.common.service;
 import com.lumina.backend.common.jwt.JWTUtil;
 import com.lumina.backend.common.utill.CookieUtil;
 import com.lumina.backend.common.utill.RedisUtil;
-import com.lumina.backend.common.utill.TokenUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +27,15 @@ public class TokenService {
     private String jwtRedisExp;
 
 
+    /**
+     * 새로운 Access/Refresh 토큰을 발급하고, Redis 및 쿠키에 저장합니다.
+     *
+     * @param userKey   Redis에 저장할 키
+     * @param nickname  사용자 닉네임
+     * @param role      사용자 권한
+     * @param response  HttpServletResponse (쿠키 설정에 사용)
+     * @return          발급된 access/refresh 토큰 Map
+     */
     public Map<String, String> reissueTokens(
             String userKey, String nickname,
             String role, HttpServletResponse response) {
