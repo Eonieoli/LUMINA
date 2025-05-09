@@ -4,8 +4,8 @@ import UserProfileFourInfo from "@/components/profile/fourInfo";
 import ProfileBtn from "@/components/profile/button";
 import { Post } from "./Home";
 import { getUserPosts } from "@/apis/board";
-import { Board } from "@/components";
 import { useNavigate, useParams } from "react-router-dom";
+import { Board, HamburgerSheet } from "@/components";
 import { getUserProfile } from "@/apis/auth";
 import { useAuthStore } from '@/stores/auth';
 import { followToggle } from "@/apis/follow";
@@ -47,6 +47,9 @@ export default function MyPage() {
     const observer = useRef<IntersectionObserver | null> (null)
     const fetchedOnce = useRef(false)
     const isFollowing = userInfo?.isFollowing
+
+    // 햄버거 열린 상태
+    const [isHamburgerOpened, setIsHamburgerOpened] = useState<boolean>(false);
 
 
     // 유저 정보 가져오기
@@ -125,9 +128,14 @@ export default function MyPage() {
         })
     }
 
-    return (
-        <div className="w-full h-full">
+    // 햄버거 닫기
+    const closeHamburger = () => {
+        setIsHamburgerOpened(false);
+    }
 
+    return (
+        <div className="relative w-full h-full bg-white">
+            <HamburgerSheet isVisible={isHamburgerOpened} onClose={closeHamburger} />
 
             {/* 게시물 상단 */}
             <div className="p-6">
@@ -135,7 +143,7 @@ export default function MyPage() {
                 {/* 이름, 햄버거바*/}
                 <div className="flex items-center justify-between h-8 mb-4">
                     <p className="text-xl font-semibold">{userInfo?.nickname}</p>
-                    <img src={Hamburger} alt="햄버거버튼" className="h-4" />
+                    <img onClick={() => setIsHamburgerOpened(!isHamburgerOpened)} src={Hamburger} alt="햄버거버튼" className="h-4" />
                 </div>
 
                 {/* 프로필 사진, 이름, 상태메세지 */}
@@ -188,6 +196,7 @@ export default function MyPage() {
                     <div key={post.postId} ref={isLast ? lastPostRef : undefined}>
                         <Board
                         postId={post.postId}
+                        userId={post.userId}
                         nickname={post.nickname}
                         profileImage={post.profileImage}
                         postImage={post.postImage}

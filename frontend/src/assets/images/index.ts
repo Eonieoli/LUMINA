@@ -13,7 +13,7 @@ import XIcon from './board/Ic_x.png'
 // 헤더 관련 에셋
 import BellIcon from './header/bell.svg';
 import PlusIcon from './header/plus.svg';
-import LuminaLogo from './header/lumina_logo.svg';
+import LuminaLogo from './header/logo.svg';
 import Hamburger from './header/hamburger.svg'
 
 // 기부 페이지 

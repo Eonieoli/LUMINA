@@ -1,6 +1,6 @@
 import { RankingInfo } from "@/apis/ranking";
 import { useEffect, useState } from "react";
-import Logo from "@/assets/images/header/logo.svg"
+import { LuminaLogo } from "@/assets/images";
 import { DefaultProfile, SmileLuna, PokerLuna } from '@/assets/images';
 import { useNavigate } from "react-router-dom";
 
@@ -36,9 +36,9 @@ export default function RankingPage() {
 
 
   return (
-  <div className="p-6">
+  <div className="p-6 bg-white">
     {/* 로고 */}
-    <img src={Logo} alt="루미나 로고" className="w-25"/>
+    <img src={LuminaLogo} alt="루미나 로고" className="w-25"/>
 
     {/* top 3 */}
     <div className="flex justify-between items-end gap-2 mb-5 ">

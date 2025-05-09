@@ -70,7 +70,7 @@ export default function HomePage() {
     );
 
     return (
-        <>
+        <div className='bg-white'>
             <Header />
             {posts.map((post, index) => {
                 const isLast = index === posts.length - 1;
@@ -82,6 +82,7 @@ export default function HomePage() {
                     >
                         <Board
                             postId={post.postId}
+                            userId={post.userId}
                             nickname={post.nickname}
                             profileImage={post.profileImage}
                             postImage={post.postImage}
@@ -100,6 +101,6 @@ export default function HomePage() {
                     불러오는 중...
                 </div>
             )}
-        </>
+        </div>
     );
 }
