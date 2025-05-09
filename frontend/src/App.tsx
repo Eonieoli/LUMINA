@@ -9,7 +9,7 @@ function App() {
         <BrowserRouter>
             <ScrollToTop />
             <Routes>
-                <Route path="/auth" element={<Auth />} />
+                <Route path="/login" element={<Auth />} />
                 <Route element={<ProtectedRoute />}>
                     <Route path="/*" element={<Main />} />
                 </Route>

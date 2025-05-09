@@ -24,7 +24,18 @@ export const getUserProfile = async (userId:number) => {
     }
 }
 
-// 카카오 로그인
+// 로그인
 export const oAuth = async (type: string) => {
     window.location.href = import.meta.env.VITE_API_URL + "/user?type=" + type;
 };
+
+// 로그아웃
+export const signOut = async () => {
+    try {
+        const response = await apiClient.post('/user');
+        return response.data
+    } catch (error) {
+        console.error('로그아웃 API 에러', error);
+        throw error
+    }
+}

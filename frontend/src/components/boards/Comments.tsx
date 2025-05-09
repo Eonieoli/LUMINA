@@ -15,6 +15,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Replies } from './Replies';
 import { useAuthStore } from '@/stores/auth';
 import { elizaComment } from '@/apis/eliza';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 // import { Toaster, toast } from 'sonner';
 
 interface Comment {
@@ -45,6 +47,8 @@ export const Comments = ({ postId, children }: CommentsProps) => {
 
     const pageNumRef = useRef(1);
     const loadingRef = useRef(false);
+
+    const navigate = useNavigate();
 
     const fetchComments = useCallback(async () => {
         if (loadingRef.current || !hasMore) return;
@@ -157,12 +161,12 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                     )
                 );
                 if (luna) {
-                    await elizaComment(postId, response.data.commentId);
-                    // toast.promise(elizaComment(postId, response.data.commentId), {
-                    //     loading: '루나가 댓글 작성 중 입니다...',
-                    //     success: '댓글이 생성되었습니다.',
-                    //     error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
-                    // })
+                    // await elizaComment(postId, response.data.commentId);
+                    toast.promise(elizaComment(postId, response.data.commentId), {
+                        loading: '루나가 댓글 작성 중 입니다...',
+                        success: '댓글이 생성되었습니다.',
+                        error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
+                    })
                     fetchComments();
                 }
 
@@ -183,12 +187,12 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                 };
 
                 if (luna) {
-                    await elizaComment(postId, response.data.commentId);
-                    // toast.promise(elizaComment(postId, response.data.commentId), {
-                    //     loading: '루나가 댓글 작성 중 입니다...',
-                    //     success: '댓글이 생성되었습니다.',
-                    //     error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
-                    // })
+                    // await elizaComment(postId, response.data.commentId);
+                    toast.promise(elizaComment(postId, response.data.commentId), {
+                        loading: '루나가 댓글 작성 중 입니다...',
+                        success: '댓글이 생성되었습니다.',
+                        error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
+                    })
                     fetchComments();
                 }
                 setComments((prev) => [newComment, ...prev]);
@@ -218,6 +222,10 @@ export const Comments = ({ postId, children }: CommentsProps) => {
         setLuna(!luna);
     }
 
+    const goProfile = (userId: number) => {
+        navigate(`/mypage/${userId}`);
+    }
+
     return (
         <div className={`flex h-full w-full flex-col gap-y-2 p-2 ${children}`}>
             <h2 className="flex items-center justify-center text-lg font-semibold">
@@ -232,8 +240,8 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                     >
                         <div className="flex h-full items-start overflow-hidden rounded-full">
                             <div className='w-12 h-12 rounded-full overflow-hidden'>
-                                <img
-                                    className="h-12 w-auto"
+                                <img onClick={() => goProfile(comment.userId)}
+                                    className="h-12 w-auto cursor-pointer"
                                     src={
                                         comment.profileImage
                                             ? comment.profileImage
@@ -245,13 +253,13 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                         </div>
                         <div className="grid grid-cols-[1fr_auto] items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium">
+                                <p onClick={() => goProfile(comment.userId)} className="text-sm font-medium cursor-pointer">
                                     {comment.nickname}
                                 </p>
                                 <p className="text-sm break-all">
                                     {comment.commentContent}
                                 </p>
-                                <div className="flex items-center gap-x-2 text-[12px] text-gray-500">
+                                <div className="flex items-center gap-x-2 text-[12px] text-gray-500 cursor-pointer">
                                     <div
                                         onClick={() =>
                                             setTarget({
@@ -277,7 +285,7 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                                 onClick={() =>
                                     heartClick(postId, comment.commentId)
                                 }
-                                className="flex flex-col items-center justify-center"
+                                className="flex flex-col items-center justify-center cursor-pointer"
                             >
                                 <img
                                     className="w-6"
@@ -321,7 +329,7 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                             onClick={() =>
                                 setTarget({ commentId: -1, nickname: '' })
                             }
-                            className="px-3 py-2"
+                            className="px-3 py-2 cursor-pointer"
                         >
                             X
                         </span>
@@ -353,12 +361,12 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                             placeholder="댓글을 입력하세요"
                             className="h-12 w-full rounded-full border px-3 py-2 text-sm"
                         />
-                        <div className='absolute right-4 top-1/2 -translate-y-1/2'>
+                        <div className='absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer'>
                             <img onClick={toggleLuna} className={`h-10 w-10 transition duration-300 ${luna ? "opacity-100" : "opacity-50"}`} src={PokerLuna} alt="" />
                         </div>
                     </div>
                     <div onClick={onPostComment}>
-                        <img className="h-8 w-auto" src={SendIcon} alt="" />
+                        <img className="h-8 w-auto cursor-pointer" src={SendIcon} alt="" />
                     </div>
                 </div>
             </div>

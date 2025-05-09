@@ -143,7 +143,7 @@ export default function MyPage() {
                 {/* 이름, 햄버거바*/}
                 <div className="flex items-center justify-between h-8 mb-4">
                     <p className="text-xl font-semibold">{userInfo?.nickname}</p>
-                    <img onClick={() => setIsHamburgerOpened(!isHamburgerOpened)} src={Hamburger} alt="햄버거버튼" className="h-4" />
+                    <img onClick={() => setIsHamburgerOpened(!isHamburgerOpened)} src={Hamburger} alt="햄버거버튼" className="h-4 cursor-pointer" />
                 </div>
 
                 {/* 프로필 사진, 이름, 상태메세지 */}

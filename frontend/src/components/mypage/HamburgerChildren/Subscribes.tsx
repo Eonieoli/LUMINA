@@ -56,7 +56,7 @@ export default function Subscribes({isVisible, onClose}: HamburgerProps) {
                                 <div key={category.categoryId} className="flex justify-between py-2">
                                     <div>{category.categoryName}</div>
                                     <img
-                                        className="w-6"
+                                        className="w-6 cursor-pointer"
                                         onClick={() => heartClick(category.categoryId)}
                                         src={
                                             category.isSubscribe
