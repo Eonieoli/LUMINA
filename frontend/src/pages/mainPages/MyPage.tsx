@@ -134,7 +134,7 @@ export default function MyPage() {
     }
 
     return (
-        <div className="relative w-full h-full bg-white">
+        <div className="relative w-full bg-white">
             <HamburgerSheet isVisible={isHamburgerOpened} onClose={closeHamburger} />
 
             {/* 게시물 상단 */}
