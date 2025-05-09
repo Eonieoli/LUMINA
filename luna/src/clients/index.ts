@@ -3,7 +3,7 @@ import { DiscordClientInterface } from "@elizaos/client-discord";
 // Telegram 및 Twitter 클라이언트 임포트 제거됨
 import { Character, IAgentRuntime } from "@elizaos/core";
 import { LunaClientInterface } from "./luna-client.ts";
-import { LocalLLMInterface } from "./local-llm-server.ts";
+import { LocalLLMInterface } from "./local-llm-server";
 
 export async function initializeClients(
   character: Character,
