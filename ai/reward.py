@@ -203,6 +203,20 @@ def get_goodness_level(text: str) -> int:
         return prediction
 
 
+@app.get("/health")
+async def health_check():
+    # 모델 상태 확인
+    models_loaded = (
+        abuse_tokenizer is not None and 
+        abuse_model is not None and 
+        goodness_tokenizer is not None and 
+        goodness_model is not None
+    )
+    
+    status = "healthy" if models_loaded else "models loading"
+    return {"status": status}
+
+
 @app.post("/analyze")
 async def analyze(comment: Comment):
     # 모델 준비 확인

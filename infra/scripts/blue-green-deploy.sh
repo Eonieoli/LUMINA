@@ -356,8 +356,8 @@ deploy_ai_server() {
             return 1
         fi
         
-        # 2초 타임아웃으로 헬스 체크 (기본 경로로 확인)
-        if curl -s -m 2 -o /dev/null -w "%{http_code}" "http://localhost:8000/" | grep -q -E "200|404"; then
+        # 2초 타임아웃으로 헬스 체크 (/health 엔드포인트 확인)
+        if curl -s -m 2 -o /dev/null -w "%{http_code}" "http://localhost:8000/health" | grep -q "200"; then
             echo "ai-server is healthy!"
             return 0
         fi
