@@ -1,6 +1,5 @@
 package com.lumina.backend.common.utill;
 
-import com.lumina.backend.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -39,8 +38,7 @@ public class RedisUtil {
      * @param key 조회할 키
      * @return 남은 만료 시간(초), 키가 없거나 만료 시간이 설정되지 않은 경우 null
      */
-    public Long getTtl(
-            String key) {
+    public Long getTtl(String key) {
 
         return redisTemplate.getExpire(key);
     }
@@ -52,8 +50,7 @@ public class RedisUtil {
      * @param key 조회할 키
      * @return 저장된 값, 키가 없는 경우 null
      */
-    public Object get(
-            String key) {
+    public Object get(String key) {
 
         return redisTemplate.opsForValue().get(key);
     }
@@ -65,8 +62,7 @@ public class RedisUtil {
      * @param key 확인할 키
      * @return 키가 존재하면 true, 그렇지 않으면 false
      */
-    public Boolean exists(
-            String key) {
+    public Boolean exists(String key) {
 
         return redisTemplate.hasKey(key);
     }
@@ -78,8 +74,7 @@ public class RedisUtil {
      * @param key 삭제할 키
      * @return 키가 성공적으로 삭제되면 true, 키가 존재하지 않으면 false
      */
-    public Boolean delete(
-            String key) {
+    public Boolean delete(String key) {
 
         return redisTemplate.delete(key);
     }
@@ -87,8 +82,12 @@ public class RedisUtil {
 
     /**
      * 패턴에 맞는 모든 키를 반환합니다.
+     *
+     * @param pattern 키 패턴 (예: "user:*")
+     * @return 패턴에 매칭되는 키 Set
      */
     public Set<String> getKeysByPattern(String pattern) {
+
         return redisTemplate.keys(pattern);
     }
 
@@ -105,18 +104,10 @@ public class RedisUtil {
     public void addSumPointToZSetWithTTL(
             String key, String userId, Integer sumPoint) {
 
-        // 현재 저장된 score 가져오기
-        Double currentRawSumPoint = redisTemplate.opsForZSet().score(key, userId);
-        double currentSumPoint = currentRawSumPoint != null ? currentRawSumPoint : -1;
-
         long now = System.currentTimeMillis();
         double finalSumPoint = sumPoint * 1e13 + (Long.MAX_VALUE - now);
 
-        // 기존 누적 기부금보다 클 때만 갱신
-        if (finalSumPoint > currentSumPoint) {
-
-            redisTemplate.opsForZSet().add(key, userId, finalSumPoint);
-        }
+        redisTemplate.opsForZSet().add(key, userId, finalSumPoint);
     }
 
 
@@ -149,8 +140,7 @@ public class RedisUtil {
      * @param userId  사용자 ID
      * @return 사용자의 랭킹 (0: 1위), 없으면 null
      */
-    public Long getUserRank(
-            String key, String userId) {
+    public Long getUserRank(String key, String userId) {
 
         return redisTemplate.opsForZSet().reverseRank(key, userId);
     }
@@ -164,6 +154,7 @@ public class RedisUtil {
      * @return 삭제된 요소의 개수(0 또는 1)
      */
     public Long removeUserFromZSet(String key, String userId) {
+
         return redisTemplate.opsForZSet().remove(key, userId);
     }
 
@@ -184,6 +175,13 @@ public class RedisUtil {
     }
 
 
+    /**
+     * User-Agent와 사용자 ID를 기반으로 Redis의 refresh 토큰 키를 생성합니다.
+     *
+     * @param request HTTP 요청 객체
+     * @param userId  사용자 ID
+     * @return Redis에 저장할 refresh 키
+     */
     public String getRefreshKey(HttpServletRequest request, Long userId) {
 
         String userAgent = request.getHeader("User-Agent").toLowerCase();

@@ -21,27 +21,25 @@ public class ValidationUtil {
             throw new CustomException(HttpStatus.BAD_REQUEST, fieldName + "은(는) 필수 입력값입니다.");
         }
     }
-
     public static void validateRequiredField(Long value, String fieldName) {
         if (value == null) {
             throw new CustomException(HttpStatus.BAD_REQUEST, fieldName + "은(는) 필수 입력값입니다.");
         }
     }
-
     public static void validateRequiredField(Integer value, String fieldName) {
         if (value == null) {
             throw new CustomException(HttpStatus.BAD_REQUEST, fieldName + "은(는) 필수 입력값입니다.");
         }
     }
 
-    //페이지네이션 유효성 검사
+    // 페이지네이션 유효성 검사
     public static void validatePageNumber(int pageNum) {
         if (pageNum <= 0) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "페이지 번호는 1 이상이어야 합니다.");
         }
     }
 
-    //팔로우 유효성 검사
+    // 팔로우 유효성 검사
     public static void validateFollow(Long followerId, Long followingId) {
         if (followerId.equals(followingId)) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "자신을 팔로우할 수 없습니다.");
@@ -63,14 +61,14 @@ public class ValidationUtil {
         }
     }
 
-    //게시물 삭제 권한 검사
+    // 댓글 삭제 권한 검사
     public static void validateCommentDelete(String role, Comment comment, Long userId) {
         if (role.equals("ROLE_USER") && !comment.getUser().getId().equals(userId)) {
             throw new CustomException(HttpStatus.FORBIDDEN, "사진 삭제 권한이 없습니다.");
         }
     }
 
-    //보유 포인트 검사
+    // 보유 포인트 검사
     public static void validateUserPoint(User user, int point) {
         if (user.getPoint() < point) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "보유 point가 부족합니다.");

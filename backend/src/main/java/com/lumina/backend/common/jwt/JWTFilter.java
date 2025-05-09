@@ -12,11 +12,9 @@ import com.lumina.backend.user.service.OAuthService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,11 +22,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * JWT 인증 필터
- * - OncePerRequestFilter를 상속하여 요청마다 한 번만 필터 실행
- * - 특정 URL 및 메서드에 대해선 필터 제외 처리
- */
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
 
@@ -54,6 +47,7 @@ public class JWTFilter extends OncePerRequestFilter {
         String method = request.getMethod();
         String type = request.getParameter("type");
 
+        // 인증이 필요 없는 경로 및 조건 처리
         return path.equals("/")
                 || path.startsWith("/actuator/")
                 || path.startsWith("/api/v1/dev/")
@@ -97,13 +91,15 @@ public class JWTFilter extends OncePerRequestFilter {
                 jwtUtil.isExpired(accessToken);
             } catch (ExpiredJwtException e) {
                 try {
+                    // 만료된 경우 재발급 시도
                     String newAccessToken = oAuthService.reissue(request, response);
 
+                    // 새 토큰으로 request 업데이트
                     CustomHttpServletRequestWrapper updatedRequest = new CustomHttpServletRequestWrapper(request);
-                    updatedRequest.addHeader("Authorization", "Bearer " + newAccessToken); // 헤더 추가
-                    updatedRequest.updateCookie("access", newAccessToken); // 쿠키 업데이트
+                    updatedRequest.addHeader("Authorization", "Bearer " + newAccessToken);
+                    updatedRequest.updateCookie("access", newAccessToken);
                     accessToken = newAccessToken;
-                    requestToUse = updatedRequest; // 재발급된 경우 updatedRequest를 사용
+                    requestToUse = updatedRequest;
                 } catch (CustomException ce) {
                     response.setStatus(ce.getStatus().value());
                     response.setContentType("application/json;charset=UTF-8");
@@ -112,6 +108,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 }
             }
 
+            // 인증 객체 생성 및 SecurityContext에 저장
             CustomOAuth2User customOAuth2User = new CustomOAuth2User(new UserDto(
                     jwtUtil.getSocialId(accessToken),
                     jwtUtil.getNickname(accessToken),

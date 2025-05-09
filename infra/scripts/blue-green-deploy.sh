@@ -119,6 +119,12 @@ deploy_service() {
         fi
     fi
     
+    # 이전 컬러의 컨테이너가 있을 경우 연결 정리를 위한 대기 시간 추가
+    if container_running "$service-$current_color"; then
+        echo "Waiting for previous $service-$current_color to stabilize connections..."
+        sleep 30  # 30초 대기
+    fi
+    
     # 기존 컨테이너 정리
     if container_exists "$service-$target_color"; then
         echo "Removing existing $service-$target_color container..."
@@ -148,12 +154,12 @@ deploy_service() {
     
     # 건강 상태 확인
     echo "Performing health check for $service-$target_color..."
-    local max_attempts=10
-    local wait_time=5
+    local max_attempts=20
+    local wait_time=10
     local endpoint="/"
     
     if [ "$service" == "backend" ]; then
-        endpoint="/actuator/health"
+    endpoint="/actuator/health"
     fi
     
     for i in $(seq 1 $max_attempts); do
