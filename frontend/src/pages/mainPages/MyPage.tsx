@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback} from "react";
-import { Hamburger, DefaultProfile } from "@/assets/images";
+import { Hamburger, DefaultProfile, ComputerTypingLuna } from "@/assets/images";
 import UserProfileFourInfo from "@/components/profile/fourInfo";
 import ProfileBtn from "@/components/profile/button";
 import { Post } from "./Home";
@@ -134,7 +134,7 @@ export default function MyPage() {
     }
 
     return (
-        <div className="relative w-full bg-white">
+        <div className="relative w-full h-full bg-white">
             <HamburgerSheet isVisible={isHamburgerOpened} onClose={closeHamburger} />
 
             {/* 게시물 상단 */}
@@ -188,34 +188,40 @@ export default function MyPage() {
             {/* 루미나 선행도 그래프 */}
 
             {/* 유저 게시물 렌더링*/}
-            <div>
-                {userPosts.map((post, index) => {
-                    const isLast = index === userPosts.length - 1;
-
-                    return (
-                    <div key={post.postId} ref={isLast ? lastPostRef : undefined}>
-                        <Board
-                        postId={post.postId}
-                        userId={post.userId}
-                        nickname={post.nickname}
-                        profileImage={post.profileImage}
-                        postImage={post.postImage}
-                        categoryName={post.categoryName}
-                        postContent={post.postContent}
-                        likeCnt={post.likeCnt}
-                        commentCnt={post.commentCnt}
-                        isLike={post.isLike}
-                        onDelete={(id) =>
-                            setUserposts((prev) => prev.filter((p) => p.postId !== id))
-                        }
-                        />
+            <div className="bg-white">
+                {userPosts.length === 0 ? (
+                    <div  className="text-center border-t-3 border-gray-300 pt-10 text-gray-500 flex flex-col items-center gap-5 justify-center">
+                            <img src={ComputerTypingLuna} alt="루나이미지" className="w-30" />
+                            <p className="text-sm">게시물이 없습니다.</p>
                     </div>
-                    );
-                })}
+                ) : (
+                    userPosts.map((post, index) => {
+                        const isLast = index === userPosts.length - 1;
+                        return (
+                        <div key={post.postId} ref={isLast ? lastPostRef : undefined}>
+                            <Board
+                            postId={post.postId}
+                            userId={post.userId}
+                            nickname={post.nickname}
+                            profileImage={post.profileImage}
+                            postImage={post.postImage}
+                            categoryName={post.categoryName}
+                            postContent={post.postContent}
+                            likeCnt={post.likeCnt}
+                            commentCnt={post.commentCnt}
+                            isLike={post.isLike}
+                            onDelete={(id) =>
+                                setUserposts((prev) => prev.filter((p) => p.postId !== id))
+                            }
+                            />
+                        </div>
+                        );
+                    })
+                )}
                 {isLoading && (
                     <div className="text-center text-gray-400 py-4">불러오는 중...</div>
                 )}
-                </div>
+            </div>
 
         </div>
     );
