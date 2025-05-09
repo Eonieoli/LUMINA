@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
-import Subscribes from "./HamburgerChildren/Subscribes";
 import { useState } from "react";
 import { signOut } from "@/apis/auth";
+import { Rewards, Subscribes } from './HamburgerChildren'
 
 export interface HamburgerProps {
     isVisible: boolean;
@@ -10,9 +10,24 @@ export interface HamburgerProps {
 
 export default function Hamburger({isVisible, onClose}: HamburgerProps) {
     const [isSubscribeOpened, setIsSubscribeOpened] = useState(false);
+    const [isRewardsOpened, setIsRewardsOpened] = useState(false);
+    const [isSubscribeAnimation, setIsSubscribeAnimation] = useState(false);
+    const [isRewardsAnimation, setIsRewardsAnimation] = useState(false);
 
     const handleSignOut = async () => {
         await signOut();
+    }
+
+    const handleClose = (name: string) => {
+        setIsSubscribeOpened(false);
+        setIsRewardsOpened(false);
+        setTimeout(() => {
+            if (name == 'sub') {
+                setIsSubscribeAnimation(false);
+            } else if (name == 're') {
+                setIsRewardsAnimation(false);
+            }
+        }, 400);
     }
     return (
         <AnimatePresence>
@@ -32,12 +47,25 @@ export default function Hamburger({isVisible, onClose}: HamburgerProps) {
                         <div className="flex-1 flex flex-col justify-between text-xl font-semibold my-4">
                             <div className="flex flex-col gap-y-2">
                                 <div className="p-4 px-10 cursor-pointer">내 기부 내역</div>
-                                <div className="p-4 px-10 cursor-pointer">리워드 보상 내역</div>
-                                <div onClick={() => setIsSubscribeOpened(true)} className="p-4 px-10 cursor-pointer">구독 카테고리</div>
+                                <div onClick={() => {
+                                    setIsRewardsOpened(true)
+                                    setIsRewardsAnimation(true)}}
+                                    className="p-4 px-10 cursor-pointer"
+                                >
+                                    리워드 내역
+                                    </div>
+                                <div onClick={() => {
+                                    setIsSubscribeOpened(true)
+                                    setIsSubscribeAnimation(true)}}
+                                    className="p-4 px-10 cursor-pointer"
+                                >
+                                    구독 카테고리
+                                </div>
                             </div>
                             <div onClick={handleSignOut} className="p-4 px-10 text-right text-xs text-gray-400 cursor-pointer">로그아웃</div>
                         </div>
-                        {isSubscribeOpened && (<Subscribes isVisible={isSubscribeOpened} onClose={() => setIsSubscribeOpened(!isSubscribeOpened)} />)}
+                        {isRewardsAnimation && (<Rewards isVisible={isRewardsOpened} onClose={() => handleClose('re')} />)}
+                        {isSubscribeAnimation && (<Subscribes isVisible={isSubscribeOpened} onClose={() => handleClose('sub')} />)}
                     </div>
                 </motion.div>
             )}
