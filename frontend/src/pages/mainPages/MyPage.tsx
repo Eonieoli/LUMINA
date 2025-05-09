@@ -202,6 +202,7 @@ export default function MyPage() {
                         postImage={post.postImage}
                         categoryName={post.categoryName}
                         postContent={post.postContent}
+                        postViews={post.postViews}
                         likeCnt={post.likeCnt}
                         commentCnt={post.commentCnt}
                         isLike={post.isLike}

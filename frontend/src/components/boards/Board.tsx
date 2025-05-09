@@ -18,6 +18,7 @@ interface BoardProps {
     postImage?: string;
     categoryName: string;
     postContent: string;
+    postViews: number;
     likeCnt: number;
     commentCnt: number;
     isLike: boolean;
@@ -32,6 +33,7 @@ export const Board = ({
     postImage,
     categoryName,
     postContent,
+    postViews,
     likeCnt: initialLikeCnt,
     commentCnt,
     isLike: initialIsLike,
@@ -169,24 +171,27 @@ export const Board = ({
                     </button>
                 )}
                 {/* 좋아요, 댓글 및 공유 */}
-                <div className="flex gap-x-4">
-                    <div
-                        onClick={() => heartClick(postId)}
-                        className="flex cursor-pointer gap-x-1"
-                    >
-                        <img
-                            src={isLiked ? HeartFilledIcon : HeartDefaultIcon}
-                            alt="좋아요"
-                        />
-                        <span>{likes}</span>
+                <div className="flex justify-between items-center">
+                    <div className='flex gap-x-4'>
+                        <div
+                            onClick={() => heartClick(postId)}
+                            className="flex cursor-pointer gap-x-1"
+                        >
+                            <img
+                                src={isLiked ? HeartFilledIcon : HeartDefaultIcon}
+                                alt="좋아요"
+                            />
+                            <span>{likes}</span>
+                        </div>
+                        <div
+                            onClick={() => setShowComments(true)}
+                            className="flex cursor-pointer gap-x-1"
+                        >
+                            <img src={ChatIcon} alt="댓글" />
+                            <span>{commentCnt}</span>
+                        </div>
                     </div>
-                    <div
-                        onClick={() => setShowComments(true)}
-                        className="flex cursor-pointer gap-x-1"
-                    >
-                        <img src={ChatIcon} alt="댓글" />
-                        <span>{commentCnt}</span>
-                    </div>
+                    <div className='text-xs text-gray-500'>조회수 {postViews}</div>
                 </div>
             </div>
 
