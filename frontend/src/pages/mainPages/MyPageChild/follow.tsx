@@ -37,7 +37,7 @@ export default function FollowPage () {
 
   // 팔로워 목록 조회
   useEffect(() => {
-    if (!userId) return
+    if (!userId || tab !== 'followers') return
 
     const fetchGetFollowers = async () => {
       try {
@@ -52,7 +52,7 @@ export default function FollowPage () {
 
   // 팔로잉 목록 조회
   useEffect(() => {
-    if (!userId) return
+    if (!userId || tab !== 'followings') return
     const fetchGetFollowings = async () => {
       try {
         const response = await getFollowings(userId)
@@ -77,6 +77,12 @@ export default function FollowPage () {
         f.userId === followingId ? { ...f, isFollowing: !f.isFollowing } : f
       )
     )
+    setFollowings((prevFollowings) => 
+      prevFollowings.map((f) =>
+      f.userId === followingId ? {...f, isFollowing: !f.isFollowing} : f
+      )
+    )
+
     try {
       await followToggle(followingId)
     }
@@ -86,8 +92,11 @@ export default function FollowPage () {
   }
   
   // 내가 나의 팔로워 목록을 조회했을 때 특정 팔로워를 삭제
-  const DeleteUser = (userId:number) => {
-    deleteFollwer(userId)
+  const DeleteUser = (deleteUserId:number) => {
+    deleteFollwer(deleteUserId)
+    setFollowers((prev) => 
+      prev.filter((follower) => follower.userId !== deleteUserId)
+    )
   }
 
 
@@ -160,7 +169,7 @@ export default function FollowPage () {
                             onClick={() => handlefollowToggle(follower.userId)}/> 
                         }
                         { myUserId === userId && (
-                          <div className=" h-5 flex items-center justify-center" onClick={() => DeleteUser(userId)}>
+                          <div className=" h-5 flex items-center justify-center" onClick={() => DeleteUser(follower.userId)}>
                             <img src={XIcon} alt="취소" className="w-2" />
                           </div>
                         )}
