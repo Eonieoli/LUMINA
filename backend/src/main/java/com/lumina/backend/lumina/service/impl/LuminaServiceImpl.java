@@ -40,8 +40,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LuminaServiceImpl implements LuminaService {
 
-    private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
     private final PostLikeRepository postLikeRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final CategoryRepository categoryRepository;
