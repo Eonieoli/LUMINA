@@ -37,7 +37,7 @@ export default function FollowPage () {
 
   // 팔로워 목록 조회
   useEffect(() => {
-    if (!userId || tab !== 'followers') return
+    if (!userId) return
 
     const fetchGetFollowers = async () => {
       try {
@@ -48,11 +48,11 @@ export default function FollowPage () {
       }
     }
     fetchGetFollowers()
-  },[tab])
+  },[userId])
 
   // 팔로잉 목록 조회
   useEffect(() => {
-    if (!userId || tab !== 'followings') return
+    if (!userId) return
     const fetchGetFollowings = async () => {
       try {
         const response = await getFollowings(userId)
@@ -62,7 +62,7 @@ export default function FollowPage () {
       }
     }
     fetchGetFollowings()
-  },[tab])
+  },[userId])
 
   //뒤로가기를 눌렀을 때
   const goToBack = () => {
@@ -70,21 +70,21 @@ export default function FollowPage () {
   }
 
   // 팔로우 팔로잉 버튼을 눌렀다면
-  const handlefollowToggle = async(followingId:number) => {
+  const handlefollowToggle = async(followId:number) => {
 
     setFollowers((prevFollowers) =>
       prevFollowers.map((f) =>
-        f.userId === followingId ? { ...f, isFollowing: !f.isFollowing } : f
+        f.userId === followId ? { ...f, isFollowing: !f.isFollowing } : f
       )
     )
     setFollowings((prevFollowings) => 
       prevFollowings.map((f) =>
-      f.userId === followingId ? {...f, isFollowing: !f.isFollowing} : f
+      f.userId === followId ? {...f, isFollowing: !f.isFollowing} : f
       )
     )
 
     try {
-      await followToggle(followingId)
+      await followToggle(followId)
     }
     catch (error){
       console.log("팔로우 팔로잉 조회에서 토글 실패")
@@ -101,41 +101,45 @@ export default function FollowPage () {
 
 
   return (
-    <div className="w-full flex flex-col relative">
+    <div className="w-full h-full flex flex-col bg-white">
 
       {/* 목록 상단 */}
-      <div className="fixed top-0 w-full md:[width:388px] pt-6 pb-2 bg-white z-50 ">
-        {/* 상단바 */}
-        <div className="flex items-center h-6 relative ml-6 mr-6">
-          <img 
-            src={BackIcon} 
-            alt="뒤로가기" 
-            className="absolute left-0 w-5"
-            onClick={goToBack}  
-          />
-          <p 
-            className=" absolute left-1/2 -translate-x-1/2 font-normal text-[22px]">{profileNickname}</p>
-        </div>
+      <div className="sticky top-0 w-full bg-white">
+        <div className="w-full pt-6 pb-2 z-50">
 
-        {/* 탭 버튼 */}
-        <div className="flex mt-4">
-          <button
-            className={` w-1/2 p-1 ${tab === 'followers' ? 'text-gray-700 border-b-2 border-b-gray-700 font-semibold' :  'text-gray-500'}`}
-            onClick={() => setTab('followers')}
-          >
-            {profileFollowCnt} 팔로워 
-          </button>
-          <button
-            className={` w-1/2 p-1 ${tab === 'followings' ? 'text-gray-700 border-b-2 border-b-gray-700 font-semibold' :  'text-gray-500'}`}
-            onClick={() => setTab('followings')}
-          >
-            {profileFollowingCnt} 팔로잉
-          </button>
+          {/* 상단바 */}
+          <div className="flex items-center h-6 relative ml-6 mr-6">
+            <img 
+              src={BackIcon} 
+              alt="뒤로가기" 
+              className="absolute left-0 w-5"
+              onClick={goToBack}  
+            />
+            <p 
+              className=" absolute left-1/2 -translate-x-1/2 font-normal text-[22px]">{profileNickname}</p>
+          </div>
+
+          {/* 탭 버튼 */}
+          <div className="flex mt-4">
+            <button
+              className={` w-1/2 p-1 ${tab === 'followers' ? 'text-gray-700 border-b-2 border-b-gray-700 font-semibold' :  'text-gray-500 border-b-2 border-b-gray-300'}`}
+              onClick={() => setTab('followers')}
+            >
+              {profileFollowCnt} 팔로워 
+            </button>
+            <button
+              className={` w-1/2 p-1 ${tab === 'followings' ? 'text-gray-700 border-b-2 border-b-gray-700 font-semibold' :  'text-gray-500 border-b-2 border-b-gray-300'}`}
+              onClick={() => setTab('followings')}
+            >
+              {profileFollowingCnt} 팔로잉
+            </button>
+          </div>
+
         </div>
       </div>
 
       {/* 팔로워 팔로잉 목록 */}
-      <div className="pl-4 pr-4 w-full pt-28 md:pb-0">
+      <div className="pl-4 pr-4 w-full pb-20 md:pb-0 bg-white">
         {tab === 'followers' ? (
           <div className="flex flex-col h-full">
             {followers.length === 0 ? (
