@@ -27,6 +27,7 @@ import SmileLuna from './donate/smileLuna.png';
 import PokerLuna from './donate/Luna.png';
 import WinkLuna from './donate/wink_Luna.png'
 import ComputerHandsupLuna from './donate/computer_handsup_Luna.png'
+import ComputerTypingLuna from './donate/computer_typing_Luna.png'
 
 // 네브바 아이콘
 import DonationIcon from './navbar/Ic_donate.png';
@@ -66,5 +67,6 @@ export {
     WinkLuna,
     ComputerHandsupLuna,
     Hamburger,
-    XIcon
+    XIcon,
+    ComputerTypingLuna
 }
