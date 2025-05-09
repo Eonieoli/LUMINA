@@ -110,7 +110,7 @@ export default function MyPage() {
     
     // 프로필 수정을 눌렀다면
     const goToProfileEdit = () => {
-        console.log("프로필 수정버튼 클릭")
+        navigate(`/mypage/${myUserId}/edit`)
     }
 
     //팔로우 팔로잉 버튼을 눌렀다면

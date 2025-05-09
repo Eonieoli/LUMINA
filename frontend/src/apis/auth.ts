@@ -16,7 +16,7 @@ export const getMyProfile = async () => {
 export const getUserProfile = async (userId:number) => {
     try {
         const response = await apiClient.get(`/user/profile/${userId}`)
-        console.log(response.data.data.nickname, "님의 정보 가져오기 성공!", response.data.data)
+        // console.log(response.data.data.nickname, "님의 정보 가져오기 성공!", response.data.data)
         return response.data
     }
     catch (error) {
@@ -36,6 +36,17 @@ export const signOut = async () => {
         return response.data
     } catch (error) {
         console.error('로그아웃 API 에러', error);
+        throw error
+    }
+}
+
+// 프로필 수정
+export const profileEdit = async (formData: FormData) => {
+    try{
+        const response = await apiClient.patch('/user/profile', formData)
+        return response.data.message
+    } catch (error) {
+        console.error("프로필 수정 실패", error)
         throw error
     }
 }
