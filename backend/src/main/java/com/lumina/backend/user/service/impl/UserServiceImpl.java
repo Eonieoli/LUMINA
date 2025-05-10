@@ -132,7 +132,7 @@ public class UserServiceImpl implements UserService {
 
         User user = findUtil.getUserById(userId);
         validateDuplicateNickname(request.getNickname(), userId);
-        String profileImageUrl = handleProfileImageUpdate(userId, request.getProfileImageFile());
+        String profileImageUrl = handleProfileImageUpdate(userId, request.getProfileImageFile(), request.getDefaultImage());
 
         if (!user.getNickname().equals(request.getNickname())) {
             String userKey = redisUtil.getRefreshKey(httpRequest, userId);
@@ -250,9 +250,18 @@ public class UserServiceImpl implements UserService {
     }
 
     private String handleProfileImageUpdate(
-            Long userId, MultipartFile newFile) throws IOException {
+            Long userId, MultipartFile newFile,
+            Boolean defaultImage) throws IOException {
 
         String existingImage = userRepository.findProfileImageByUserId(userId);
+
+        if (defaultImage) {
+            if (existingImage != null) {
+                s3Service.deleteImageFile(existingImage, "profile/");
+            }
+            return null;
+        }
+
         if (newFile != null && !newFile.isEmpty()) {
             s3Service.deleteImageFile(existingImage, "profile/");
             return s3Service.uploadImageFile(newFile, "profile/");
