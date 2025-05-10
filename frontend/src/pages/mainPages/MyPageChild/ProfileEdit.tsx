@@ -65,12 +65,25 @@ export default function ProfileEditPage () {
       const formData = new FormData()
       formData.append("nickname", nickname)
       formData.append("message", message)
+
+      // 사진을 선택했을 경우
       if(profileImageFile instanceof File) {
         formData.append("profileImageFile", profileImageFile)
+        formData.append("defaultImage", "false")
       }
-      // if(profileImageFile === null ){formData.append("profileImageFile", DefaultProfile)}
+      // 이미지를 삭제했을 경우
+      else if (profileImageFile === null) {
+        formData.append("profileImage", "")
+        formData.append("defaultImage", "true")
+      } 
+      // 이미지 변경 안했을 경우
+      else {
+        formData.append("profileImageFile", "")
+        formData.append("defaultImage", "false")        
+      }
 
       console.log("파일", profileImageFile);
+      console.log("파일", typeof profileImageFile);
       await profileEdit(formData)
       console.log("프로필 수정 성공")
       navigate(`/mypage/${authData.data.userId}`)
