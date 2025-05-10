@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DefaultProfile } from "@/assets/images";
+import { DefaultProfile, PencilIcon, CircleXIcon } from "@/assets/images";
 import { profileEdit } from "@/apis/auth";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getUserProfile } from "@/apis/auth";
@@ -47,8 +47,9 @@ export default function ProfileEditPage () {
       if(profileImageFile instanceof File) {
         formData.append("profileImageFile", profileImageFile)
       }
+      // if(profileImageFile === null ){formData.append("profileImageFile", DefaultProfile)}
+
       console.log("파일", profileImageFile);
-      console.log("파일 타입", profileImageFile instanceof File);
       await profileEdit(formData)
       console.log("프로필 수정 성공")
       navigate(`/mypage/${authData.data.userId}`)
@@ -68,14 +69,21 @@ export default function ProfileEditPage () {
       <div className="w-full flex flex-col justify-center items-center">
 
           {/* 프로필 이미지 */}
-          <label className="m-15">
-            <img 
-              src={profileImageFile instanceof File ? URL.createObjectURL(profileImageFile) : profileImageFile || DefaultProfile} 
-              alt="프로필 이미지" 
-              className="w-40 bg-white rounded-full object-cover aspect-square border-2 border-gray-200"
-            />
-            <input type="file" accept="image/*" onChange={handleImageChange} className="hidden"/>
-          </label>
+          <div className="relative">
+            <label className="m-15 cursor-pointer">
+              <div className="relative">
+                <img 
+                  src={profileImageFile instanceof File ? URL.createObjectURL(profileImageFile) : profileImageFile || DefaultProfile} 
+                  alt="프로필 이미지" 
+                  className="w-40 bg-white rounded-full object-cover aspect-square border-2 border-gray-200"
+                />
+                <img src={PencilIcon} alt="수정아이콘" className=" absolute w-4 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+              </div>
+              <input type="file" accept="image/*" onChange={handleImageChange} className="hidden"/>
+            </label>
+            <img src={CircleXIcon} alt="이미지 삭제" onClick={() => setProfileImageFile(null)} className="w-4 absolute top-5 right-0 z-50 cursor-pointer"/>
+          </div>
+
 
           {/* 닉네임 */}
           <EditInput title="닉네임" value={nickname} onChange={(e) => setNickname(e.target.value)} />

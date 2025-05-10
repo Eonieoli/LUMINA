@@ -9,6 +9,8 @@ import HeartFilledIcon from './board/heart_filled.svg';
 import ChatIcon from './board/chat.svg';
 import SendIcon from './board/send.svg';
 import XIcon from './board/Ic_x.png'
+import CircleXIcon from './board/Ic_circle_X.png'
+import PencilIcon from './board/Ic_pencil.png'
 
 // 헤더 관련 에셋
 import BellIcon from './header/bell.svg';
@@ -68,5 +70,7 @@ export {
     ComputerHandsupLuna,
     Hamburger,
     XIcon,
-    ComputerTypingLuna
+    ComputerTypingLuna,
+    CircleXIcon,
+    PencilIcon,
 }
