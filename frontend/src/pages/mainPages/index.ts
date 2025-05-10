@@ -9,7 +9,7 @@ import DonationSearchResultPage from './DonateChild/DonationSearchResult';
 import DonationThanksPage from './DonateChild/DonationThanks';
 import DonationInputPage from './DonateChild/DonationInput';
 import FollowPage from './MyPageChild/follow';
-import ProfileEditPage from './MyPageChild/profileEdit';
+import ProfileEditPage from './MyPageChild/ProfileEdit';
 
 export {
     HomePage,
