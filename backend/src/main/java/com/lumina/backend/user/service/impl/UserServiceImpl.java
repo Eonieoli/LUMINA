@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -62,9 +61,9 @@ public class UserServiceImpl implements UserService {
 
 
     /**
-     * 현재 사용자의 프로필 정보를 조회하는 메서드
+     * 현재 사용자의 프로필 정보를 조회
      *
-     * @param userId 조회할 사용자의 ID
+     * @param userId 조회할 사용자 ID
      * @return GetMyProfileResponse 사용자 프로필 정보 응답
      */
     @Override
@@ -72,7 +71,7 @@ public class UserServiceImpl implements UserService {
 
         User user = findUtil.getUserById(userId);
 
-        int sumPointRank = getUserRankFromRedis(userId);
+        int sumPointRank = getUserRankFromRedis(userId); // Redis 에서 랭킹 조회
         int postCnt = postRepository.countByUserId(userId);
         int followerCnt = followRepository.countByFollowingId(userId);
         int followingCnt = followRepository.countByFollowerId(userId);
@@ -86,10 +85,10 @@ public class UserServiceImpl implements UserService {
 
 
     /**
-     * 특정 사용자의 프로필 정보를 조회하는 메서드
+     * 특정 사용자의 프로필 정보를 조회
      *
-     * @param myId 현재 로그인한 사용자의 ID
-     * @param userId 조회할 사용자의 ID
+     * @param myId 현재 로그인한 사용자 ID
+     * @param userId 조회할 사용자 ID
      * @return GetUserProfileResponse 사용자 프로필 정보 응답
      */
     @Override
@@ -115,9 +114,10 @@ public class UserServiceImpl implements UserService {
 
 
     /**
-     * 현재 사용자의 프로필 정보를 수정하는 메서드
+     * 현재 사용자의 프로필 정보 수정
      *
-     * @param userId 수정할 사용자의 ID
+     * @param userId 수정할 사용자 ID
+     * @param httpRequest HTTP 요청 객체
      * @param request 수정할 프로필 정보
      * @param response HTTP 응답 객체
      */
@@ -131,9 +131,11 @@ public class UserServiceImpl implements UserService {
         ValidationUtil.validateRequiredField(request.getMessage(), "상태 메시지");
 
         User user = findUtil.getUserById(userId);
-        validateDuplicateNickname(request.getNickname(), userId);
-        String profileImageUrl = handleProfileImageUpdate(userId, request.getProfileImageFile(), request.getDefaultImage());
+        validateDuplicateNickname(request.getNickname(), userId); // 닉네임 중복 체크
+        String profileImageUrl = handleProfileImageUpdate(
+                userId, request.getProfileImageFile(), request.getDefaultImage()); // 프로필 이미지 변경 처리
 
+        // 닉네임 변경 시 토큰 재발급
         if (!user.getNickname().equals(request.getNickname())) {
             String userKey = redisUtil.getRefreshKey(httpRequest, userId);
             String role = tokenUtil.findRoleByToken(httpRequest);
@@ -146,10 +148,10 @@ public class UserServiceImpl implements UserService {
 
 
     /**
-     * 현재 사용자의 포인트 조회하는 메서드
+     * 현재 사용자의 포인트 조회
      *
-     * @param userId 수정할 사용자의 ID
-     * @return GetUserPointResponse 유저 표인트 정보 응답
+     * @param userId 사용자 ID
+     * @return GetUserPointResponse 유저 포인트 정보 응답
      */
     @Override
     public GetUserPointResponse getUserPoint(Long userId) {
@@ -161,10 +163,11 @@ public class UserServiceImpl implements UserService {
 
 
     /**
-     * 사용자 검색 기능을 제공하는 메서드
+     * 사용자 검색 기능 제공
      *
      * @param keyword 검색할 닉네임 텍스트
-     * @return Map<String, Object> 검색된 사용자 목록을 포함한 응답
+     * @param pageNum 페이지 번호
+     * @return Map<String, Object> 검색 결과 및 페이징 정보
      */
     @Override
     public Map<String, Object> searchUser(String keyword, int pageNum) {
@@ -183,10 +186,10 @@ public class UserServiceImpl implements UserService {
 
 
     /**
-     * 현재 사용자와 10등까지 사용자들의 등수를 제공하는 메서드
+     * 현재 사용자와 10등까지 사용자들의 등수 조회
      *
-     * @param userId 현재 사용자의 ID
-     * @return List<GetSumPointRankResponse> 사용자들의 등수 응답
+     * @param userId 현재 사용자 ID
+     * @return List<GetSumPointRankResponse> 등수 정보 응답
      */
     @Override
     public List<GetSumPointRankResponse> getSumPointRank(Long userId) {
@@ -195,14 +198,17 @@ public class UserServiceImpl implements UserService {
         User my = findUtil.getUserById(userId);
         Long myRank = redisUtil.getUserRank(rankKey, "user:" + userId);
 
+        // 상위 10명 사용자 키 조회
         List<String> userKeys = redisUtil.getTopRankersInOrder(rankKey, 0, 9);
         List<Long> userIds = userKeys.stream()
                 .map(key -> Long.parseLong(key.replace("user:", "")))
                 .toList();
 
+        // ID로 사용자 정보 일괄 조회
         Map<Long, User> userMap = userRepository.findAllById(userIds).stream()
                 .collect(Collectors.toMap(User::getId, u -> u));
 
+        // 현재 사용자와 상위 10명 랭킹 응답
         List<GetSumPointRankResponse> rankList = new ArrayList<>();
         rankList.add(toRankResponse(my, myRank != null ? myRank.intValue() + 1 : -1));
         for (int i = 0; i < userIds.size(); i++) {
@@ -214,6 +220,12 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    /**
+     * 사용자의 보상 내역 조회 (게시글/댓글)
+     *
+     * @param userId 사용자 ID
+     * @return List<GetMyReward> 보상 내역 리스트
+     */
     @Override
     public List<GetMyReward> getMyReward(Long userId) {
 
@@ -231,7 +243,12 @@ public class UserServiceImpl implements UserService {
     }
 
 
-
+    /**
+     * Redis에서 사용자 랭킹 조회
+     *
+     * @param userId 사용자 ID
+     * @return int 랭킹 (없으면 0)
+     */
     private int getUserRankFromRedis(Long userId) {
 
         String rankKey = "sum-point:rank";
@@ -240,6 +257,13 @@ public class UserServiceImpl implements UserService {
         return (rank != null) ? rank.intValue() + 1 : 0;
     }
 
+    /**
+     * 닉네임 중복 검증
+     *
+     * @param nickname 검증할 닉네임
+     * @param userId 현재 사용자 ID
+     * @throws CustomException 중복 시 예외 발생
+     */
     private void validateDuplicateNickname(
             String nickname, Long userId) {
 
@@ -249,6 +273,15 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * 프로필 이미지 변경 처리
+     *
+     * @param userId 사용자 ID
+     * @param newFile 새 이미지 파일
+     * @param defaultImage 기본 이미지로 변경 여부
+     * @return String 변경된 이미지 URL (기본 이미지면 null)
+     * @throws IOException 파일 처리 예외
+     */
     private String handleProfileImageUpdate(
             Long userId, MultipartFile newFile,
             Boolean defaultImage) throws IOException {
@@ -269,6 +302,13 @@ public class UserServiceImpl implements UserService {
         return existingImage;
     }
 
+    /**
+     * 사용자 및 랭킹 정보를 응답 DTO로 변환합니다.
+     *
+     * @param user 사용자 엔티티
+     * @param rank 해당 사용자의 랭킹 (1부터 시작)
+     * @return GetSumPointRankResponse 랭킹 응답 DTO
+     */
     private GetSumPointRankResponse toRankResponse(User user, int rank) {
         return new GetSumPointRankResponse(
                 user.getId(),
@@ -279,6 +319,13 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+    /**
+     * 게시글 또는 댓글 보상 정보를 응답 DTO로 변환합니다.
+     *
+     * @param post 게시글 엔티티 (항상 필수)
+     * @param comment 댓글 엔티티 (게시글 보상 시 null)
+     * @return GetMyReward 보상 응답 DTO
+     */
     private GetMyReward toRewardDto(Post post, Comment comment) {
 
         // Post 보상
