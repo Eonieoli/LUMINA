@@ -14,7 +14,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Table(name = "donation")
 public class Donation extends BaseEntity {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "donation_id", nullable = false)
@@ -35,6 +34,7 @@ public class Donation extends BaseEntity {
 
     @Column(name = "sum_user", nullable = false)
     private Integer sumUser;
+
 
     public Donation(Category category, String donationName, Boolean status, Integer sumPoint, Integer sumUser) {
         this.category = category;
