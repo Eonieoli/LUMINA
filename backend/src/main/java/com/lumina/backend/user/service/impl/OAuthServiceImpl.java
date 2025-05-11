@@ -1,5 +1,6 @@
 package com.lumina.backend.user.service.impl;
 
+import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.jwt.JWTUtil;
 import com.lumina.backend.common.service.TokenService;
 import com.lumina.backend.common.utill.*;
@@ -13,9 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * 인증 관련 서비스를 제공하는 클래스
- */
 @Service
 @RequiredArgsConstructor
 public class OAuthServiceImpl implements OAuthService {
@@ -45,7 +43,8 @@ public class OAuthServiceImpl implements OAuthService {
      *
      * @param request HTTP 요청 객체
      * @param response HTTP 응답 객체
-     * @return String 생성된 accessToken 응답
+     * @return String 새로 발급된 accessToken
+     * @throws CustomException 토큰 검증 실패 시 예외 발생
      */
     @Override
     public String reissue(
@@ -67,11 +66,12 @@ public class OAuthServiceImpl implements OAuthService {
 
 
     /**
-     * 사용자 계정을 탈퇴하는 메서드
+     * 사용자 계정 탈퇴 처리 및 관련 리소스 정리
      *
-     * @param userId 탈퇴할 사용자의 ID
+     * @param userId 탈퇴할 사용자 ID
      * @param request HTTP 요청 객체
      * @param response HTTP 응답 객체 (쿠키 삭제에 사용)
+     * @throws CustomException 사용자 미존재 시 예외 발생
      */
     @Override
     @Transactional
@@ -79,15 +79,17 @@ public class OAuthServiceImpl implements OAuthService {
             Long userId, HttpServletRequest request, HttpServletResponse response) {
 
         User user = findUtil.getUserById(userId);
+        // soft delete 방식(상태값 변경 등) 적용
         user.deleteUser();
         userRepository.save(user);
 
+        // 랭킹 ZSet에서 사용자 제거 (ex: 점수 랭킹)
         redisUtil.removeUserFromZSet("sum-point:rank", "user:" + userId);
 
+        // Redis에 저장된 refresh 토큰 삭제
         String userKey = redisUtil.getRefreshKey(request, userId);
         redisUtil.delete(userKey);
 
-        // 쿠키에서 Access Token과 Refresh Token 삭제
         CookieUtil.deleteCookie(response, "access");
         CookieUtil.deleteCookie(response, "refresh");
     }

@@ -110,6 +110,10 @@ public class S3Service {
     public String extractFileName(
             String url, String folderName) {
 
+        if (url == null || folderName == null) {
+            return null;
+        }
+
         int index = url.indexOf(folderName);
 
         if (index != -1) {

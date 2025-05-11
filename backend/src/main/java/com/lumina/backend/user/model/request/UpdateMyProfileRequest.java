@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UpdateMyProfileRequest {
 
     private MultipartFile profileImageFile;
+    private Boolean defaultImage;
     private String nickname;
     private String message;
 }

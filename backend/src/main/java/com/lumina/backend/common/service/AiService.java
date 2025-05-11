@@ -30,23 +30,27 @@ public class AiService {
      *
      * @param user 보상을 받을 사용자
      * @param text 평가할 텍스트
+     * @return 실제 적용된 보상값 (양수: 포인트 증가, 음수: 긍정지수 감소)
      */
     @Transactional
-    public void textReward(User user, String text) {
+    public int textReward(User user, String text) {
 
         // AI 서버로부터 reward 값 요청
         int reward = requestReward(Map.of("text", text)).getReward();
+        int appliedReward;
 
         if (reward >= 0) {
             // 긍정지수 또는 최소값(10)으로 보상 배수 결정
             int multiplier = Math.max(user.getPositiveness(), 10);
-            user.updatePoint(reward * multiplier);
+            appliedReward = reward * multiplier;
+            user.updatePoint(appliedReward);
         } else {
-            // reward가 음수면 긍정지수 업데이트
+            appliedReward = reward;
             user.updatePositiveness(reward);
         }
 
         userRepository.save(user);
+        return appliedReward;
     }
 
 

@@ -26,6 +26,7 @@ public class PostHashtag extends BaseEntity {
     @JoinColumn(name = "hashtag_id", nullable = false)
     private Hashtag hashtag;
 
+
     public PostHashtag(Post post, Hashtag hashtag) {
         this.post = post;
         this.hashtag = hashtag;

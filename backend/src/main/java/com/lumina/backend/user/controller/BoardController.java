@@ -3,7 +3,6 @@ package com.lumina.backend.user.controller;
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.user.model.response.GetSumPointRankResponse;
-import com.lumina.backend.user.service.OAuthService;
 import com.lumina.backend.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
