@@ -1,11 +1,8 @@
 package com.lumina.backend.admin.controller;
 
-import com.lumina.backend.admin.model.response.GetUserPostResponse;
-import com.lumina.backend.admin.model.response.GetUserResponse;
 import com.lumina.backend.admin.service.AdminService;
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.common.utill.TokenUtil;
-import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
