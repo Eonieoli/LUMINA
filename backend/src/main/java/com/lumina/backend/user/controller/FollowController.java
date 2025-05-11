@@ -5,14 +5,12 @@ import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.user.model.request.ToggleFollowRequest;
 import com.lumina.backend.user.model.response.GetFollowsResponse;
 import com.lumina.backend.user.service.FollowService;
-import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -24,13 +22,6 @@ public class FollowController {
     private final TokenUtil tokenUtil;
 
 
-    /**
-     * 현재 사용자의 팔로우 상태를 토글하는 엔드포인트
-     *
-     * @param toggleFollowRequest 팔로우 대상 사용자의 ID를 포함한 요청 객체
-     * @param request             HTTP 요청 객체
-     * @return ResponseEntity<BaseResponse < Void>> 팔로우 상태 변경 결과 메시지
-     */
     @PostMapping("/following")
     public ResponseEntity<BaseResponse<Void>> toggleFollow(
             @RequestBody ToggleFollowRequest toggleFollowRequest,
@@ -47,12 +38,6 @@ public class FollowController {
     }
 
 
-    /**
-     * 현재 사용자의 팔로워 목록을 조회하는 엔드포인트
-     *
-     * @param request HTTP 요청 객체
-     * @return ResponseEntity<BaseResponse<Map<String, Object>>> 팔로워 목록 정보
-     */
     @GetMapping("/follower")
     public ResponseEntity<BaseResponse<List<GetFollowsResponse>>> getFollowers(
             HttpServletRequest request, @RequestParam(required = false) Long userId) {
@@ -65,12 +50,6 @@ public class FollowController {
     }
 
 
-    /**
-     * 현재 사용자의 팔로잉 목록을 조회하는 엔드포인트
-     *
-     * @param request HTTP 요청 객체
-     * @return ResponseEntity<BaseResponse<Map<String, Object>>> 팔로잉 목록 정보
-     */
     @GetMapping("/following")
     public ResponseEntity<BaseResponse<List<GetFollowsResponse>>> getFollowings(
             HttpServletRequest request, @RequestParam(required = false) Long userId) {
@@ -83,13 +62,6 @@ public class FollowController {
     }
 
 
-    /**
-     * 현재 사용자의 팔로워를 삭제하는 엔드포인트
-     *
-     * @param request HTTP 요청 객체 (현재 사용자 인증 정보 포함)
-     * @param userId  삭제할 팔로워의 ID
-     * @return ResponseEntity<BaseResponse < Void>> 삭제 결과 응답
-     */
     @DeleteMapping("/follower/{userId}")
     public ResponseEntity<BaseResponse<Void>> deleteMyFollower(
             HttpServletRequest request, @PathVariable Long userId) {

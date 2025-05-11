@@ -1,7 +1,6 @@
 package com.lumina.backend.post.repository;
 
 import com.lumina.backend.post.model.entity.CommentLike;
-import com.lumina.backend.post.model.entity.PostLike;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;

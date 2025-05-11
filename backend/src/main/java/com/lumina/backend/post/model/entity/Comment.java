@@ -37,6 +37,7 @@ public class Comment extends BaseEntity {
     @Column(name = "comment_reward", nullable = false)
     private Integer commentReward;
 
+
     public Comment(User user, Post post, Comment parentComment, String commentContent, Integer commentReward) {
         this.user = user;
         this.post = post;

@@ -1,8 +1,6 @@
 package com.lumina.backend.donation.repository;
 
 import com.lumina.backend.donation.model.entity.UserDonation;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -21,5 +19,4 @@ public interface UserDonationRepository extends JpaRepository<UserDonation, Long
 
     @EntityGraph(attributePaths = {"donation"})
     List<UserDonation> findByUserIdAndRegistration(Long userId, String registration);
-
 }

@@ -1,6 +1,5 @@
 package com.lumina.backend.donation.model.entity;
 
-import com.lumina.backend.category.model.entity.Category;
 import com.lumina.backend.common.model.entity.BaseEntity;
 import com.lumina.backend.user.model.entity.User;
 import jakarta.persistence.*;
@@ -36,6 +35,7 @@ public class UserDonation extends BaseEntity {
 
     @Column(name = "donation_sum")
     private Integer donationSum;
+
 
     public UserDonation(User user, Donation donation, String registration) {
         this.user = user;

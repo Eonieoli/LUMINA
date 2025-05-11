@@ -4,7 +4,6 @@ import com.lumina.backend.category.model.response.GetCategoryResponse;
 import com.lumina.backend.category.service.CategoryService;
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.common.utill.TokenUtil;
-import com.lumina.backend.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,13 +32,6 @@ public class CategoryController {
     }
 
 
-    /**
-     * 카테고리 구독을 토글하는 API
-     *
-     * @param request   사용자 인증 정보를 포함한 HTTP 요청 객체
-     * @param categoryId   구독을 토글할 카테고리의 ID
-     * @return ResponseEntity<BaseResponse<Void>> 구독 상태에 따른 응답 메시지 반환
-     */
     @PostMapping("/{categoryId}")
     public ResponseEntity<BaseResponse<Void>> toggleCategorySubscribe(
             HttpServletRequest request, @PathVariable Long categoryId) {

@@ -60,14 +60,6 @@ public class CommentController {
     }
 
 
-    /**
-     * 특정 댓글을 삭제하는 엔드포인트
-     *
-     * @param request HTTP 요청 객체 (사용자 인증 정보 포함)
-     * @param postId 댓글 게시물의 ID
-     * @param commentId 삭제할 댓글의 ID
-     * @return ResponseEntity<BaseResponse<Void>> 삭제 결과 응답
-     */
     @DeleteMapping("/{commentId}")
     public ResponseEntity<BaseResponse<Void>> deleteComment(
             HttpServletRequest request, @PathVariable Long postId,
@@ -81,14 +73,6 @@ public class CommentController {
     }
 
 
-    /**
-     * 댓글 좋아요를 토글하는 API
-     *
-     * @param request    사용자 인증 정보를 포함한 HTTP 요청 객체
-     * @param postId     댓글 게시물의 ID
-     * @param commentId  좋아요 할 댓글의 ID
-     * @return ResponseEntity<BaseResponse<Void>> 좋아요 상태에 따른 응답 메시지 반환
-     */
     @PostMapping("/{commentId}/like")
     public ResponseEntity<BaseResponse<Void>> toggleCommentLike(
             HttpServletRequest request, @PathVariable Long postId,
