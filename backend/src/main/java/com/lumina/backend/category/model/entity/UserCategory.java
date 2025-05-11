@@ -1,8 +1,6 @@
 package com.lumina.backend.category.model.entity;
 
 import com.lumina.backend.common.model.entity.BaseEntity;
-import com.lumina.backend.post.model.entity.Hashtag;
-import com.lumina.backend.post.model.entity.Post;
 import com.lumina.backend.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -28,6 +26,7 @@ public class UserCategory extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
+
 
     public UserCategory(User user, Category category) {
         this.user = user;
