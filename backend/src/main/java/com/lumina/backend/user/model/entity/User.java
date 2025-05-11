@@ -51,6 +51,7 @@ public class User extends BaseEntity {
     @Column(name = "user_status", nullable = false)
     private Boolean userStatus;
 
+
     public User(String socialId, String socialType, String profileImage, String message, Integer point,
                 Integer sumPoint, Integer positiveness, Integer likeCnt, String role, Boolean userStatus) {
         this.socialId = socialId;
