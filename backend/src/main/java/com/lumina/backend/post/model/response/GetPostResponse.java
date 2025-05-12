@@ -3,6 +3,7 @@ package com.lumina.backend.post.model.response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -21,4 +22,5 @@ public class GetPostResponse {
     private int likeCnt;
     private int commentCnt;
     private Boolean isLike;
+    private LocalDateTime createdAt;
 }
