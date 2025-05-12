@@ -9,6 +9,7 @@ import { Board, HamburgerSheet } from "@/components";
 import { getUserProfile } from "@/apis/auth";
 import { useAuthStore } from '@/stores/auth';
 import { followToggle } from "@/apis/follow";
+import PositivenessChart from "./MyPageChild/PositivenessChart";
 
 interface MypageProps {
     userId: number
@@ -197,6 +198,9 @@ export default function MyPage() {
             </div>
 
             {/* 루미나 선행도 그래프 */}
+            <div>
+                <PositivenessChart positiveness={userInfo?.positiveness} />
+            </div>
 
             {/* 유저 게시물 렌더링*/}
             <div className="bg-white pb-[80px] md:pb-0">

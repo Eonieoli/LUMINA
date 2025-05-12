@@ -26,6 +26,7 @@ import BackIcon from './donate/Ic_back.svg'
 
 // 루나 이미지
 import SmileLuna from './donate/smileLuna.png';
+import AngryLuna from './donate/angryLuna.png'
 import PokerLuna from './donate/Luna.png';
 import WinkLuna from './donate/wink_Luna.png'
 import ComputerHandsupLuna from './donate/computer_handsup_Luna.png'
@@ -73,4 +74,5 @@ export {
     ComputerTypingLuna,
     CircleXIcon,
     PencilIcon,
+    AngryLuna
 }
