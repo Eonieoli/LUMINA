@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signOut } from "@/apis/auth";
 import { Rewards, Subscribes } from './HamburgerChildren'
+import { useLocation } from "react-router-dom";
 
 export interface HamburgerProps {
     isVisible: boolean;
@@ -13,6 +14,8 @@ export default function Hamburger({isVisible, onClose}: HamburgerProps) {
     const [isRewardsOpened, setIsRewardsOpened] = useState(false);
     const [isSubscribeAnimation, setIsSubscribeAnimation] = useState(false);
     const [isRewardsAnimation, setIsRewardsAnimation] = useState(false);
+    const location = useLocation();
+    const state = location.state;
 
     const handleSignOut = async () => {
         await signOut();
@@ -29,6 +32,13 @@ export default function Hamburger({isVisible, onClose}: HamburgerProps) {
             }
         }, 400);
     }
+
+    useEffect(() => {
+        if (state?.from === 'search') {
+            setIsSubscribeAnimation(true);
+            setIsSubscribeOpened(true);
+        }
+    }, [])
     return (
         <AnimatePresence>
             {isVisible && (

@@ -4,7 +4,7 @@ import UserProfileFourInfo from "@/components/profile/fourInfo";
 import ProfileBtn from "@/components/profile/button";
 import { Post } from "./Home";
 import { getUserPosts } from "@/apis/board";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Board, HamburgerSheet } from "@/components";
 import { getUserProfile } from "@/apis/auth";
 import { useAuthStore } from '@/stores/auth';
@@ -27,6 +27,10 @@ interface MypageProps {
 export default function MyPage() {
 
     const navigate = useNavigate()
+
+    // 주소에 상태가 있는지 확인
+    const location = useLocation();
+    const state = location.state
 
     // 나의 아이디 
     const authData = useAuthStore();
@@ -90,6 +94,13 @@ export default function MyPage() {
         }
         fetchPosts()
     },[pageNum, userInfo])
+
+    // 검색창에서 온 경우
+    useEffect(() => {
+        if (state?.from === 'search') {
+            setIsHamburgerOpened(true);
+        }
+    }, [])
 
     // 무한스크롤 
     const lastPostRef = useCallback(

@@ -73,12 +73,10 @@ export default function ProfileEditPage () {
       }
       // 이미지를 삭제했을 경우
       else if (profileImageFile === null) {
-        formData.append("profileImage", "")
         formData.append("defaultImage", "true")
       } 
       // 이미지 변경 안했을 경우
       else {
-        formData.append("profileImageFile", "")
         formData.append("defaultImage", "false")        
       }
 
