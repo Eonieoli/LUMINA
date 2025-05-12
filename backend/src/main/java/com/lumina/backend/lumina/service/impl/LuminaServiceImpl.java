@@ -137,7 +137,7 @@ public class LuminaServiceImpl implements LuminaService {
 //                .bodyToMono(EvaluateCommentResponse.class)
 //                .block(); // 동기 방식
 
-        Long categoryId = categoryRepository.findIdByCategoryName("한부모");
+        Long categoryId = categoryRepository.findIdByCategoryName("동물");
         List<Donation> donationList = donationRepository.findByCategoryId(categoryId);
 
         // 기존 AI 추천 내역 삭제
