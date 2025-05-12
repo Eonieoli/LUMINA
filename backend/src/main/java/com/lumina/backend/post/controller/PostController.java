@@ -38,10 +38,11 @@ public class PostController {
     @GetMapping("")
     public ResponseEntity<BaseResponse<Map<String, Object>>> getPost(
             HttpServletRequest request, @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) String categoryName, @RequestParam int pageNum) {
+            @RequestParam(required = false) String categoryName,
+            @RequestParam String feedType, @RequestParam int pageNum) {
 
         Long myId = tokenUtil.findIdByToken(request);
-        Map<String, Object> response = postService.getPosts(myId, userId, categoryName, pageNum);
+        Map<String, Object> response = postService.getPosts(myId, userId, categoryName, feedType, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("게시물 조회 성공", response));
     }
