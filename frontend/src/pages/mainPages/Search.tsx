@@ -1,5 +1,5 @@
 import { getCategoryExplore, getHashtagPosts, getUser } from "@/apis/board";
-import { DefaultProfile, SearchIcon } from "@/assets/images";
+import { CuriousLuna, DefaultProfile, SearchIcon } from "@/assets/images";
 import { Board } from "@/components";
 import { useAuthStore } from "@/stores/auth";
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
@@ -244,6 +244,7 @@ export default function Search() {
             </div>
             {posts.length === 0 ? 
                 <div className="flex flex-col gap-y-4 flex-1 justify-center items-center">
+                    <img src={CuriousLuna} alt="" className="h-50 w-auto" />
                     <p className="text-xl font-semibold">
                         관심 카테고리를 등록해주세요!
                     </p>
