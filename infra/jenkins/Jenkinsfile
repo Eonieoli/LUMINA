@@ -1,0 +1,447 @@
+pipeline {
+    agent any
+    
+    // GitLab 플러그인 트리거 설정
+    triggers {
+        gitlab(
+            triggerOnPush: true,
+            triggerOnMergeRequest: true,
+            branchFilterType: 'All'
+        )
+    }
+
+    environment {
+        // 공통 환경 변수
+        GCP_DEPLOY_HOST = "rublin322@picscore.net"
+        GCP_DEPLOY_PATH = "/home/rublin322/lumina"
+        AWS_DEPLOY_HOST = "ubuntu@k12s306.p.ssafy.io"
+        AWS_DEPLOY_PATH = "/home/ubuntu/lumina"
+        
+        // 환경 변수
+        ENVIRONMENT = '개발'
+        
+        // Jenkins 빌드 URL
+        BUILD_URL = "${env.JENKINS_URL}job/lumina/job/${env.BRANCH_NAME}/${env.BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                script {
+                    echo "현재 브랜치: ${env.BRANCH_NAME}"
+                    echo "현재 워크스페이스: ${env.WORKSPACE}"
+                    
+                    // 환경 설정
+                    if (env.BRANCH_NAME == 'master') {
+                        env.ENVIRONMENT = '운영'
+                    }
+                }
+            }
+        }
+        
+        stage('SonarQube Analysis') {
+            parallel {
+                stage('Backend Analysis') {
+                    when {
+                        branch 'develop'
+                    }
+                    steps {
+                        withSonarQubeEnv('SonarQube') {
+                            dir('backend') {
+                                sh 'chmod +x ./gradlew' 
+                                sh './gradlew sonar -x test'
+                            }
+                        }
+                        // Quality Gate 확인
+                        timeout(time: 3, unit: 'MINUTES') {
+                            waitForQualityGate abortPipeline: false
+                        }
+                    }
+                }
+                
+                stage('Frontend Analysis') {
+                    when {
+                        branch 'develop'
+                    }
+                    steps {
+                        nodejs('Node22') {
+                            withSonarQubeEnv('SonarQube') {
+                                dir('frontend') {
+                                    // Yarn 의존성 설치
+                                    sh 'yarn install'
+                                    // SonarScanner 실행 (package.json에 이미 설정된 sonar 스크립트 사용)
+                                    sh 'yarn sonar'
+                                }
+                            }
+                            // Quality Gate 확인
+                            timeout(time: 3, unit: 'MINUTES') {
+                                waitForQualityGate abortPipeline: false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Prepare Environment') {
+            parallel {
+                stage('Dev Environment') {
+                    when {
+                        anyOf {
+                            branch 'develop'
+                            branch 'backend'
+                            branch 'frontend'
+                        }
+                    }
+                    steps {
+                        withCredentials([file(credentialsId: 'env-dev-content', variable: 'ENV_DEV_PATH')]) {
+                            script {
+                                def envContent = readFile(ENV_DEV_PATH)
+                                writeFile file: 'infra/dev/.env', text: envContent
+                            }
+                        }
+                        withCredentials([file(credentialsId: 'env-front-dev-content', variable: 'ENV_FRONT_DEV_PATH')]) {
+                            script {
+                                def envFrontContent = readFile(ENV_FRONT_DEV_PATH)
+                                writeFile file: 'infra/dev/.env.front', text: envFrontContent
+                            }
+                        }
+                        withCredentials([file(credentialsId: 'htpasswd-dev-content', variable: "HTPASSWD_DEV_PATH")]) {
+                            script {
+                                def htpasswdContent = readFile(HTPASSWD_DEV_PATH)
+                                writeFile file: 'infra/dev/proxy/.htpasswd', text: htpasswdContent
+                            }
+                        }
+                    }
+                }
+                
+                stage('Prod Environment') {
+                    when {
+                        branch 'master'
+                    }
+                    steps {
+                        withCredentials([file(credentialsId: 'env-prod-content', variable: 'ENV_PROD_PATH')]) {
+                            script {
+                                def envContent = readFile(ENV_PROD_PATH)
+                                writeFile file: 'infra/prod/.env', text: envContent
+                            }
+                        }
+                        withCredentials([file(credentialsId: 'env-front-prod-content', variable: 'ENV_FRONT_PROD_PATH')]) {
+                            script {
+                                def envFrontContent = readFile(ENV_FRONT_PROD_PATH)
+                                writeFile file: 'infra/prod/.env.front', text: envFrontContent
+                            }
+                        }
+                        withCredentials([file(credentialsId: 'htpasswd-prod-content', variable: "HTPASSWD_PROD_PATH")]) {
+                            script {
+                                def htpasswdContent = readFile(HTPASSWD_PROD_PATH)
+                                writeFile file: 'infra/prod/proxy/.htpasswd', text: htpasswdContent
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build and Deploy') {
+            parallel {
+                stage('Develop Branch') {
+                    when {
+                        anyOf {
+                            branch 'develop'
+                            branch 'frontend'
+                            branch 'backend'
+                        }
+                    }
+                    stages {
+                        stage('Build Docker Images - Dev') {
+                            steps {
+                                script {
+                                    // 프론트엔드 이미지 빌드 (frontend 브랜치 또는 develop 브랜치인 경우)
+                                    if (env.BRANCH_NAME == 'frontend' || env.BRANCH_NAME == 'develop') {
+                                        dir('frontend') {
+                                            sh "cp ../infra/dev/.env.front .env.front"
+                                            sh "docker build -t rublin322/lumina-frontend:develop ."
+                                        }
+                                    }
+                                    
+                                    // 백엔드 이미지 빌드 (backend 브랜치 또는 develop 브랜치인 경우)
+                                    if (env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'develop') {
+                                        dir('backend') {
+                                            sh "docker build -t rublin322/lumina-backend:develop ."
+                                        }
+                                    }
+
+                                    // AI 서버 이미지 빌드 (backend 브랜치 또는 develop 브랜치인 경우)
+                                    if (env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'develop') {
+                                        dir('ai') {
+                                            sh "docker build -t rublin322/lumina-ai:develop ."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        stage('Push to DockerHub - Dev') {
+                            steps {
+                                withDockerRegistry([credentialsId: 'dockerhub-token', url: '']) {
+                                    script {
+                                        // 프론트엔드 이미지 푸시 (frontend 브랜치 또는 develop 브랜치인 경우)
+                                        if (env.BRANCH_NAME == 'frontend' || env.BRANCH_NAME == 'develop') {
+                                            sh "docker push rublin322/lumina-frontend:develop"
+                                        }
+                                        
+                                        // 백엔드 이미지 푸시 (backend 브랜치 또는 develop 브랜치인 경우)
+                                        if (env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'develop') {
+                                            sh "docker push rublin322/lumina-backend:develop"
+                                        }
+
+                                        // AI 서버 이미지 푸시 (backend 브랜치 또는 develop 브랜치인 경우)
+                                        if (env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'develop') {
+                                            sh "docker push rublin322/lumina-ai:develop"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        stage('Deploy to GCP - Dev') {
+                            steps {
+                                sshagent(credentials: ['gcp-ssh-key']) {
+                                    // 디렉토리 생성
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/proxy'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/ai-server'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/prometheus'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/scripts'"
+                                    
+                                    // 환경 설정 파일 전송
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/.env ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/.env"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/.env.front ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/.env.front"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/docker-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/docker-compose.yml"
+                                    
+                                    // 프록시 설정 파일 전송
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/.htpasswd ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/.htpasswd"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/nginx.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/nginx.conf"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/proxy-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/proxy-compose.yml"
+                                    
+                                    // Blue-Green 설정 파일 전송 - location.conf만 전송 (upstream.conf는 서버에서 관리)
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/blue-green/frontend/location.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/location.conf"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/blue-green/backend/location.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/location.conf"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/blue-green/ai-server/location.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/ai-server/location.conf"
+                                    
+                                    // upstream.conf 초기화 파일 체크
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'if [ ! -f ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/upstream.conf ]; then echo upstream frontend \\{\\} > ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/upstream.conf; fi'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'if [ ! -f ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/upstream.conf ]; then echo upstream backend \\{\\} > ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/upstream.conf; fi'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'if [ ! -f ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/ai-server/upstream.conf ]; then echo upstream ai-server \\{\\} > ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/ai-server/upstream.conf; fi'"
+                                    
+                                    // 배포 스크립트 전송
+                                    sh "scp -o StrictHostKeyChecking=no infra/scripts/blue-green-deploy.sh ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/scripts/blue-green-deploy.sh"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'chmod +x ${GCP_DEPLOY_PATH}/infra/scripts/blue-green-deploy.sh'"
+                                    
+                                    // 모니터링 설정 파일 전송
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/monitoring-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/monitoring-compose.yml"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/prometheus/prometheus.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/prometheus/prometheus.yml"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/grafana/datasource.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/datasource.yml"
+
+                                    // 초기 배포 또는 Blue-Green 배포 실행
+                                    script {
+                                        if (env.BRANCH_NAME == 'frontend') {
+                                            // 프론트엔드만 배포
+                                            sh """
+                                            ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
+                                                cd ${GCP_DEPLOY_PATH} && 
+                                                ./infra/scripts/blue-green-deploy.sh dev frontend
+                                            '
+                                            """
+                                        } else if (env.BRANCH_NAME == 'backend') {
+                                            // 백엔드만 배포
+                                            sh """
+                                            ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
+                                                cd ${GCP_DEPLOY_PATH} && 
+                                                ./infra/scripts/blue-green-deploy.sh dev backend
+                                            '
+                                            """
+                                        } else {
+                                            // 전체 배포 (develop 브랜치)
+                                            // docker system prune -af 추가할지
+                                            sh """
+                                            ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
+                                                cd ${GCP_DEPLOY_PATH} &&
+                                                ./infra/scripts/blue-green-deploy.sh dev all
+                                            '
+                                            """
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                stage('Master Branch') {
+                    when {
+                        branch 'master'
+                    }
+                    stages {
+                        stage('Build Docker Images - Prod') {
+                            steps {
+                                script {
+                                    // 프론트엔드 이미지 빌드
+                                    dir('frontend') {
+                                        sh "cp ../infra/prod/.env.front .env.front"
+                                        sh "docker build -t rublin322/lumina-frontend:latest ."
+                                    }
+                                    
+                                    // 백엔드 이미지 빌드
+                                    dir('backend') {
+                                        sh "docker build -t rublin322/lumina-backend:latest ."
+                                    }
+
+                                    // AI 서버 이미지 빌드
+                                    dir('ai') {
+                                        sh "docker build -t rublin322/lumina-ai:latest ."
+                                    }
+                                }
+                            }
+                        }
+                        
+                        stage('Push to DockerHub - Prod') {
+                            steps {
+                                withDockerRegistry([credentialsId: 'dockerhub-token', url: '']) {
+                                    sh "docker push rublin322/lumina-frontend:latest"
+                                    sh "docker push rublin322/lumina-backend:latest"
+                                    sh "docker push rublin322/lumina-ai:latest"
+                                }
+                            }
+                        }
+                        
+                        stage('Deploy to AWS - Prod') {
+                            steps {
+                                sshagent(credentials: ['aws-ssh-key']) {
+                                    // 디렉토리 생성
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/proxy'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/ai-server'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/prometheus'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/dashboards'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/scripts'"
+                                    
+                                    // 환경 설정 파일 전송
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/.env ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/.env"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/.env.front ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/.env.front"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/docker-compose.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/docker-compose.yml"
+                                    
+                                    // 프록시 설정 파일 전송
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/.htpasswd ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/.htpasswd"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/nginx.conf ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/nginx.conf"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/proxy-compose.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/proxy-compose.yml"
+                                    
+                                    // Blue-Green 설정 파일 전송 - location.conf만 전송 (upstream.conf는 서버에서 관리)
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/blue-green/frontend/location.conf ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/location.conf"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/blue-green/backend/location.conf ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/location.conf"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/blue-green/ai-server/location.conf ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/ai-server/location.conf"
+                                    
+                                    // upstream.conf 초기화 파일 체크
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'if [ ! -f ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/upstream.conf ]; then echo upstream frontend \\{\\} > ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/upstream.conf; fi'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'if [ ! -f ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/upstream.conf ]; then echo upstream backend \\{\\} > ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/upstream.conf; fi'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'if [ ! -f ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/ai-server/upstream.conf ]; then echo upstream ai-server \\{\\} > ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/ai-server/upstream.conf; fi'"
+                                    
+                                    // 배포 스크립트 전송
+                                    sh "scp -o StrictHostKeyChecking=no infra/scripts/blue-green-deploy.sh ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/scripts/blue-green-deploy.sh"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'chmod +x ${AWS_DEPLOY_PATH}/infra/scripts/blue-green-deploy.sh'"
+                                    
+                                    // 모니터링 설정 파일 전송
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/monitoring-compose.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/monitoring-compose.yml"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/prometheus/prometheus.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/prometheus/prometheus.yml"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/datasource.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/datasource.yml"
+
+                                    // 운영 환경 배포 실행 - Blue-Green 배포
+                                    // docker system prune -af 추가할지
+                                    sh """
+                                    ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} '
+                                        cd ${AWS_DEPLOY_PATH} &&
+                                        ./infra/scripts/blue-green-deploy.sh prod all
+                                    '
+                                    """
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            script {
+                def deployEnv = ''
+                def deployType = ''
+                def deployInfo = ''
+                
+                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
+                    echo '개발 환경 배포 성공'
+                    deployEnv = '개발'
+                    deployType = 'GCP'
+                    deployInfo = '개발 서버에 배포가 완료되었습니다.'
+                } else if (env.BRANCH_NAME == 'master') {
+                    echo '운영 환경 배포 성공'
+                    deployEnv = '운영'
+                    deployType = 'AWS'
+                    deployInfo = '운영 서버에 배포가 완료되었습니다.'
+                }
+                if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
+                    mattermostSend color: 'good', 
+                        message: """
+✅ 배포 성공: ${env.BRANCH_NAME} #${env.BUILD_NUMBER}
+🌐 환경: ${deployEnv} (${deployType})
+📝 상세 정보: ${deployInfo}
+🔗 빌드 링크: ${env.BUILD_URL}
+""",
+                        channel: 's306-alarm',
+                        endpoint: 'https://meeting.ssafy.com/hooks/7qa9fbgsbtb3fyak3sao9n887e'
+                }
+            }
+        }
+        failure {
+            script {
+                def deployEnv = ''
+                def deployType = ''
+                def deployInfo = ''
+                
+                if (env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
+                    echo '개발 환경 배포 실패'
+                    deployEnv = '개발'
+                    deployType = 'GCP'
+                    deployInfo = '개발 서버에 배포가 실패했습니다.'
+                } else if (env.BRANCH_NAME == 'master') {
+                    echo '운영 환경 배포 실패'
+                    deployEnv = '운영'
+                    deployType = 'AWS'
+                    deployInfo = '운영 서버에 배포가 실패했습니다.'
+                }
+                if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'frontend') {
+                
+                    mattermostSend color: 'danger', 
+                        message: """
+❌ 배포 실패: ${env.BRANCH_NAME} #${env.BUILD_NUMBER}
+🌐 환경: ${deployEnv} (${deployType})
+⚠️ 상세 정보: ${deployInfo}
+🔗 빌드 링크: ${env.BUILD_URL}
+""",
+                        channel: 's306-alarm',
+                        endpoint: 'https://meeting.ssafy.com/hooks/7qa9fbgsbtb3fyak3sao9n887e'
+                }
+            }
+        }
+        always {
+            echo '배포 파이프라인 종료'
+            cleanWs()
+        }
+    }
+}

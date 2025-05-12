@@ -1,0 +1,14 @@
+*.ts
+dist
+!index.ts
+!character.ts
+!luna-client.ts
+!local-llm-server.ts
+!local-llm.ts
+.env
+node_modules
+dist/
+
+db.sqlite
+.idea
+.tee-cloud

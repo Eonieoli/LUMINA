@@ -1,0 +1,23 @@
+services:
+  eliza:
+    container_name: eliza
+    command: ["pnpm", "start", "--character=./characters/luna.character.json"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    ports:
+      - "3000:3000" # ElizaOS 메인 서버
+      - "4000:4000" # Luna API 서버 (4000 포트 매핑)
+    restart: always
+    networks:
+      - lumina-network
+
+networks:
+  lumina-network:
+    external: true
