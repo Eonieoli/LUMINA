@@ -234,23 +234,21 @@ pipeline {
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/blue-green/ai-server/location.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/ai-server/location.conf"
                                     
                                     // upstream.conf 초기화 파일 체크 - 초기 배포시 active와 backup 서버 모두 설정
-                                    sh '''
-                                    ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'if [ ! -f ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/upstream.conf ]; then 
-                                        echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n    server frontend-green:80 backup;    # backup\n}" > ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/upstream.conf; 
+                                    sh """
+                                    ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'DEPLOY_PATH="${GCP_DEPLOY_PATH}" && 
+                                    mkdir -p "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend" && 
+                                    mkdir -p "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/backend" && 
+                                    mkdir -p "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/ai-server" && 
+                                    if [ ! -f "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/upstream.conf" ]; then 
+                                        echo -e "upstream frontend {\\n    server frontend-blue:80;    # active\\n    server frontend-green:80 backup;    # backup\\n}" > "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/upstream.conf"; 
+                                    fi && 
+                                    if [ ! -f "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/upstream.conf" ]; then 
+                                        echo -e "upstream backend {\\n    server backend-blue:8080;    # active\\n    server backend-green:8080 backup;    # backup\\n}" > "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/upstream.conf"; 
+                                    fi && 
+                                    if [ ! -f "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/ai-server/upstream.conf" ]; then 
+                                        echo -e "upstream ai-server {\\n    server ai-server-blue:8000;    # active\\n    server ai-server-green:8000 backup;    # backup\\n}" > "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/ai-server/upstream.conf"; 
                                     fi'
-                                    '''
-                                    
-                                    sh '''
-                                    ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'if [ ! -f ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/upstream.conf ]; then 
-                                        echo -e "upstream backend {\n    server backend-blue:8080;    # active\n    server backend-green:8080 backup;    # backup\n}" > ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend/upstream.conf; 
-                                    fi'
-                                    '''
-                                    
-                                    sh '''
-                                    ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'if [ ! -f ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/ai-server/upstream.conf ]; then 
-                                        echo -e "upstream ai-server {\n    server ai-server-blue:8000;    # active\n    server ai-server-green:8000 backup;    # backup\n}" > ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/ai-server/upstream.conf; 
-                                    fi'
-                                    '''
+                                    """
                                     
                                     // 배포 스크립트 전송
                                     sh "scp -o StrictHostKeyChecking=no infra/scripts/blue-green-deploy.sh ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/scripts/blue-green-deploy.sh"
@@ -361,23 +359,21 @@ pipeline {
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/blue-green/ai-server/location.conf ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/ai-server/location.conf"
                                     
                                     // upstream.conf 초기화 파일 체크 - 초기 배포시 active와 backup 서버 모두 설정
-                                    sh '''
-                                    ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'if [ ! -f ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/upstream.conf ]; then 
-                                        echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n    server frontend-green:80 backup;    # backup\n}" > ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/upstream.conf; 
+                                    sh """
+                                    ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'DEPLOY_PATH="${AWS_DEPLOY_PATH}" && 
+                                    mkdir -p "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend" && 
+                                    mkdir -p "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/backend" && 
+                                    mkdir -p "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/ai-server" && 
+                                    if [ ! -f "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/upstream.conf" ]; then 
+                                        echo -e "upstream frontend {\\n    server frontend-blue:80;    # active\\n    server frontend-green:80 backup;    # backup\\n}" > "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/upstream.conf"; 
+                                    fi && 
+                                    if [ ! -f "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/upstream.conf" ]; then 
+                                        echo -e "upstream backend {\\n    server backend-blue:8080;    # active\\n    server backend-green:8080 backup;    # backup\\n}" > "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/upstream.conf"; 
+                                    fi && 
+                                    if [ ! -f "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/ai-server/upstream.conf" ]; then 
+                                        echo -e "upstream ai-server {\\n    server ai-server-blue:8000;    # active\\n    server ai-server-green:8000 backup;    # backup\\n}" > "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/ai-server/upstream.conf"; 
                                     fi'
-                                    '''
-                                    
-                                    sh '''
-                                    ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'if [ ! -f ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/upstream.conf ]; then 
-                                        echo -e "upstream backend {\n    server backend-blue:8080;    # active\n    server backend-green:8080 backup;    # backup\n}" > ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend/upstream.conf; 
-                                    fi'
-                                    '''
-                                    
-                                    sh '''
-                                    ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'if [ ! -f ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/ai-server/upstream.conf ]; then 
-                                        echo -e "upstream ai-server {\n    server ai-server-blue:8000;    # active\n    server ai-server-green:8000 backup;    # backup\n}" > ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/ai-server/upstream.conf; 
-                                    fi'
-                                    '''
+                                    """
                                     
                                     // 배포 스크립트 전송
                                     sh "scp -o StrictHostKeyChecking=no infra/scripts/blue-green-deploy.sh ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/scripts/blue-green-deploy.sh"
