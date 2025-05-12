@@ -1,5 +1,5 @@
 import DonationCard from './DonationCard';
-import { PokerLuna } from '@/assets/images';
+import { PokerLuna, ComputerHandsupLuna } from '@/assets/images';
 // 슬라이드 swiper 관련
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
@@ -7,6 +7,7 @@ import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
 import { useEffect, useState } from 'react';
 import { getFavoriteDonations } from '@/apis/donation';
+import { useNavigate } from 'react-router-dom';
 
 interface RecommendDonationListProps {
     donationId: number;
@@ -16,6 +17,7 @@ interface RecommendDonationListProps {
 export default function RecommendDonationList() {
 
     const [donations, setDonations] = useState<RecommendDonationListProps[]>([])
+    const navigate = useNavigate()
 
     useEffect(() => {
         const fetchRecommendDonations = async () => {
@@ -30,6 +32,11 @@ export default function RecommendDonationList() {
     const slides = [];
     for (let i = 0; i < donations.length; i += 2) {
         slides.push(donations.slice(i, i + 2));
+    }
+
+    // 메인페이지로 이동
+    const goToMainPage = () => { 
+        navigate('/')
     }
 
     return (
@@ -50,26 +57,36 @@ export default function RecommendDonationList() {
             </div>
 
             {/* 추천 기부처 목록 */}
-            {/* 슬라이더 */}
-            <Swiper
-                pagination={{ clickable: true }}
-                modules={[Pagination]}
-                className="mySwiper w-full"
-            >
-                {slides.map((group, index) => (
-                    <SwiperSlide key={index}>
-                        <div className="grid grid-cols-2 gap-4 pb-10">
-                            {group.map((donation) => (
-                                <DonationCard
-                                    key={donation.donationId}
-                                    donationId={donation.donationId}
-                                    donationName={donation.donationName}
-                                />
-                            ))}
-                        </div>
-                    </SwiperSlide>
-                ))}
-            </Swiper>
+            {slides.length === 0 ? (
+                <div className='flex flex-col items-center' onClick={goToMainPage} >
+                    <img src={ComputerHandsupLuna} alt="기부처 루나" className='w-2/4' />
+                    <div className="w-full h-20 flex items-center justify-center text-gray-400 text-[15px]">
+                    게시글에 좋아요를 눌러보세요!
+                    
+                    </div>
+
+                </div>                
+            ) : (
+                <Swiper
+                    pagination={{ clickable: true }}
+                    modules={[Pagination]}
+                    className="mySwiper w-full"
+                >
+                    {slides.map((group, index) => (
+                        <SwiperSlide key={index}>
+                            <div className="grid grid-cols-2 gap-4 pb-10">
+                                {group.map((donation) => (
+                                    <DonationCard
+                                        key={donation.donationId}
+                                        donationId={donation.donationId}
+                                        donationName={donation.donationName}
+                                    />
+                                ))}
+                            </div>
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
+            )}
         </div>
     );
 }

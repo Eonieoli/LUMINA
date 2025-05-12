@@ -39,38 +39,38 @@ export default function RankingPage() {
 
 
   return (
-  <div className="p-6 bg-white">
+  <div className="p-6 h-full overflow-y-auto bg-white">
     {/* 로고 */}
     <img src={LuminaLogo} alt="루미나 로고" className="w-25"/>
 
     {/* top 3 */}
-    <div className="flex justify-between items-end gap-2 mb-5 ">
+    <div className="flex w-full justify-between items-end gap-2 mb-5">
 
-      <div className="flex flex-col justify-center items-center cursor-pointer" onClick={() => {goToUserProfile(rankings[2].userId)}}>
+      <div className="flex flex-col justify-center items-center cursor-pointer w-full" onClick={() => {goToUserProfile(rankings[2].userId)}}>
         <img 
           src={rankings[2]?.profileImage ?? DefaultProfile} 
           alt="top2 프로필이미지" 
-          className="w-24 rounded-full object-cover mb-2 aspect-square"
+          className="w-8/10 rounded-full object-cover mb-2 aspect-square"
         />
         <p className="text-gray-700 text-[15px] font-semibold text-center w-[80px] truncate">{rankings[2]?.nickname}</p>
         <p className="text-gray-500">{rankings[2]?.sumPoint}</p>
       </div>
 
-      <div className="flex flex-col justify-center items-center cursor-pointer" onClick={() => {goToUserProfile(rankings[1].userId)}}>
+      <div className="flex flex-col justify-center items-center cursor-pointer w-full" onClick={() => {goToUserProfile(rankings[1].userId)}}>
         <img 
           src={rankings[1]?.profileImage ?? DefaultProfile} 
           alt="top1 프로필이미지" 
-          className="w-32 aspect-square rounded-full object-cover mb-2"
+          className="w-10/10 aspect-square rounded-full object-cover mb-2"
         />
         <p className="text-gray-700 text-[15px] font-semibold text-center w-[100px] truncate">{rankings[1]?.nickname}</p>
         <p className="text-gray-500">{rankings[1]?.sumPoint}</p>
       </div>
 
-      <div className="flex flex-col justify-center items-center cursor-pointer" onClick={() => {goToUserProfile(rankings[3].userId)}}>
+      <div className="flex flex-col justify-center items-center cursor-pointer w-full" onClick={() => {goToUserProfile(rankings[3].userId)}}>
         <img 
           src={rankings[3]?.profileImage ?? DefaultProfile} 
           alt="top3 프로필이미지" 
-          className="w-22 aspect-square rounded-full object-cover mb-2"
+          className="w-7/10 aspect-square rounded-full object-cover mb-2"
         />
         <p className="text-gray-700 text-[15px] font-semibold text-center  w-[80px] truncate">{rankings[3]?.nickname}</p>
         <p className="text-gray-500">{rankings[3]?.sumPoint}</p>
@@ -91,7 +91,7 @@ export default function RankingPage() {
             <img 
               src={rankings[0]?.profileImage ?? DefaultProfile}
               alt="나의 프로필 이미지" 
-              className="w-15 aspect-square bg-white rounded-full"/>
+              className="w-15 aspect-square object-cover bg-white rounded-full"/>
           </div>
           <p className="text-[16px]">
             {rankings[0]?.rank <= 3

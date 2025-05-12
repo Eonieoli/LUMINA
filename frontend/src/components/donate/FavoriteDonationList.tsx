@@ -1,5 +1,5 @@
 import DonationCard from './DonationCard';
-import { SmileLuna } from '@/assets/images';
+import { SmileLuna, ComputerTypingLuna } from '@/assets/images';
 import { useState, useEffect } from 'react';
 import { getFavoriteDonations } from '@/apis/donation';
 
@@ -8,6 +8,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
+import { useNavigate } from 'react-router-dom';
 
 interface FavoriteDonationList {
     donationId: number;
@@ -16,6 +17,7 @@ interface FavoriteDonationList {
 
 export default function FavoriteDonationList() {
     const [donations, setDonations] = useState<FavoriteDonationList[]>([]);
+    const navigate = useNavigate()
 
     useEffect(() => {
         const fetchFavoriteDonations = async () => {
@@ -30,6 +32,11 @@ export default function FavoriteDonationList() {
     const slides = [];
     for (let i = 0; i < donations.length; i += 4) {
         slides.push(donations.slice(i, i + 4));
+    }
+
+    // 전체 기부처 조회
+    const goToAllDonaitons = () => {
+        navigate('/donate/research/donations')
     }
 
     return (
@@ -51,8 +58,11 @@ export default function FavoriteDonationList() {
 
             {/* 슬라이더 */}
             {slides.length === 0 ? (
-                <div className="w-full h-20 flex items-center justify-center text-gray-400 text-[15px]">
-                기부처를 구독해보세요!
+                <div className='flex flex-col items-center' onClick={goToAllDonaitons}>
+                    <img src={ComputerTypingLuna} alt="기부처 루나" className='w-2/4' />
+                    <div className="w-full h-20 flex items-center justify-center text-gray-400 text-[15px]">
+                    기부처를 구독해보세요!
+                    </div>
                 </div>
             ) : (
                 <Swiper

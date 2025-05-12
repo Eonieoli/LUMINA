@@ -64,7 +64,7 @@ export default function Navbar() {
                 <img
                     src={profileImageFile || DefaultProfile}
                     alt="Profile"
-                    className="h-6 w-6 cursor-pointer rounded-full transition-transform duration-300 hover:scale-120"
+                    className="object-cover h-8 w-8 cursor-pointer rounded-full transition-transform duration-300 hover:scale-120 border-1 border-[#9C97FA]"
                 />
             </Link>
         </nav>
