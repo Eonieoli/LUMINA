@@ -27,10 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -189,10 +186,10 @@ public class UserServiceImpl implements UserService {
      * 현재 사용자와 10등까지 사용자들의 등수 조회
      *
      * @param userId 현재 사용자 ID
-     * @return List<GetSumPointRankResponse> 등수 정보 응답
+     * @return Map<String, Object> 등수 정보 응답
      */
     @Override
-    public List<GetSumPointRankResponse> getSumPointRank(Long userId) {
+    public Map<String, Object> getSumPointRank(Long userId) {
 
         String rankKey = "sum-point:rank";
         User my = findUtil.getUserById(userId);
@@ -216,7 +213,11 @@ public class UserServiceImpl implements UserService {
             if (user != null)
                 rankList.add(toRankResponse(user, i + 1));
         }
-        return rankList;
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalUser", userRepository.countByUserStatusTrue());
+        result.put("ranks", rankList);
+        return result;
     }
 
 
