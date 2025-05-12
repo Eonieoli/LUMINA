@@ -267,11 +267,11 @@ pipeline {
                                             """
                                         } else {
                                             // 전체 배포 (develop 브랜치)
+                                            // docker system prune -af 추가할지
                                             sh """
                                             ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
                                                 cd ${GCP_DEPLOY_PATH} &&
-                                                ./infra/scripts/blue-green-deploy.sh dev all &&
-                                                docker system prune -af
+                                                ./infra/scripts/blue-green-deploy.sh dev all
                                             '
                                             """
                                         }
@@ -361,11 +361,11 @@ pipeline {
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/datasource.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/datasource.yml"
 
                                     // 운영 환경 배포 실행 - Blue-Green 배포
+                                    // docker system prune -af 추가할지
                                     sh """
                                     ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} '
                                         cd ${AWS_DEPLOY_PATH} &&
-                                        ./infra/scripts/blue-green-deploy.sh prod all &&
-                                        docker system prune -af
+                                        ./infra/scripts/blue-green-deploy.sh prod all
                                     '
                                     """
                                 }
