@@ -82,17 +82,20 @@ public class PostServiceImpl implements PostService {
      * @param myId         현재 사용자 ID
      * @param userId       특정 사용자 게시물만 조회 시 ID
      * @param categoryName 카테고리명으로 필터링 시
+     * @param feedType     팔로잉 or 전체 게시물
      * @param pageNum      페이지 번호
      * @return Map<String, Object> 페이징된 게시물 목록
      */
     @Override
     public Map<String, Object> getPosts(
-            Long myId, Long userId, String categoryName, int pageNum) {
+            Long myId, Long userId, String categoryName,
+            String feedType, int pageNum) {
 
         ValidationUtil.validatePageNumber(pageNum);
+        ValidationUtil.validateRequiredField(feedType, "피드타입");
 
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Post> postPage = getPostPage(myId, userId, categoryName, pageRequest);
+        Page<Post> postPage = getPostPage(myId, userId, categoryName, feedType, pageRequest);
 
         List<GetPostResponse> posts = postPage.getContent().stream()
                 .map(post -> convertToPostResponse(post, myId))
@@ -256,7 +259,8 @@ public class PostServiceImpl implements PostService {
      * @return Page<Post>  페이징된 게시물 목록
      */
     private Page<Post> getPostPage(
-            Long myId, Long userId, String categoryName, PageRequest pageRequest) {
+            Long myId, Long userId, String categoryName,
+            String feedType, PageRequest pageRequest) {
 
         if (userId != null) {
             return postRepository.findByUserId(userId, pageRequest);
@@ -267,7 +271,11 @@ public class PostServiceImpl implements PostService {
             // 팔로잉 사용자 + 본인 게시물 조회
             List<Long> followingIds = followRepository.findFollowingIdsByFollowerId(myId);
             followingIds.add(myId);
-            return postRepository.findByUserIdIn(followingIds, pageRequest);
+            if (feedType.equals("following")) {
+                return postRepository.findByUserIdIn(followingIds, pageRequest);
+            } else {
+                return postRepository.findByUserIdNotIn(followingIds, pageRequest);
+            }
         }
     }
 
