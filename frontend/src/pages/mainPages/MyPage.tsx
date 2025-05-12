@@ -110,7 +110,7 @@ export default function MyPage() {
     
     // 프로필 수정을 눌렀다면
     const goToProfileEdit = () => {
-        console.log("프로필 수정버튼 클릭")
+        navigate(`/mypage/${myUserId}/edit`)
     }
 
     //팔로우 팔로잉 버튼을 눌렀다면
@@ -188,7 +188,7 @@ export default function MyPage() {
             {/* 루미나 선행도 그래프 */}
 
             {/* 유저 게시물 렌더링*/}
-            <div className="bg-white">
+            <div className="bg-white pb-[80px] md:pb-0">
                 {userPosts.length === 0 ? (
                     <div  className="text-center border-t-3 border-gray-300 pt-10 text-gray-500 flex flex-col items-center gap-5 justify-center">
                             <img src={ComputerTypingLuna} alt="루나이미지" className="w-30" />

@@ -43,7 +43,7 @@ export default function RankingPage() {
     {/* top 3 */}
     <div className="flex justify-between items-end gap-2 mb-5 ">
 
-      <div className="flex flex-col justify-center items-center" onClick={() => {goToUserProfile(rankings[2].userId)}}>
+      <div className="flex flex-col justify-center items-center cursor-pointer" onClick={() => {goToUserProfile(rankings[2].userId)}}>
         <img 
           src={rankings[2]?.profileImage ?? DefaultProfile} 
           alt="top2 프로필이미지" 
@@ -53,7 +53,7 @@ export default function RankingPage() {
         <p className="text-gray-500">{rankings[2]?.sumPoint}</p>
       </div>
 
-      <div className="flex flex-col justify-center items-center" onClick={() => {goToUserProfile(rankings[1].userId)}}>
+      <div className="flex flex-col justify-center items-center cursor-pointer" onClick={() => {goToUserProfile(rankings[1].userId)}}>
         <img 
           src={rankings[1]?.profileImage ?? DefaultProfile} 
           alt="top1 프로필이미지" 
@@ -63,7 +63,7 @@ export default function RankingPage() {
         <p className="text-gray-500">{rankings[1]?.sumPoint}</p>
       </div>
 
-      <div className="flex flex-col justify-center items-center" onClick={() => {goToUserProfile(rankings[3].userId)}}>
+      <div className="flex flex-col justify-center items-center cursor-pointer" onClick={() => {goToUserProfile(rankings[3].userId)}}>
         <img 
           src={rankings[3]?.profileImage ?? DefaultProfile} 
           alt="top3 프로필이미지" 
@@ -116,7 +116,7 @@ export default function RankingPage() {
         {topTen.map((user) => (
           <div
             key={`${user.userId}`}
-            className="flex items-center justify-between border-2 border-[#9C97FA] rounded-2xl px-4 py-2"
+            className="flex items-center justify-between border-2 border-[#9C97FA] rounded-2xl px-4 py-2 cursor-pointer"
             onClick={()=> goToUserProfile(user.userId)}
           >
             {/* 왼쪽: 순위, 이미지, 닉네임 */}

@@ -153,7 +153,10 @@ export default function FollowPage () {
                       key={follower.userId} 
                       className="flex items-center mb-4 justify-between relative">
                       {/* 프로필 사진, 닉네임 */}
-                      <div className="flex items-center">
+                      <div 
+                        className="flex items-center"
+                        onClick={() => {navigate(`/mypage/${follower.userId}`)}}
+                      >
                         <img 
                           src={follower.profileImage || DefaultProfile} alt="프로필이미지" 
                           className="w-10 h-10 object-cover rounded-full mr-5 bg-white"
@@ -196,7 +199,10 @@ export default function FollowPage () {
                     <div 
                       key={following.userId} 
                       className="flex items-center mb-4 justify-between">
-                      <div className="flex items-center">
+                      <div 
+                        className="flex items-center"
+                        onClick={() => {navigate(`/mypage/${following.userId}`)}}
+                      >
                         <img 
                           src={following.profileImage || DefaultProfile} alt="프로필이미지" 
                           className="w-10 h-10 object-cover rounded-full mr-5 bg-white"
