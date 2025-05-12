@@ -1,13 +1,13 @@
 services:
-  ai-server:
-    container_name: ai-server
+  ai-server-blue:
+    container_name: ai-server-blue
     build:
       context: ../../ai
       dockerfile: Dockerfile
-    image: rublin322/lumina-ai:develop
+    image: rublin322/lumina-ai:latest
     restart: always
     ports:
-      - "8000:8000"
+      - "8001:8000"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
       interval: 10s
@@ -17,7 +17,29 @@ services:
     networks:
       - lumina-network
     labels:
-      com.docker.compose.service: "ai-server"
+      com.docker.compose.service: "ai-server-blue"
+      com.docker.compose.project: "lumina"
+      environment: "production"
+      
+  ai-server-green:
+    container_name: ai-server-green
+    build:
+      context: ../../ai
+      dockerfile: Dockerfile
+    image: rublin322/lumina-ai:latest
+    restart: always
+    ports:
+      - "8002:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - lumina-network
+    labels:
+      com.docker.compose.service: "ai-server-green"
       com.docker.compose.project: "lumina"
       environment: "production"
 

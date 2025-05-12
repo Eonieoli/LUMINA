@@ -11,12 +11,12 @@ DEPLOY_PATH=""
 # 인자 검증
 if [[ "$ENV" != "dev" && "$ENV" != "prod" ]]; then
     echo "Error: First argument must be 'dev' or 'prod'"
-    echo "Usage: ./blue-green-deploy.sh [dev|prod] [frontend|backend|all]"
+    echo "Usage: ./blue-green-deploy.sh [dev|prod] [frontend|backend|ai|all]"
     exit 1
 fi
 
-if [[ "$TARGET" != "frontend" && "$TARGET" != "backend" && "$TARGET" != "all" ]]; then
-    echo "Error: Second argument must be 'frontend', 'backend', or 'all'"
+if [[ "$TARGET" != "frontend" && "$TARGET" != "backend" && "$TARGET" != "ai" && "$TARGET" != "all" ]]; then
+    echo "Error: Second argument must be 'frontend', 'backend', 'ai', or 'all'"
     echo "Usage: ./blue-green-deploy.sh [dev|prod] [frontend|backend|all]"
     exit 1
 fi
@@ -318,66 +318,150 @@ cleanup() {
     echo "Cleanup completed!"
 }
 
-# AI 서버 배포 함수
-deploy_ai_server() {
-    echo "============================="
-    echo "Deploying AI Server"
-    echo "============================="
-    
-    # 기존 컨테이너 정리
-    if container_exists "ai-server"; then
-        echo "Stopping and removing existing ai-server container..."
-        docker stop "ai-server" >/dev/null 2>&1 || true
-        docker rm "ai-server" >/dev/null 2>&1 || true
-    fi
-    
-    # 이미지 태그 설정
-    local image_tag=""
-    if [ "$ENV" == "dev" ]; then
-        image_tag="develop"
-    else
-        image_tag="latest"
-    fi
-    
-    # AI 서버 컨테이너 시작
-    echo "Starting new ai-server container..."
-    docker run -d --name "ai-server" \
-        --network lumina-network \
-        -p 8000:8000 \
-        --restart always \
-        --label environment=$ENV \
-        "rublin322/lumina-ai:$image_tag"
-    
-    # 건강 상태 확인
-    echo "Performing health check for ai-server..."
-    local max_attempts=10
-    local wait_time=5
-    
+# AI 서버 블루-그린 배포 함수
+deploy_ai_server_blue_green() {
+local service="ai-server"
+
+# 현재 색상 확인 및 타겟 색상 결정
+local current_color=$(get_current_color "$service")
+local target_color=""
+
+if [ "$current_color" == "blue" ]; then
+target_color="green"
+else
+    target_color="blue"
+fi
+
+echo "Deploying $service: $current_color -> $target_color"
+
+# 포트 설정
+local port=""
+local container_port="8000"
+local image_tag=""
+
+if [ "$ENV" == "dev" ]; then
+    image_tag="develop"
+else
+image_tag="latest"
+fi
+
+if [ "$target_color" == "blue" ]; then
+port="8001"
+else
+    port="8002"
+fi
+
+# 이전 컨테이너가 있을 경우 연결 정리를 위한 대기 시간 추가
+if container_running "$service-$current_color"; then
+    echo "Waiting for previous $service-$current_color to stabilize connections..."
+sleep 30  # 30초 대기
+fi
+
+# 기존 컨테이너 정리
+if container_exists "$service-$target_color"; then
+echo "Removing existing $service-$target_color container..."
+docker stop "$service-$target_color" >/dev/null 2>&1 || true
+docker rm "$service-$target_color" >/dev/null 2>&1 || true
+fi
+
+# 새 컨테이너 배포
+echo "Starting new $service-$target_color container..."
+docker run -d --name "$service-$target_color" \
+--network lumina-network \
+-p $port:$container_port \
+--restart always \
+--label environment=$ENV \
+"rublin322/lumina-ai:$image_tag"
+
+# 건강 상태 확인
+echo "Performing health check for $service-$target_color..."
+local max_attempts=20
+local wait_time=10
+local endpoint="/health"
+
     for i in $(seq 1 $max_attempts); do
         echo "Health check attempt $i/$max_attempts..."
         
-        if ! container_running "ai-server"; then
-            echo "Error: Container ai-server is not running anymore!"
-            docker logs --tail 50 "ai-server" || true
-            return 1
+        if ! container_running "$service-$target_color"; then
+            echo "Error: Container $service-$target_color is not running anymore!"
+            docker logs --tail 50 "$service-$target_color" || true
+            exit 1
         fi
         
-        # 2초 타임아웃으로 헬스 체크 (/health 엔드포인트 확인)
-        if curl -s -m 2 -o /dev/null -w "%{http_code}" "http://localhost:8000/health" | grep -q "200"; then
-            echo "ai-server is healthy!"
-            return 0
+        # 2초 타임아웃으로 헬스 체크
+        if curl -s -m 2 -o /dev/null -w "%{http_code}" "http://localhost:$port$endpoint" | grep -q "200"; then
+            echo "$service-$target_color is healthy!"
+            break
         fi
         
         if [ $i -eq $max_attempts ]; then
             echo "Error: Health check failed after $max_attempts attempts"
-            docker logs --tail 50 "ai-server"
-            return 1
+            docker logs --tail 50 "$service-$target_color"
+            exit 1
         fi
         
         echo "Health check failed, waiting $wait_time seconds before next attempt..."
         sleep $wait_time
     done
     
+    # Nginx 설정 변경
+    echo "Updating Nginx configuration for $service..."
+    local conf_dir=""
+    
+    conf_dir="$DEPLOY_PATH/proxy/blue-green/ai-server"
+    
+    mkdir -p "$conf_dir"
+    
+    # 설정 파일 업데이트 (백업 서버 포함)
+    echo "upstream $service {" > "$conf_dir/upstream.conf"
+    echo "    server $service-$target_color:$container_port;    # active" >> "$conf_dir/upstream.conf"
+    
+    # 백업 서버가 존재하는 경우에만 추가
+    if container_running "$service-$current_color"; then
+        echo "    server $service-$current_color:$container_port backup;    # backup" >> "$conf_dir/upstream.conf"
+    fi
+    
+    echo "}" >> "$conf_dir/upstream.conf"
+    
+    # Nginx 설정 적용
+    echo "Testing and applying Nginx configuration..."
+    if ! docker exec proxy nginx -t; then
+        echo "Nginx configuration test failed, reverting changes..."
+        
+        # 설정 복원 (기존 구성으로)
+        echo "upstream $service {" > "$conf_dir/upstream.conf"
+        echo "    server $service-$current_color:$container_port;    # active" >> "$conf_dir/upstream.conf"
+        
+        # 이전 타겟이 존재하는 경우 백업으로 추가
+        if container_running "$service-$target_color"; then
+            echo "    server $service-$target_color:$container_port backup;    # backup" >> "$conf_dir/upstream.conf"
+        fi
+        
+        echo "}" >> "$conf_dir/upstream.conf"
+        
+        # 새 컨테이너 정리
+        docker stop "$service-$target_color" >/dev/null 2>&1 || true
+        docker rm "$service-$target_color" >/dev/null 2>&1 || true
+        
+        echo "Deployment of $service failed!"
+        exit 1
+    fi
+    
+    # 설정 변경 적용
+    if ! docker exec proxy nginx -s reload; then
+        echo "Nginx reload failed, trying full restart..."
+        (cd "$DEPLOY_PATH/proxy" && docker-compose -f proxy-compose.yml -p proxy restart)
+        sleep 3
+    fi
+    
+    echo "$service successfully switched to $target_color"
+    
+    # 이전 컨테이너는 유지하되 추후 정리를 위해 태그
+    echo "Marking old $service-$current_color for later cleanup"
+    docker update --label "pending-cleanup=true" "$service-$current_color" >/dev/null 2>&1 || true
+    
+    # 배포 성공
+    echo "$service deployment completed successfully!"
     return 0
 }
 
@@ -417,12 +501,12 @@ main() {
         fi
     fi
     
-    # AI 서버 배포 (backend 또는 all이 지정된 경우에 배포)
-    if [ "$TARGET" == "backend" ] || [ "$TARGET" == "all" ]; then
-        deploy_ai_server
+    # AI 서버 배포 (backend 또는 all 또는 ai가 지정된 경우에 배포)
+    if [ "$TARGET" == "backend" ] || [ "$TARGET" == "all" ] || [ "$TARGET" == "ai" ]; then
+        deploy_ai_server_blue_green
         result=$?
         if [ $result -ne 0 ]; then
-            echo "AI Server deployment failed!"
+            echo "AI Server blue-green deployment failed!"
             exit $result
         fi
     fi
