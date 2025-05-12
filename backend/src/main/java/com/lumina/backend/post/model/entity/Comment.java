@@ -34,16 +34,22 @@ public class Comment extends BaseEntity {
     @Column(name = "comment_content", nullable = false, length = 300)
     private String commentContent;
 
-    public Comment(User user, Post post, Comment parentComment, String commentContent) {
+    @Column(name = "comment_reward", nullable = false)
+    private Integer commentReward;
+
+
+    public Comment(User user, Post post, Comment parentComment, String commentContent, Integer commentReward) {
         this.user = user;
         this.post = post;
         this.parentComment = parentComment;
         this.commentContent = commentContent;
+        this.commentReward = commentReward;
     }
 
-    public Comment(User user, Post post, String commentContent) {
+    public Comment(User user, Post post, String commentContent, Integer commentReward) {
         this.user = user;
         this.post = post;
         this.commentContent = commentContent;
+        this.commentReward = commentReward;
     }
 }

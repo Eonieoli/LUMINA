@@ -1,7 +1,6 @@
 package com.lumina.backend.user.service.impl;
 
 import com.lumina.backend.common.exception.CustomException;
-import com.lumina.backend.common.utill.PagingResponseUtil;
 import com.lumina.backend.common.utill.FindUtil;
 import com.lumina.backend.common.utill.ValidationUtil;
 import com.lumina.backend.user.model.entity.Follow;
@@ -10,22 +9,13 @@ import com.lumina.backend.user.model.response.GetFollowsResponse;
 import com.lumina.backend.user.repository.FollowRepository;
 import com.lumina.backend.user.service.FollowService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-/**
- * 팔로우 관련 서비스를 제공하는 클래스
- */
 @Service
 @RequiredArgsConstructor
 public class FollowServiceImpl implements FollowService {
@@ -36,11 +26,12 @@ public class FollowServiceImpl implements FollowService {
 
 
     /**
-     * 팔로우 관계를 토글(추가/삭제)하는 메서드
+     * 팔로우 관계 생성/삭제 토글 기능 수행
      *
-     * @param followerId 팔로우를 하는 사용자의 ID
-     * @param followingId 팔로우 대상 사용자의 ID
-     * @return Boolean 팔로우 관계가 생성되면 true, 삭제되면 false
+     * @param followerId 팔로우 요청 사용자 ID
+     * @param followingId 대상 사용자 ID
+     * @return Boolean 생성 시 true, 삭제 시 false
+     * @throws CustomException 유효성 검증 실패 시 발생
      */
     @Override
     @Transactional
@@ -49,11 +40,13 @@ public class FollowServiceImpl implements FollowService {
 
         ValidationUtil.validateId(followerId, "사용자");
         ValidationUtil.validateId(followingId, "사용자");
+        // 자기 자신 팔로우 방지
         ValidationUtil.validateFollow(followerId, followingId);
 
         User follower = findUtil.getUserById(followerId);
         User following = findUtil.getUserById(followingId);
 
+        // 존재하는 관계인지 확인 후 삭제/생성 분기 처리
         return followRepository.findByFollowerIdAndFollowingId(followerId, followingId)
                 .map(existingFollow -> {
                     followRepository.delete(existingFollow);
@@ -67,10 +60,11 @@ public class FollowServiceImpl implements FollowService {
 
 
     /**
-     * 사용자의 팔로워 목록을 조회하는 메서드
+     * 특정 사용자의 팔로워 목록 조회 (현재 사용자의 팔로우 상태 포함)
      *
-     * @param targetUserId 유저의 ID
-     * @return Map<String, Object> 팔로워 목록을 포함한 응답
+     * @param myId 현재 로그인 사용자 ID (팔로우 상태 확인용)
+     * @param targetUserId 조회 대상 사용자 ID
+     * @return List<GetFollowsResponse> 팔로워 정보 + 현재 사용자의 팔로우 상태
      */
     @Override
     public List<GetFollowsResponse> getFollowers(
@@ -85,10 +79,11 @@ public class FollowServiceImpl implements FollowService {
 
 
     /**
-     * 사용자의 팔로잉 목록을 조회하는 메서드
+     * 특정 사용자의 팔로잉 목록 조회 (현재 사용자의 팔로우 상태 포함)
      *
-     * @param targetUserId 유저의 ID
-     * @return Map<String, Object> 팔로잉 목록을 포함한 응답
+     * @param myId 현재 로그인 사용자 ID
+     * @param targetUserId 조회 대상 사용자 ID
+     * @return List<GetFollowsResponse> 팔로잉 정보 + 현재 사용자의 팔로우 상태
      */
     @Override
     public List<GetFollowsResponse> getFollowings(
@@ -103,10 +98,11 @@ public class FollowServiceImpl implements FollowService {
 
 
     /**
-     * 현재 사용자의 팔로워를 삭제하는 메서드
+     * 현재 사용자의 특정 팔로워 삭제 (차단 기능)
      *
-     * @param myId 현재 로그인한 사용자의 ID
-     * @param userId 삭제할 팔로워의 ID
+     * @param myId 현재 로그인 사용자 ID
+     * @param userId 삭제할 팔로워 사용자 ID
+     * @throws CustomException 팔로워 관계 없을 경우 404 에러
      */
     @Override
     public void deleteMyFollower(
@@ -120,6 +116,14 @@ public class FollowServiceImpl implements FollowService {
         followRepository.delete(follow);
     }
 
+
+    /**
+     * 사용자 정보 → 응답 DTO 변환 (현재 사용자의 팔로우 상태 포함)
+     *
+     * @param myId 현재 사용자 ID
+     * @param follow 대상 사용자 엔티티
+     * @return GetFollowsResponse 변환된 응답 객체
+     */
     private GetFollowsResponse convertToFollowResponses(Long myId, User follow) {
         boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, follow.getId());
 
@@ -130,40 +134,4 @@ public class FollowServiceImpl implements FollowService {
                 isFollowing
         );
     }
-
-
-
-//    private List<GetFollowsResponse> convertToFollowResponses(
-//            List<Follow> follows, Long myId,
-//            Function<Follow, User> userExtractor) {
-//
-//        return follows.stream()
-//                .map(follow -> {
-//                    User user = userExtractor.apply(follow);
-//                    boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, user.getId());
-//                    return new GetFollowsResponse(
-//                            user.getId(),
-//                            user.getProfileImage(),
-//                            user.getNickname(),
-//                            isFollowing
-//                    );
-//                })
-//                .collect(Collectors.toList());
-//    }
-//
-//    private Map<String, Object> getFollows(
-//            Long myId, Long targetUserId, int pageNum,
-//            BiFunction<Long, Pageable, Page<Follow>> followFetchFunction, String keyName) {
-//
-//        ValidationUtil.validatePageNumber(pageNum);
-//
-//        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10);
-//        Page<Follow> followPage = followFetchFunction.apply(targetUserId, pageRequest);
-//
-//        List<GetFollowsResponse> responses = convertToFollowResponses(
-//                followPage.getContent(), myId,
-//                keyName.equals("followers") ? Follow::getFollower : Follow::getFollowing);
-//
-//        return PagingResponseUtil.toPagingResult(followPage, pageNum, keyName, responses);
-//    }
 }

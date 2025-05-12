@@ -19,6 +19,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findByNicknameContaining(String keyword, Pageable pageable);
 
 
+    Long countByUserStatusTrue();
+
+
     @Query("SELECT u.Id FROM User u WHERE u.nickname = :nickname")
     Long findIdByNickname(@Param("nickname") String nickname);
 

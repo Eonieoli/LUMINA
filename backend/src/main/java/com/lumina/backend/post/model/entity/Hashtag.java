@@ -21,6 +21,7 @@ public class Hashtag extends BaseEntity {
     @Column(name = "hashtag_name", nullable = false, length = 10)
     private String hashtagName;
 
+
     public Hashtag(String hashtagName) {
         this.hashtagName = hashtagName;
     }

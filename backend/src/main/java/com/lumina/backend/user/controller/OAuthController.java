@@ -26,12 +26,6 @@ public class OAuthController {
     private final TokenUtil tokenUtil;
 
 
-    /**
-     * Google 로그인 페이지로 리다이렉트하는 엔드포인트
-     *
-     * @param response HTTP 응답 객체
-     * @throws IOException 리다이렉트 중 발생할 수 있는 입출력 예외
-     */
     @GetMapping("")
     public void redirectToLogin(
             @RequestParam String type, HttpServletResponse response) throws IOException {
@@ -46,10 +40,6 @@ public class OAuthController {
     }
 
 
-    /**
-     * 사용자 로그아웃을 처리합니다.
-     * 로그아웃 완료 메시지를 반환합니다.
-     */
     @PostMapping("/logout")
     public ResponseEntity<BaseResponse<Void>> redirectToLogout() {
         //logoutFilter 에서 로그아웃 진행 후 응답 반환
@@ -57,10 +47,6 @@ public class OAuthController {
     }
 
 
-    /**
-     * 회원 탈퇴를 처리합니다.
-     * 회원탈퇴 완료 메시지를 반환합니다.
-     */
     @DeleteMapping("/delete")
     public ResponseEntity<BaseResponse<Void>> deleteUser(
             HttpServletRequest request, HttpServletResponse response) {

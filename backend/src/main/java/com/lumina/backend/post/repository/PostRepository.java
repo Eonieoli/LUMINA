@@ -17,12 +17,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @EntityGraph(attributePaths = {"user", "category"})
     Page<Post> findByUserId(Long userId, Pageable pageable);
+    List<Post> findByUserId(Long userId);
 
     @EntityGraph(attributePaths = {"user", "category"})
     Page<Post> findByCategoryId(Long categoryId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "category"})
     Page<Post> findByUserIdIn(List<Long> userIds, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "category"})
+    Page<Post> findByUserIdNotIn(List<Long> userIds, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "category"})
     Page<Post> findByCategoryIdIn(List<Long> categoryIds, Pageable pageable);

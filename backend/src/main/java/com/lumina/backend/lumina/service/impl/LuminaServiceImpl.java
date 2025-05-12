@@ -16,9 +16,7 @@ import com.lumina.backend.post.model.entity.Post;
 import com.lumina.backend.post.model.entity.PostLike;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.repository.CommentLikeRepository;
-import com.lumina.backend.post.repository.CommentRepository;
 import com.lumina.backend.post.repository.PostLikeRepository;
-import com.lumina.backend.post.repository.PostRepository;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,8 +38,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LuminaServiceImpl implements LuminaService {
 
-    private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
     private final PostLikeRepository postLikeRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final CategoryRepository categoryRepository;
@@ -60,6 +56,13 @@ public class LuminaServiceImpl implements LuminaService {
     private String luminaComment;
 
 
+    /**
+     * 게시글에 대한 루미나 평가 결과를 조회합니다.
+     *
+     * @param userId 평가를 요청한 사용자 ID
+     * @param postId 평가 대상 게시글 ID
+     * @return UploadCommentRequest 루미나 평가 결과(보상 등)
+     */
     @Override
     public UploadCommentRequest getPostLumina(
             Long userId, Long postId) {
@@ -75,6 +78,13 @@ public class LuminaServiceImpl implements LuminaService {
     }
 
 
+    /**
+     * 댓글에 대한 루미나 평가 결과를 조회합니다.
+     *
+     * @param userId 평가를 요청한 사용자 ID
+     * @param commentId 평가 대상 댓글 ID
+     * @return UploadCommentRequest 루미나 평가 결과(답글 등)
+     */
     @Override
     public UploadCommentRequest getCommentLumina(
             Long userId, Long commentId) {
@@ -85,6 +95,7 @@ public class LuminaServiceImpl implements LuminaService {
         Map<String, String> requestPayload = createCommentRequestPayload(userId, commentId, nickname, comment.getCommentContent());
         EvaluateCommentResponse response = requestLuminaCommentEvaluation(requestPayload);
 
+        // 대댓글일 경우 부모 댓글 ID 반환
         Long parentCommentId = (comment.getParentComment() != null)
                 ? comment.getParentComment().getId()
                 : commentId;
@@ -93,6 +104,12 @@ public class LuminaServiceImpl implements LuminaService {
     }
 
 
+    /**
+     * 사용자의 AI 기부 추천 내역을 생성합니다.
+     * 최근 좋아요한 게시글/댓글을 기반으로 카테고리 내 기부 내역을 추천합니다.
+     *
+     * @param userId 추천을 생성할 사용자 ID
+     */
     @Override
     @Transactional
     public void getAiDonation(Long userId) {
@@ -101,19 +118,18 @@ public class LuminaServiceImpl implements LuminaService {
         Page<PostLike> postLikePage = postLikeRepository.findByUserId(userId, pageRequest);
         Page<CommentLike> commentLikePage = commentLikeRepository.findByUserId(userId, pageRequest);
 
+        // 요청 텍스트 생성
         Map<String, List<String>> requestText = new HashMap<>();
         List<String> post = postLikePage.getContent().stream()
                 .map(like -> like.getPost().getPostContent())
                 .collect(Collectors.toList());
-
         List<String> comment = commentLikePage.getContent().stream()
                 .map(like -> like.getComment().getCommentContent())
                 .collect(Collectors.toList());
-
         requestText.put("post", post);
         requestText.put("comment", comment);
 
-        // POST 요청 보내고 응답 받기
+        // AI 평가 서버 호출 부분
 //        EvaluateCommentResponse response = webClient.post()
 //                .uri(luminaComment)
 //                .bodyValue(requestText)
@@ -121,23 +137,35 @@ public class LuminaServiceImpl implements LuminaService {
 //                .bodyToMono(EvaluateCommentResponse.class)
 //                .block(); // 동기 방식
 
-        Long categoryId = categoryRepository.findIdByCategoryName("한부모");
+        Long categoryId = categoryRepository.findIdByCategoryName("동물");
         List<Donation> donationList = donationRepository.findByCategoryId(categoryId);
 
+        // 기존 AI 추천 내역 삭제
         userDonationRepository.deleteByUserIdAndRegistration(userId, "AI");
 
         User user = findUtil.getUserById(userId);
 
+        // 새로운 AI 추천 기부 내역 저장
         for (Donation donation : donationList) {
             UserDonation userDonation = new UserDonation(user, donation, "AI");
             userDonationRepository.save(userDonation);
         }
 
+        // 사용자 좋아요 카운트 초기화
         user.resetUserLickCnt();
         userRepository.save(user);
     }
 
 
+    /**
+     * 게시글 평가 요청에 필요한 Payload를 생성합니다.
+     *
+     * @param userId 사용자 ID
+     * @param postId 게시글 ID
+     * @param nickname 사용자 닉네임
+     * @param postContent 게시글 내용
+     * @return Map<String, String> 요청 Payload
+     */
     private Map<String, String> createRequestPayload(Long userId, Long postId, String nickname, String postContent) {
         Map<String, String> payload = new HashMap<>();
         payload.put("user_id", userId.toString());
@@ -147,6 +175,13 @@ public class LuminaServiceImpl implements LuminaService {
         return payload;
     }
 
+    /**
+     * 루미나 게시글 평가 서버에 요청을 보내고 응답을 반환합니다.
+     *
+     * @param requestPayload 평가 요청 데이터
+     * @return EvaluatePostResponse 평가 결과
+     * @throws CustomException 서버 응답이 없을 때 예외 발생
+     */
     private EvaluatePostResponse requestLuminaEvaluation(Map<String, String> requestPayload) {
         EvaluatePostResponse response = webClient.post()
                 .uri(luminaPost)
@@ -162,6 +197,15 @@ public class LuminaServiceImpl implements LuminaService {
         return response;
     }
 
+    /**
+     * 댓글 평가 요청에 필요한 Payload를 생성합니다.
+     *
+     * @param userId 사용자 ID
+     * @param commentId 댓글 ID
+     * @param nickname 사용자 닉네임
+     * @param content 댓글 내용
+     * @return Map<String, String> 요청 Payload
+     */
     private Map<String, String> createCommentRequestPayload(Long userId, Long commentId, String nickname, String content) {
         Map<String, String> payload = new HashMap<>();
         payload.put("user_id", userId.toString());
@@ -171,6 +215,13 @@ public class LuminaServiceImpl implements LuminaService {
         return payload;
     }
 
+    /**
+     * 루미나 댓글 평가 서버에 요청을 보내고 응답을 반환합니다.
+     *
+     * @param requestPayload 평가 요청 데이터
+     * @return EvaluateCommentResponse 평가 결과
+     * @throws CustomException 서버 응답이 없을 때 예외 발생
+     */
     private EvaluateCommentResponse requestLuminaCommentEvaluation(Map<String, String> requestPayload) {
         EvaluateCommentResponse response = webClient.post()
                 .uri(luminaComment)

@@ -3,10 +3,6 @@ package com.lumina.backend.common.exception;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-/**
- * 사용자 정의 예외 클래스
- * 비즈니스 로직에서 HTTP 상태 코드와 함께 예외를 던질 때 사용
- */
 @Getter
 public class CustomException extends RuntimeException {
 
@@ -20,7 +16,8 @@ public class CustomException extends RuntimeException {
      * @param message 예외 메시지
      */
     public CustomException(HttpStatus status, String message) {
-        super(message); // RuntimeException의 생성자에 메시지 전달
+
+        super(message);
         this.status = status;
     }
 }
