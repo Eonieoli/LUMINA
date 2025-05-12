@@ -9,6 +9,8 @@ import HeartFilledIcon from './board/heart_filled.svg';
 import ChatIcon from './board/chat.svg';
 import SendIcon from './board/send.svg';
 import XIcon from './board/Ic_x.png'
+import CircleXIcon from './board/Ic_circle_X.png'
+import PencilIcon from './board/Ic_pencil.png'
 
 // 헤더 관련 에셋
 import BellIcon from './header/bell.svg';
@@ -28,6 +30,7 @@ import PokerLuna from './donate/Luna.png';
 import WinkLuna from './donate/wink_Luna.png'
 import ComputerHandsupLuna from './donate/computer_handsup_Luna.png'
 import ComputerTypingLuna from './donate/computer_typing_Luna.png'
+import CuriousLuna from './search/curiousLuna.png'
 
 // 네브바 아이콘
 import DonationIcon from './navbar/Ic_donate.png';
@@ -68,5 +71,8 @@ export {
     ComputerHandsupLuna,
     Hamburger,
     XIcon,
-    ComputerTypingLuna
+    ComputerTypingLuna,
+    CuriousLuna,
+    CircleXIcon,
+    PencilIcon,
 }

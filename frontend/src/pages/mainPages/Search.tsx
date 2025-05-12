@@ -1,6 +1,7 @@
 import { getCategoryExplore, getHashtagPosts, getUser } from "@/apis/board";
-import { DefaultProfile, SearchIcon } from "@/assets/images";
+import { CuriousLuna, DefaultProfile, SearchIcon } from "@/assets/images";
 import { Board } from "@/components";
+import { useAuthStore } from "@/stores/auth";
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -43,6 +44,7 @@ export default function Search() {
     const isComposing = useRef(false);
 
     const navigate = useNavigate();
+    const authStore = useAuthStore();
 
     const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
         setSearchInput(e.target.value);
@@ -66,7 +68,6 @@ export default function Search() {
     }, [searchInput]);
 
     useEffect(() => {
-        console.log("해시태그 변경:", hashtag);
         if (hashtag !== "") {
             setPosts([]);
             setPageNum(1);
@@ -75,9 +76,7 @@ export default function Search() {
     }, [hashtag]);
     
     useEffect(() => {
-        console.log('해시택2');
         const fetchPosts = async () => {
-            console.log('조건 체크:', { isLoading, hasMore, fetchedOnce: fetchedOnce.current });
             if (isLoading || !hasMore || fetchedOnce.current) return;
     
             fetchedOnce.current = true;
@@ -85,7 +84,6 @@ export default function Search() {
             try {
                 let data;
                 if (hashtag !== "") {
-                    console.log('해시택3:', hashtag, pageNum);
                     data = await getHashtagPosts(hashtag, pageNum);
                 } else {
                     data = await getCategoryExplore(pageNum);
@@ -126,7 +124,6 @@ export default function Search() {
     // 디바운스된 값이 변경되면 API 호출
     useEffect(() => {
       if (debouncedInput.trim() === "") return;
-      console.log("API 호출: ", debouncedInput);
       const fetchUser = async (keyword: string) => {
         try {
             const response = await getUser(keyword);
@@ -160,33 +157,35 @@ export default function Search() {
 
     // IME 이벤트 핸들러
     const handleCompositionStart = () => {
-        console.log('IME 입력 시작');
         isComposing.current = true;
     };
 
     const handleCompositionEnd = () => {
-        console.log('IME 입력 완료');
         isComposing.current = false;
     };
 
     // 사용자 항목 클릭 핸들러 - 별도로 분리하여 IME와 관계없이 동작하도록 함
     const handleUserClick = (userId: number) => {
-        console.log('사용자 클릭됨:', userId);
         // 모달 닫기
         setIsModalOpen(false);
         // 페이지 이동
         navigate(`/mypage/${userId}`);
     };
 
+    const handleCategory = () => {
+        navigate('/mypage/' + authStore.data.userId, {state: {from: 'search'}});
+    };
+
     return (
-        <div className="h-full overflow-y-auto bg-white">
+        <div className="flex flex-col h-full overflow-y-auto bg-white">
             <div className="sticky top-0 z-30">
-                <div className="relative flex h-20 items-end px-5 pb-3 bg-white" ref={wrapperRef}>
+                <div className="flex h-20 items-end px-5 pb-3 bg-white" ref={wrapperRef}>
                     <div className="relative w-full">
                         <input
                             type="text"
                             ref={inputRef}
                             value={searchInput}
+                            placeholder="유저 또는 해시태그를 검색해보세요!"
                             onChange={handleInput}
                             onCompositionStart={handleCompositionStart}
                             onCompositionEnd={handleCompositionEnd}
@@ -203,7 +202,7 @@ export default function Search() {
                             }}
                             src={SearchIcon}
                             alt="돋보기"
-                            className="absolute right-4 bottom-0 -translate-y-1/2 w-4 h-auto cursor-pointer"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-auto cursor-pointer"
                         />
                     </div>
                     {/* 유저 검색 모달 */}
@@ -243,35 +242,50 @@ export default function Search() {
                     )}
                 </div>
             </div>
-            {posts.map((post, index) => {
-                const isLast = index === posts.length - 1;
-
-                return (
-                    <div
-                        key={post.postId}
-                        ref={isLast ? lastPostRef : undefined}
-                    >
-                        <Board
-                            postId={post.postId}
-                            userId={post.userId}
-                            nickname={post.nickname}
-                            profileImage={post.profileImage}
-                            postImage={post.postImage}
-                            categoryName={post.categoryName}
-                            postContent={post.postContent}
-                            likeCnt={post.likeCnt}
-                            commentCnt={post.commentCnt}
-                            isLike={post.isLike}
-                            onDelete={handleDelete}
-                        />
-                    </div>
-                );
-            })}
-            {isLoading && (
-                <div className="py-4 text-center text-gray-400">
-                    불러오는 중...
+            {posts.length === 0 ? 
+                <div className="flex flex-col gap-y-4 flex-1 justify-center items-center">
+                    <img src={CuriousLuna} alt="" className="h-50 w-auto" />
+                    <p className="text-xl font-semibold">
+                        관심 카테고리를 등록해주세요!
+                    </p>
+                    <button onClick={handleCategory} className="p-2 border-2 border-[#9c97fa] hover:bg-[#9c97fa] hover:text-white transition duration-300 w-1/3 rounded-[13px] p-1 cursor-pointer text-center text-[15px] text-[#9c97fa]">
+                        하러가기!
+                    </button>
                 </div>
-            )}
+            :
+                <div>
+                    {posts.map((post, index) => {
+                        const isLast = index === posts.length - 1;
+
+                        return (
+                            <div
+                                key={post.postId}
+                                ref={isLast ? lastPostRef : undefined}
+                            >
+                                <Board
+                                    postId={post.postId}
+                                    userId={post.userId}
+                                    nickname={post.nickname}
+                                    profileImage={post.profileImage}
+                                    postImage={post.postImage}
+                                    categoryName={post.categoryName}
+                                    postContent={post.postContent}
+                                    postViews={post.postViews}
+                                    likeCnt={post.likeCnt}
+                                    commentCnt={post.commentCnt}
+                                    isLike={post.isLike}
+                                    onDelete={handleDelete}
+                                />
+                            </div>
+                        );
+                    })}
+                    {isLoading && (
+                        <div className="py-4 text-center text-gray-400">
+                            불러오는 중...
+                        </div>
+                    )}
+                </div>
+            }
         </div>
     );
 }

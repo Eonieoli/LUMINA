@@ -78,3 +78,14 @@ export const postDonatePoint = async(donationId: number, point: number) => {
     throw error
   }
 }
+
+// 유저 리워드 조회
+export const getUserReward = async () => {
+  try {
+    const response = await apiClient.get('/user/reward');
+    return response.data
+  } catch (error) {
+    console.error("유저 리워드 내역 조회 실패", error);
+    throw error
+  }
+}

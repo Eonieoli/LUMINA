@@ -4,7 +4,7 @@ import UserProfileFourInfo from "@/components/profile/fourInfo";
 import ProfileBtn from "@/components/profile/button";
 import { Post } from "./Home";
 import { getUserPosts } from "@/apis/board";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Board, HamburgerSheet } from "@/components";
 import { getUserProfile } from "@/apis/auth";
 import { useAuthStore } from '@/stores/auth';
@@ -27,6 +27,10 @@ interface MypageProps {
 export default function MyPage() {
 
     const navigate = useNavigate()
+
+    // 주소에 상태가 있는지 확인
+    const location = useLocation();
+    const state = location.state
 
     // 나의 아이디 
     const authData = useAuthStore();
@@ -91,6 +95,13 @@ export default function MyPage() {
         fetchPosts()
     },[pageNum, userInfo])
 
+    // 검색창에서 온 경우
+    useEffect(() => {
+        if (state?.from === 'search') {
+            setIsHamburgerOpened(true);
+        }
+    }, [])
+
     // 무한스크롤 
     const lastPostRef = useCallback(
         (node: HTMLDivElement) => {
@@ -110,7 +121,7 @@ export default function MyPage() {
     
     // 프로필 수정을 눌렀다면
     const goToProfileEdit = () => {
-        console.log("프로필 수정버튼 클릭")
+        navigate(`/mypage/${myUserId}/edit`)
     }
 
     //팔로우 팔로잉 버튼을 눌렀다면
@@ -188,7 +199,7 @@ export default function MyPage() {
             {/* 루미나 선행도 그래프 */}
 
             {/* 유저 게시물 렌더링*/}
-            <div className="bg-white">
+            <div className="bg-white pb-[80px] md:pb-0">
                 {userPosts.length === 0 ? (
                     <div  className="text-center border-t-3 border-gray-300 pt-10 text-gray-500 flex flex-col items-center gap-5 justify-center">
                             <img src={ComputerTypingLuna} alt="루나이미지" className="w-30" />
@@ -207,6 +218,7 @@ export default function MyPage() {
                             postImage={post.postImage}
                             categoryName={post.categoryName}
                             postContent={post.postContent}
+                            postViews={post.postViews}
                             likeCnt={post.likeCnt}
                             commentCnt={post.commentCnt}
                             isLike={post.isLike}

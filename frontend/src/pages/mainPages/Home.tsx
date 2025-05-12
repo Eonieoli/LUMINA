@@ -19,9 +19,12 @@ export interface Post {
 
 export default function HomePage() {
     const [posts, setPosts] = useState<Post[]>([]);
+    // 팔로워들
     const [pageNum, setPageNum] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    // 이전 게시물 다 본 경우 랜덤게시물?
+    const [category, setCategory] = useState<'following' | 'all'>('following');
     const observer = useRef<IntersectionObserver | null>(null);
     const fetchedOnce = useRef(false);
 
@@ -38,20 +41,41 @@ export default function HomePage() {
             fetchedOnce.current = true;
             setIsLoading(true);
             try {
-                const data = await getPosts(pageNum);
-                if (data.data.posts.length < 10) {
+                const data = await getPosts(pageNum, category);
+                const fetchedPosts = data.data.posts;
+
+                // 처음 요청인데 게시물이 아예 없음 → 바로 all로 전환
+                if (pageNum === 1 && fetchedPosts.length === 0 && category === 'following') {
+                    setCategory('all');
+                    setPageNum(1);
+                    setHasMore(true);
+                    setIsLoading(false);
+                    fetchedOnce.current = false;
+                }
+
+                // 두 번째 이후 요청인데 10개 미만이면 now switch to all
+                if (pageNum > 1 && fetchedPosts.length < 10 && category === 'following') {
+                    setCategory('all');
+                    setPageNum(1);
+                    setHasMore(true);
+                    setIsLoading(false);
+                    fetchedOnce.current = false;
+                }
+
+                // all인데도 10개 미만이면 종료
+                if (category === 'all' && fetchedPosts.length < 10) {
                     setHasMore(false);
                 }
-                setPosts((prev) => [...prev, ...data.data.posts]);
+
+                setPosts((prev) => [...prev, ...fetchedPosts]);
             } catch (error) {
                 console.error('게시물 불러오기 실패:', error);
             }
             setIsLoading(false);
             fetchedOnce.current = false;
         };
-
         fetchPosts();
-    }, [pageNum]);
+    }, [pageNum, category]);
 
     const lastPostRef = useCallback(
         (node: HTMLDivElement) => {
@@ -88,6 +112,7 @@ export default function HomePage() {
                             postImage={post.postImage}
                             categoryName={post.categoryName}
                             postContent={post.postContent}
+                            postViews={post.postViews}
                             likeCnt={post.likeCnt}
                             commentCnt={post.commentCnt}
                             isLike={post.isLike}
