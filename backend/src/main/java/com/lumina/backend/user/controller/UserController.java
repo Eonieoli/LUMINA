@@ -4,7 +4,7 @@ import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
 import com.lumina.backend.user.model.response.GetMyProfileResponse;
-import com.lumina.backend.user.model.response.GetMyReward;
+import com.lumina.backend.user.model.response.GetMyRewardRespond;
 import com.lumina.backend.user.model.response.GetUserPointResponse;
 import com.lumina.backend.user.model.response.GetUserProfileResponse;
 import com.lumina.backend.user.service.UserService;
@@ -84,11 +84,11 @@ public class UserController {
 
 
     @GetMapping("/reward")
-    public ResponseEntity<BaseResponse<List<GetMyReward>>> getMyReward(
+    public ResponseEntity<BaseResponse<List<GetMyRewardRespond>>> getMyReward(
             HttpServletRequest request) {
 
         Long userId = tokenUtil.findIdByToken(request);
-        List<GetMyReward> response = userService.getMyReward(userId);
+        List<GetMyRewardRespond> response = userService.getMyReward(userId);
 
         return ResponseEntity.ok(BaseResponse.success("리워드 조회 성공", response));
     }

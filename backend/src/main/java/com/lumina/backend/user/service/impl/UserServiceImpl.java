@@ -228,18 +228,18 @@ public class UserServiceImpl implements UserService {
      * @return List<GetMyReward> 보상 내역 리스트
      */
     @Override
-    public List<GetMyReward> getMyReward(Long userId) {
+    public List<GetMyRewardRespond> getMyReward(Long userId) {
 
-        List<GetMyReward> postRewards = postRepository.findByUserId(userId).stream()
+        List<GetMyRewardRespond> postRewards = postRepository.findByUserId(userId).stream()
                 .map(post -> toRewardDto(post, null))
                 .toList();
 
-        List<GetMyReward> commentRewards = commentRepository.findByUserId(userId).stream()
+        List<GetMyRewardRespond> commentRewards = commentRepository.findByUserId(userId).stream()
                 .map(comment -> toRewardDto(comment.getPost(), comment))
                 .toList();
 
         return Stream.concat(postRewards.stream(), commentRewards.stream())
-                .sorted(Comparator.comparing(GetMyReward::getCreatedAt).reversed())
+                .sorted(Comparator.comparing(GetMyRewardRespond::getCreatedAt).reversed())
                 .collect(Collectors.toList());
     }
 
@@ -327,12 +327,12 @@ public class UserServiceImpl implements UserService {
      * @param comment 댓글 엔티티 (게시글 보상 시 null)
      * @return GetMyReward 보상 응답 DTO
      */
-    private GetMyReward toRewardDto(Post post, Comment comment) {
+    private GetMyRewardRespond toRewardDto(Post post, Comment comment) {
 
         // Post 보상
         if (comment == null) {
             int reward = post.getPostReward();
-            return GetMyReward.builder()
+            return GetMyRewardRespond.builder()
                     .postId(post.getId())
                     .content(post.getPostContent())
                     .point(reward >= 0 ? reward : null)
@@ -342,7 +342,7 @@ public class UserServiceImpl implements UserService {
         }
         // Comment 보상
         int reward = comment.getCommentReward();
-        return GetMyReward.builder()
+        return GetMyRewardRespond.builder()
                 .postId(post.getId())
                 .commentId(comment.getId())
                 .content(comment.getCommentContent())

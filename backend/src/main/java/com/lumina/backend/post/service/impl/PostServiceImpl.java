@@ -302,7 +302,7 @@ public class PostServiceImpl implements PostService {
         return new GetPostResponse(
                 post.getId(), user.getId(), user.getNickname(), user.getProfileImage(),
                 post.getPostImage(), post.getPostContent(), post.getPostViews(),
-                category.getCategoryName(), hashtagList, likeCnt, commentCnt, isLike
+                category.getCategoryName(), hashtagList, likeCnt, commentCnt, isLike, post.getCreatedAt()
         );
     }
 

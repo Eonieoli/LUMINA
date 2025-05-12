@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 @Data
 @AllArgsConstructor
-public class GetMyReward {
+public class GetMyRewardRespond {
 
     private Long postId;
     private Long commentId;
