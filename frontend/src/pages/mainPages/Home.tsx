@@ -19,9 +19,12 @@ export interface Post {
 
 export default function HomePage() {
     const [posts, setPosts] = useState<Post[]>([]);
+    // 팔로워들
     const [pageNum, setPageNum] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    // 이전 게시물 다 본 경우 랜덤게시물?
+    const [category, setCategory] = useState<'following' | 'all'>('following');
     const observer = useRef<IntersectionObserver | null>(null);
     const fetchedOnce = useRef(false);
 
@@ -38,9 +41,19 @@ export default function HomePage() {
             fetchedOnce.current = true;
             setIsLoading(true);
             try {
-                const data = await getPosts(pageNum);
-                if (data.data.posts.length < 10) {
-                    setHasMore(false);
+                const data = await getPosts(pageNum, category);
+                const fetchedPosts = data.data.posts;
+
+                if (fetchedPosts.length < 10) {
+                    if (category === 'following') {
+                        // 다음 요청부터는 'all'로 전환
+                        setCategory('all');
+                        setPageNum(1); // 페이지 초기화
+                        setPosts([]); // 게시물도 초기화하거나 유지하고 싶다면 이 줄 제거
+                        setHasMore(true); // 더 불러올 수 있도록 다시 true로 설정
+                    } else {
+                        setHasMore(false);
+                    }
                 }
                 setPosts((prev) => [...prev, ...data.data.posts]);
             } catch (error) {
@@ -49,9 +62,8 @@ export default function HomePage() {
             setIsLoading(false);
             fetchedOnce.current = false;
         };
-
         fetchPosts();
-    }, [pageNum]);
+    }, [pageNum, category]);
 
     const lastPostRef = useCallback(
         (node: HTMLDivElement) => {

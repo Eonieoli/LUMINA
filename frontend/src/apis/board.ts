@@ -38,10 +38,10 @@ export const createPost = async ({
 };
 
 // 게시물 전체 조회 페이지네이션
-export const getPosts = async (pageNum: number) => {
+export const getPosts = async (pageNum: number, feedType: string) => {
     try {
         const response = await apiClient.get('/post', {
-            params: { pageNum },
+            params: { pageNum, feedType },
         });
 
         return response.data;
