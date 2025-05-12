@@ -205,8 +205,8 @@ export default function MyPage() {
             {/* 유저 게시물 렌더링*/}
             <div className="bg-white pb-[80px] md:pb-0">
                 {userPosts.length === 0 ? (
-                    <div  className="text-center border-t-3 border-gray-300 pt-10 text-gray-500 flex flex-col items-center gap-5 justify-center">
-                            <img src={ComputerTypingLuna} alt="루나이미지" className="w-30" />
+                    <div  className="text-center border-t-3 border-gray-200 pt-10 text-gray-500 flex flex-col items-center gap-5 justify-center">
+                            <img src={ComputerTypingLuna} alt="루나이미지" className="w-2/5" />
                             <p className="text-sm">게시물이 없습니다.</p>
                     </div>
                 ) : (

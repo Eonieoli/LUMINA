@@ -154,8 +154,11 @@ export default function FollowPage () {
                       className="flex items-center mb-4 justify-between relative">
                       {/* 프로필 사진, 닉네임 */}
                       <div 
-                        className="flex items-center"
-                        onClick={() => {navigate(`/mypage/${follower.userId}`)}}
+                        className="flex items-center z-30"
+                        onClick={() => {
+                          navigate(`/mypage/${follower.userId}`)
+                          console.log("팔로워 페이지로 이동!")
+                        }}
                       >
                         <img 
                           src={follower.profileImage || DefaultProfile} alt="프로필이미지" 
@@ -201,7 +204,10 @@ export default function FollowPage () {
                       className="flex items-center mb-4 justify-between">
                       <div 
                         className="flex items-center"
-                        onClick={() => {navigate(`/mypage/${following.userId}`)}}
+                        onClick={() => {
+                          navigate(`/mypage/${following.userId}`)
+                          console.log("팔로잉 페이지로 이동!")
+                        }}
                       >
                         <img 
                           src={following.profileImage || DefaultProfile} alt="프로필이미지" 
