@@ -15,6 +15,7 @@ interface rankingList {
 export default function RankingPage() {
 
   const [rankings, setRankings] = useState<rankingList[]>([])
+  const [totalPeople, setTotalPeople] = useState<number>(-1);
   const navigate = useNavigate()
 
   // const myRanking = rankings[0]
@@ -24,7 +25,9 @@ export default function RankingPage() {
   useEffect (() => {
     const fetchRankings = async () => {
       const response = await RankingInfo()
-      setRankings(response)
+      console.log(response);
+      setTotalPeople(response.totalUser)
+      setRankings(response.ranks)
     }
     fetchRankings()
   },[])
@@ -95,11 +98,17 @@ export default function RankingPage() {
               ? "Top3 에요! 👑"
               : "조금만 더 힘내요! 💪"}
           </p>
-          <p className="font-semibold text-[16px]">
-            <span className="font-normal ">
-              {rankings[0]?.sumPoint}점 /&nbsp;
-            </span>
-            {rankings[0]?.rank}위</p>
+          <div>
+            <p className="flex justify-center font-semibold text-[16px]">
+              <span className="font-normal ">
+                {rankings[0]?.sumPoint}점 /&nbsp;
+              </span>
+              {rankings[0]?.rank}위
+            </p>
+            <p className="text-sm font-normal">
+              전체 {totalPeople}명 중 상위 {Math.round(rankings[0]?.rank / totalPeople * 100)}%
+            </p>
+          </div>
         </div>
       </div>
     </div>
