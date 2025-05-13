@@ -1,9 +1,11 @@
 package com.lumina.backend.common.exception;
 
 import com.lumina.backend.common.model.response.BaseResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -22,5 +24,17 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(ex.getStatus())
                 .body(BaseResponse.error(ex.getMessage()));
+    }
+
+
+    /**
+     * 파일 업로드 크기 초과 예외 처리
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<BaseResponse<Void>> handleMaxUploadSizeExceededException(
+            MaxUploadSizeExceededException ex) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(BaseResponse.error("업로드 가능한 파일 크기는 최대 5MB입니다."));
     }
 }
