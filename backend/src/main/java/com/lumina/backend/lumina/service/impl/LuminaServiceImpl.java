@@ -9,6 +9,7 @@ import com.lumina.backend.donation.repository.DonationRepository;
 import com.lumina.backend.donation.repository.UserDonationRepository;
 import com.lumina.backend.lumina.model.response.EvaluateCommentResponse;
 import com.lumina.backend.lumina.model.response.EvaluatePostResponse;
+import com.lumina.backend.lumina.model.response.GetCategoryResponse;
 import com.lumina.backend.lumina.service.LuminaService;
 import com.lumina.backend.post.model.entity.Comment;
 import com.lumina.backend.post.model.entity.CommentLike;
@@ -54,6 +55,9 @@ public class LuminaServiceImpl implements LuminaService {
 
     @Value("${LUMINA_COMMENT}")
     private String luminaComment;
+
+    @Value("${GEMMA_CATEGORY}")
+    private String gemmaCategory;
 
 
     /**
@@ -119,25 +123,20 @@ public class LuminaServiceImpl implements LuminaService {
         Page<CommentLike> commentLikePage = commentLikeRepository.findByUserId(userId, pageRequest);
 
         // 요청 텍스트 생성
-        Map<String, List<String>> requestText = new HashMap<>();
+        Map<String, List<String>> requestPayload = new HashMap<>();
         List<String> post = postLikePage.getContent().stream()
-                .map(like -> like.getPost().getPostContent())
+                .map(like -> like.getPost().getCategory().getCategoryName())
                 .collect(Collectors.toList());
         List<String> comment = commentLikePage.getContent().stream()
                 .map(like -> like.getComment().getCommentContent())
                 .collect(Collectors.toList());
-        requestText.put("post", post);
-        requestText.put("comment", comment);
+        requestPayload.put("post", post);
+        requestPayload.put("comment", comment);
 
         // AI 평가 서버 호출 부분
-//        EvaluateCommentResponse response = webClient.post()
-//                .uri(luminaComment)
-//                .bodyValue(requestText)
-//                .retrieve()
-//                .bodyToMono(EvaluateCommentResponse.class)
-//                .block(); // 동기 방식
+        GetCategoryResponse response = requestRecommendCategory(requestPayload);
 
-        Long categoryId = categoryRepository.findIdByCategoryName("동물");
+        Long categoryId = categoryRepository.findIdByCategoryName(response.getCategory());
         List<Donation> donationList = donationRepository.findByCategoryId(categoryId);
 
         // 기존 AI 추천 내역 삭제
@@ -232,6 +231,29 @@ public class LuminaServiceImpl implements LuminaService {
 
         if (response == null) {
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "댓글 평가 서버에서 응답이 없습니다.");
+        }
+
+        return response;
+    }
+
+    /**
+     * 기부처 추천 서버에 요청을 보내고 응답을 반환합니다.
+     *
+     * @param requestPayload 기부처 추천 요청 데이터
+     * @return GetCategoryResponse 추천 결과
+     * @throws CustomException 서버 응답이 없을 때 예외 발생
+     */
+    private GetCategoryResponse requestRecommendCategory(Map<String, List<String>> requestPayload) {
+
+        GetCategoryResponse response = webClient.post()
+                .uri(gemmaCategory)
+                .bodyValue(requestPayload)
+                .retrieve()
+                .bodyToMono(GetCategoryResponse.class)
+                .block(); // 동기 방식
+
+        if (response == null) {
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "카테고리 추천 서버에서 응답이 없습니다.");
         }
 
         return response;
