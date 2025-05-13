@@ -11,6 +11,7 @@ public interface DonationRepository extends JpaRepository<Donation, Long> {
 
     Page<Donation> findByDonationNameContaining(String keyword, Pageable pageable);
 
+    Page<Donation> findByStatusTrue(Pageable pageable);
 
     List<Donation> findByStatusTrue();
 
