@@ -233,15 +233,17 @@ export const Comments = ({ postId, children }: CommentsProps) => {
             </h2>
             <div className="flex max-h-100 md:h-100 flex-col gap-y-2 overflow-y-auto px-2">
                 {/* <Toaster /> */}
-                {comments.map((comment) => (
+                {comments.map((comment, index) => (
                     <div
                         key={comment.commentId}
-                        className="grid grid-cols-[auto_1fr] items-center gap-2 border-b border-gray-200 pb-2"
+                        className={`grid grid-cols-[auto_1fr] items-center gap-2 pb-2
+                             ${index == comments.length - 1 ? "" : "border-b border-gray-200 "}
+                            `}
                     >
                         <div className="flex h-full items-start overflow-hidden rounded-full">
                             <div className='w-12 h-12 rounded-full overflow-hidden'>
                                 <img onClick={() => goProfile(comment.userId)}
-                                    className="h-12 w-auto cursor-pointer object-cover "
+                                    className="h-12 w-auto cursor-pointer object-cover"
                                     src={
                                         comment.profileImage
                                             ? comment.profileImage
