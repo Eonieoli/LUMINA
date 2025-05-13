@@ -39,7 +39,7 @@ public class PostController {
     public ResponseEntity<BaseResponse<Map<String, Object>>> getPost(
             HttpServletRequest request, @RequestParam(required = false) Long userId,
             @RequestParam(required = false) String categoryName,
-            @RequestParam String feedType, @RequestParam int pageNum) {
+            @RequestParam(required = false) String feedType, @RequestParam int pageNum) {
 
         Long myId = tokenUtil.findIdByToken(request);
         Map<String, Object> response = postService.getPosts(myId, userId, categoryName, feedType, pageNum);
