@@ -9,7 +9,7 @@ import java.util.Map;
 
 public interface DonationService {
 
-    List<GetDonationResponse> getDonation(Long userId);
+    Map<String, Object> getDonation(Long userId, int pageNum);
 
     void doDonation(Long userId, DoDonationRequest request);
 

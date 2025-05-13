@@ -3,6 +3,7 @@ package com.lumina.backend.post.service.impl;
 import com.lumina.backend.category.model.entity.Category;
 import com.lumina.backend.category.repository.CategoryRepository;
 import com.lumina.backend.category.repository.UserCategoryRepository;
+import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.service.AiService;
 import com.lumina.backend.common.service.S3Service;
 import com.lumina.backend.common.utill.FindUtil;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,7 +94,6 @@ public class PostServiceImpl implements PostService {
             String feedType, int pageNum) {
 
         ValidationUtil.validatePageNumber(pageNum);
-        ValidationUtil.validateRequiredField(feedType, "피드타입");
 
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postPage = getPostPage(myId, userId, categoryName, feedType, pageRequest);
@@ -267,7 +268,7 @@ public class PostServiceImpl implements PostService {
         } else if (categoryName != null) {
             Long categoryId = categoryRepository.findIdByCategoryName(categoryName);
             return postRepository.findByCategoryId(categoryId, pageRequest);
-        } else {
+        } else if (feedType != null) {
             // 팔로잉 사용자 + 본인 게시물 조회
             List<Long> followingIds = followRepository.findFollowingIdsByFollowerId(myId);
             followingIds.add(myId);
@@ -277,6 +278,7 @@ public class PostServiceImpl implements PostService {
                 return postRepository.findByUserIdNotIn(followingIds, pageRequest);
             }
         }
+        throw new CustomException(HttpStatus.BAD_REQUEST, "제대로 된 요청이 아닙니다");
     }
 
     /**
