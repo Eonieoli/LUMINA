@@ -5,6 +5,7 @@ import com.lumina.backend.post.model.entity.Comment;
 import com.lumina.backend.post.model.entity.Post;
 import com.lumina.backend.user.model.entity.User;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 public class ValidationUtil {
 
@@ -72,6 +73,17 @@ public class ValidationUtil {
     public static void validateUserPoint(User user, int point) {
         if (user.getPoint() < point) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "보유 point가 부족합니다.");
+        }
+    }
+
+    // 사진 크기 검사
+    public static void validatePostImageFile(MultipartFile postImageFile) {
+        if (postImageFile != null && !postImageFile.isEmpty()) {
+            System.out.println("postImageFile = " + postImageFile.getSize());
+            long maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+            if (postImageFile.getSize() > maxSizeInBytes) {
+                throw new CustomException(HttpStatus.BAD_REQUEST, "이미지 파일 크기는 5MB를 초과할 수 없습니다.");
+            }
         }
     }
 }
