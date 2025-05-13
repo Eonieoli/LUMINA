@@ -340,7 +340,7 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                 <div className="flex w-full items-center gap-x-2">
                     <div className="aspect-square overflow-hidden rounded-full">
                         <img
-                            className="h-12 w-12"
+                            className="h-12 w-12 object-cover"
                             src={
                                 authStore.data.profileImage
                                     ? authStore.data.profileImage
@@ -361,14 +361,14 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                             }}
                             type="text"
                             placeholder="댓글을 입력하세요"
-                            className="h-12 w-full rounded-full border px-3 py-2 text-sm"
+                            className="h-12 w-full rounded-full border border-gray-400 px-3 py-2 text-sm"
                         />
                         <div className='absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer'>
                             <img onClick={toggleLuna} className={`h-10 w-10 transition duration-300 ${luna ? "opacity-100" : "opacity-50"}`} src={PokerLuna} alt="" />
                         </div>
                     </div>
                     <div onClick={onPostComment}>
-                        <img className="h-8 w-auto cursor-pointer" src={SendIcon} alt="" />
+                        <img className="w-7 h-auto cursor-pointer object-cover" src={SendIcon} alt="" />
                     </div>
                 </div>
             </div>
