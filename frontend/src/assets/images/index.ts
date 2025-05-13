@@ -1,48 +1,48 @@
 // 사용자 관련 에셋
-import DefaultProfile from './auth/default.svg';
-import KakaoAuthButton from './auth/kakao_login_button.svg';
-import GoogleAuthButton from './auth/google_login_button.svg';
+import DefaultProfile from './auth/default.webp';
+import KakaoAuthButton from './auth/kakao_login_button.webp';
+import GoogleAuthButton from './auth/google_login_button.webp';
 
 // 게시물 관련 에셋
-import HeartDefaultIcon from './board/heart_default.svg';
-import HeartFilledIcon from './board/heart_filled.svg';
-import ChatIcon from './board/chat.svg';
-import SendIcon from './board/send.svg';
-import XIcon from './board/Ic_x.png'
-import CircleXIcon from './board/Ic_circle_X.png'
-import PencilIcon from './board/Ic_pencil.png'
+import HeartDefaultIcon from './board/heart_default.webp';
+import HeartFilledIcon from './board/heart_filled.webp';
+import ChatIcon from './board/chat.webp';
+import SendIcon from './board/send.webp';
+import XIcon from './board/Ic_x.webp'
+import CircleXIcon from './board/Ic_circle_X.webp'
+import PencilIcon from './board/Ic_pencil.webp'
 
 // 헤더 관련 에셋
-import BellIcon from './header/bell.svg';
-import PlusIcon from './header/plus.svg';
-import LuminaLogo from './header/logo.svg';
-import Hamburger from './header/hamburger.svg'
+import BellIcon from './header/bell.webp';
+import PlusIcon from './header/plus.webp';
+import LuminaLogo from './header/logo.webp';
+import Hamburger from './header/hamburger.webp'
 
 // 기부 페이지 
-import CoinIcon from './donate/coin.png'
-import SearchIconGray from './navbar/Ic_search.svg'
+import CoinIcon from './donate/coin.webp'
+import SearchIconGray from './navbar/Ic_search.webp'
 import DownIcon from './donate/Ic_down.svg'
 import BackIcon from './donate/Ic_back.svg'
 
 // 루나 이미지
-import SmileLuna from './donate/smileLuna.png';
-import AngryLuna from './donate/angryLuna.png'
-import PokerLuna from './donate/Luna.png';
-import WinkLuna from './donate/wink_Luna.png'
-import ComputerHandsupLuna from './donate/computer_handsup_Luna.png'
-import ComputerTypingLuna from './donate/computer_typing_Luna.png'
-import CuriousLuna from './search/curiousLuna.png'
+import SmileLuna from './donate/smileLuna.webp';
+import AngryLuna from './donate/angryLuna.webp'
+import PokerLuna from './donate/Luna.webp';
+import WinkLuna from './donate/wink_Luna.webp'
+import ComputerHandsupLuna from './donate/computer_handsup_Luna.webp'
+import ComputerTypingLuna from './donate/computer_typing_Luna.webp'
+import CuriousLuna from './search/curiousLuna.webp'
 
 // 네브바 아이콘
-import DonationIcon from './navbar/Ic_donate.png';
-import HomeIcon from './navbar/Ic_home.png';
-import RankingIcon from './navbar/Ic_ranking.png';
-import SearchIcon from './navbar/Ic_search.png';
+import DonationIcon from './navbar/Ic_donate.webp';
+import HomeIcon from './navbar/Ic_home.webp';
+import RankingIcon from './navbar/Ic_ranking.webp';
+import SearchIcon from './navbar/Ic_search.webp';
 
 // 메인 이미지
-import MainText from './main/main_text.svg';
-import MainBackground from './main/background_img.svg'
-import MainBackgroundShort from './main/background_img_short.svg'
+import MainText from './main/main_text.webp';
+import MainBackground from './main/background_img.webp'
+import MainBackgroundShort from './main/background_img_short.webp'
 
 export {
     DefaultProfile,
