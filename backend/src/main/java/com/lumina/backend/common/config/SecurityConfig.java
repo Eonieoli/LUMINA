@@ -110,7 +110,7 @@ public class SecurityConfig {
         // URL 별 접근 권한 설정
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/actuator/**", "/api/v1/user", "/api/v1/dev/**").permitAll()
+                        .requestMatchers("/", "/actuator/**", "/api/v1/user", "/api/v1/dev/**", "/api/v1/lumina/post").permitAll()
                         .anyRequest().authenticated());
 
         // 세션 관리 정책 설정
