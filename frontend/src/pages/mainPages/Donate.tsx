@@ -13,6 +13,12 @@ export default function DonatePage() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const navigate = useNavigate()
 
+    const handleAllDonationsClick = () => {
+        navigate('/donate/research/donations', {
+            state: { type: 'all'},
+        })
+    }
+
     return (
         <div className="relative flex w-full h-full overflow-y-auto flex-col px-6 py-6 bg-white">
             {/* 검색 모달창 */}
@@ -48,7 +54,9 @@ export default function DonatePage() {
             <div className='mb-6 w-full text-gray-600'>
                 <div 
                     className='flex items-center justify-center cursor-pointer'
-                    onClick={() => navigate(`/donate/research/donations`)}>
+                    // onClick={() => navigate(`/donate/research/donations`)}
+                    onClick={handleAllDonationsClick}
+                    >
                     <span className='text-[15px]'>전체 기부처</span>
                     <img src={BackIcon} alt="전체 기부처 조회" className='rotate-180 h-2.5 ml-2 opacity-50' />
                 </div>

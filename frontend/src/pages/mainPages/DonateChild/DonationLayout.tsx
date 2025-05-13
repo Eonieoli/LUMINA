@@ -25,7 +25,7 @@ const goToBack = () => {
       <div className="flex items-center justify-between mb-6 h-6">
         <img 
           src={BackIcon} alt="뒤로가기" 
-          className="w-5"
+          className="w-5 cursor-pointer"
           onClick={goToBack}
         />
         <PointInfo />

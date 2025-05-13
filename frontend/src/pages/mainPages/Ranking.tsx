@@ -93,7 +93,7 @@ export default function RankingPage() {
               alt="나의 프로필 이미지" 
               className="w-15 aspect-square object-cover bg-white rounded-full"/>
           </div>
-          <p className="text-[16px]">
+          <p className="text-[15px]">
             {rankings[0]?.rank <= 3
               ? "Top3 에요! 👑"
               : "조금만 더 힘내요! 💪"}
@@ -105,7 +105,7 @@ export default function RankingPage() {
               </span>
               {rankings[0]?.rank}위
             </p>
-            <p className="text-sm font-normal">
+            <p className="text-sm font-light">
               전체 {totalPeople}명 중 상위 {Math.round(rankings[0]?.rank / totalPeople * 100)}%
             </p>
           </div>
@@ -130,7 +130,7 @@ export default function RankingPage() {
           >
             {/* 왼쪽: 순위, 이미지, 닉네임 */}
             <div className="flex items-center gap-3">
-              <span className="text-[20px] text-[#5D56F1] w-5 text-center">{user.rank}</span>
+              <span className="text-[20px] font-semmibold text-[#5D56F1] w-5 text-center">{user.rank}</span>
               <img
                 src={user.profileImage ?? DefaultProfile}
                 alt="프로필"

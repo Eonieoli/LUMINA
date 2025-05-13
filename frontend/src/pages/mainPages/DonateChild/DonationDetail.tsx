@@ -93,8 +93,8 @@ export default function DonationDetailPage() {
           <div className="flex justify-between">
             <p className="font-semibold">총 기부 금액 </p>
             <div className="flex">
-              <p className="text-[#5D56F1]">{donation.sumPoint}</p>
-              <p>&nbsp;/&nbsp;100</p>
+              <p className="text-[#5D56F1] mr-1">{donation.sumPoint}</p>
+              <img src={CoinIcon} alt="포인트이미지" className="w-4 object-contain "/>
             </div>
           </div>
 
