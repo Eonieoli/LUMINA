@@ -49,7 +49,7 @@ public class DonationServiceImpl implements DonationService {
 
         ValidationUtil.validatePageNumber(pageNum);
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "id"));
         Page<Donation> donationPage = donationRepository.findByStatusTrue(pageRequest);
 
         List<GetDonationResponse> donations = donationPage.getContent().stream()
@@ -141,7 +141,7 @@ public class DonationServiceImpl implements DonationService {
     @Override
     public Map<String, Object> searchDonation(String keyword, int pageNum) {
 
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "id"));
         if (keyword == null || keyword.trim().isEmpty()) {
             return PagingResponseUtil.toPagingResult(
                     Page.empty(pageRequest), pageNum, "donations", Collections.emptyList()
