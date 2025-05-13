@@ -58,7 +58,7 @@ export default function FavoriteDonationList() {
 
             {/* 슬라이더 */}
             {slides.length === 0 ? (
-                <div className='flex flex-col items-center' onClick={goToAllDonaitons}>
+                <div className='flex flex-col items-center cursor-pointer' onClick={goToAllDonaitons}>
                     <img src={ComputerTypingLuna} alt="기부처 루나" className='w-2/4' />
                     <div className="w-full h-20 flex items-center justify-center text-gray-400 text-[15px]">
                     기부처를 구독해보세요!

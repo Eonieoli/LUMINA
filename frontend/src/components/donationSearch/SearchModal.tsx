@@ -62,7 +62,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
                 <img
                     src={BackIcon}
                     alt="BackIcon"
-                    className="mr-2 w-5"
+                    className="mr-2 w-5 cursor-pointer"
                     onClick={handleClose}
                 />
             </div>

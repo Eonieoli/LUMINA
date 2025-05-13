@@ -113,10 +113,10 @@ export default function DonationSearchResultPage() {
                     <div className="mt-4 flex items-center justify-center">
                         <button
                             onClick={handleLoadMore}
-                            className="flex flex-col items-center justify-center"
+                            className="flex flex-col items-center justify-center cursor-pointer"
                         >
                             <p className="text-gray-500">더보기</p>
-                            <img src={DownIcon} alt="더보기" className="h-6 w-6" />
+                            <img src={DownIcon} alt="더보기" className="h-5 w-5 mb-10" />
                         </button>
                     </div>
                 )}
