@@ -241,7 +241,7 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                         <div className="flex h-full items-start overflow-hidden rounded-full">
                             <div className='w-12 h-12 rounded-full overflow-hidden'>
                                 <img onClick={() => goProfile(comment.userId)}
-                                    className="h-12 w-auto cursor-pointer"
+                                    className="h-12 w-auto cursor-pointer object-cover "
                                     src={
                                         comment.profileImage
                                             ? comment.profileImage

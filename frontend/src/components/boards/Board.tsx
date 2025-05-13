@@ -151,7 +151,7 @@ export const Board = ({
                         <img
                             src={profileImage ? profileImage : DefaultProfile}
                             alt="프로필 이미지"
-                            className="h-7 w-7 rounded-full"
+                            className="h-7 w-7 rounded-full object-cover"
                         />
                         <span className="font-bold">{nickname}</span>
                     </div>
