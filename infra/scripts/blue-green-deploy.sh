@@ -263,15 +263,17 @@ initialize_environment() {
     cd "$DEPLOY_PATH"
     docker-compose up -d mysql redis
     
-    # frontend-blue와 backend-blue 배포
-    docker-compose up -d frontend-blue backend-blue
+    # 모든 서비스 배포 - blue와 green 인스턴스 모두 시작
+    docker-compose up -d frontend-blue frontend-green backend-blue backend-green ai-server-blue ai-server-green
     
-    # ai-server 배포
-    # docker-compose up -d ai-server
+    # 각 서비스의 건강 상태 확인 기다리기
+    echo "Waiting for services to initialize..."
+    sleep 30 # 초기화 시간 확보
     
-    # 초기 upstream.conf 설정 (백업 서버 포함 후 기동)
-    echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
-    echo -e "upstream backend {\n    server backend-blue:8080;    # active\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
+    # 초기 upstream.conf 설정 - 초기 배포시 active와 backup 서버 모두 설정
+    echo -e "upstream frontend {\n    server frontend-blue:80;    # active\n    server frontend-green:80 backup;    # backup\n}" > "$FRONTEND_NGINX_CONF_PATH/upstream.conf"
+    echo -e "upstream backend {\n    server backend-blue:8080;    # active\n    server backend-green:8080 backup;    # backup\n}" > "$BACKEND_NGINX_CONF_PATH/upstream.conf"
+    echo -e "upstream ai-server {\n    server ai-server-blue:8000;    # active\n    server ai-server-green:8000 backup;    # backup\n}" > "$DEPLOY_PATH/proxy/blue-green/ai-server/upstream.conf"
     
     # proxy 설정
     cd "$DEPLOY_PATH/proxy"
