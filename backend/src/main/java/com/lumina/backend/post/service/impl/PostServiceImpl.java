@@ -62,6 +62,7 @@ public class PostServiceImpl implements PostService {
     public UploadPostResponse uploadPost(
             Long userId, UploadPostRequest request) throws IOException {
 
+        ValidationUtil.validatePostImageFile(request.getPostImageFile());
         ValidationUtil.validateRequiredField(request.getCategoryName(), "카테고리");
         ValidationUtil.validateRequiredField(request.getPostContent(), "게시물 내용");
 
