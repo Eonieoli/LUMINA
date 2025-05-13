@@ -42,14 +42,21 @@ public class DonationServiceImpl implements DonationService {
      * 모든 활성화된 기부처 목록을 조회합니다.
      *
      * @param userId 사용자 ID
-     * @return List<GetDonationResponse> 기부처 응답 리스트
+     * @return Map<String, Object> 기부처 응답 리스트
      */
     @Override
-    public List<GetDonationResponse> getDonation(Long userId) {
+    public Map<String, Object> getDonation(Long userId, int pageNum) {
 
-        return donationRepository.findByStatusTrue().stream()
-                .map(donation -> mapToGetDonationResponse(userId, donation))
+        ValidationUtil.validatePageNumber(pageNum);
+
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Donation> donationPage = donationRepository.findByStatusTrue(pageRequest);
+
+        List<GetDonationResponse> donations = donationPage.getContent().stream()
+                .map(donation -> convertToDonationResponse(donation, userId))
                 .collect(Collectors.toList());
+
+        return PagingResponseUtil.toPagingResult(donationPage, pageNum, "donations", donations);
     }
 
 
@@ -269,5 +276,21 @@ public class DonationServiceImpl implements DonationService {
                     );
                 })
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 기부처 정보를 응답 객체로 변환합니다.
+     *
+     * @param userId 사용자 ID
+     * @param donation Donation 엔티티
+     * @return GetDonationResponse 변환된 응답 객체
+     */
+    private GetDonationResponse convertToDonationResponse(Donation donation, Long userId) {
+
+        boolean isSubscribe = userDonationRepository.existsByUserIdAndDonationIdAndRegistration(
+                userId, donation.getId(), "USER");
+
+        return new GetDonationResponse(
+                donation.getId(), donation.getDonationName(), isSubscribe);
     }
 }

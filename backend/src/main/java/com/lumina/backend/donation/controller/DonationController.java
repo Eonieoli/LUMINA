@@ -30,11 +30,11 @@ public class DonationController {
 
 
     @GetMapping("")
-    public ResponseEntity<BaseResponse<List<GetDonationResponse>>> getDonation(
-            HttpServletRequest request) {
+    public ResponseEntity<BaseResponse<Map<String, Object>>> getDonation(
+            HttpServletRequest request, @RequestParam int pageNum) {
 
         Long userId = tokenUtil.findIdByToken(request);
-        List<GetDonationResponse> response = donationService.getDonation(userId);
+        Map<String, Object> response = donationService.getDonation(userId, pageNum);
 
         return ResponseEntity.ok(BaseResponse.success("전체 기부처 조회 성공", response));
     }
