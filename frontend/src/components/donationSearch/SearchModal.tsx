@@ -47,7 +47,9 @@ export default function SearchModal({ onClose }: SearchModalProps) {
         const finalkeyword =
             keyword.trim() === '' ? 'donations' : encodeURIComponent(keyword);
         onClose();
-        navigate(`/donate/research/${finalkeyword}`);
+        navigate(`/donate/research/${finalkeyword}`, {
+            state: {type: 'search'}
+        });
     };
 
     // 뒤로가기 버튼 클릭했을 때 검색창 초기화하기
