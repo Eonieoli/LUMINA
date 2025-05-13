@@ -142,6 +142,11 @@ public class DonationServiceImpl implements DonationService {
     public Map<String, Object> searchDonation(String keyword, int pageNum) {
 
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return PagingResponseUtil.toPagingResult(
+                    Page.empty(pageRequest), pageNum, "donations", Collections.emptyList()
+            );
+        }
         Page<Donation> donationPage = donationRepository.findByDonationNameContaining(keyword, pageRequest);
 
         List<SearchDonationResponse> donations = donationPage.getContent().stream()
