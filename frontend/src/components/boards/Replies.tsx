@@ -106,14 +106,16 @@ export const Replies = ({
                     >
                         --- 답글 숨기기
                     </div>
-                    {replies.map((reply) => (
+                    {replies.map((reply, index) => (
                         <div
                             key={reply.commentId}
-                            className="grid grid-cols-[auto_1fr] items-center gap-2 border-b border-gray-200 pb-2"
+                            className={`grid grid-cols-[auto_1fr] items-center gap-2 ${
+                                index !== replies.length - 1 ? 'border-b border-gray-200 pb-2' : ''
+                            }`}
                         >
                             <div className="h-full items-center">
                                 <img onClick={() => goProfile(reply.userId)}
-                                    className="w-6 rounded-full cursor-pointer"
+                                    className="w-6 h-6 rounded-full cursor-pointer object-cover"
                                     src={
                                         reply.profileImage
                                             ? reply.profileImage

@@ -27,6 +27,20 @@ export const getFavoriteDonations = async () => {
     }
 };
 
+// 전체 기부처 조회
+export const getAllDonations = async (pageNum: number) => {
+  try{
+    const response = await apiClient.get("/donation", {params:{pageNum}})
+    console.log("전체 기부하기 성공!", response.data.data.donations)
+    const { donations, totalPages } = response.data.data
+    return { donations, totalPages}
+  }
+  catch (error) {
+    console.error("전체 기부처 검색 실패!", error)
+    throw error
+  }
+}
+
 // 기부처 검색하기 
 export const getSearchDonations = async(keyword: string, pageNum: number) => {
   try {
