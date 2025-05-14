@@ -30,7 +30,7 @@ export default function DonationCard({
           className="w-50 h-40 object-contain"
         />
       </div>
-      <p className="text-l font-medium text-center text-gray-600">{donationName}</p>
+      <p className="text-[15px] font-medium text-center w-full text-gray-600 truncate">{donationName}</p>
 
     </div>
   )
