@@ -41,18 +41,16 @@ public class Post extends BaseEntity {
     private Integer postReward;
 
 
-    public Post (User user, Category category, String postImage, String postContent, Integer postViews, Integer postReward) {
+    public Post (User user, String postImage, String postContent, Integer postViews, Integer postReward) {
         this.user = user;
-        this.category = category;
         this.postImage = postImage;
         this.postContent = postContent;
         this.postViews = postViews;
         this.postReward = postReward;
     }
 
-    public Post (User user, Category category, String postContent, Integer postViews, Integer postReward) {
+    public Post (User user, String postContent, Integer postViews, Integer postReward) {
         this.user = user;
-        this.category = category;
         this.postContent = postContent;
         this.postViews = postViews;
         this.postReward = postReward;
@@ -60,5 +58,9 @@ public class Post extends BaseEntity {
 
     public void plusViews(Integer postViews) {
         this.postViews += postViews;
+    }
+
+    public void updateCategory(Category category) {
+        this.category = category;
     }
 }
