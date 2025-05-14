@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -110,7 +111,8 @@ public class SecurityConfig {
         // URL 별 접근 권한 설정
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/actuator/**", "/api/v1/user", "/api/v1/dev/**", "/api/v1/lumina/post").permitAll()
+                        .requestMatchers("/", "/actuator/**", "/api/v1/user", "/api/v1/dev/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/lumina/post").permitAll()
                         .anyRequest().authenticated());
 
         // 세션 관리 정책 설정
