@@ -1,5 +1,6 @@
 package com.lumina.backend.lumina.service.impl;
 
+import com.lumina.backend.category.model.entity.Category;
 import com.lumina.backend.category.repository.CategoryRepository;
 import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.utill.FindUtil;
@@ -16,8 +17,11 @@ import com.lumina.backend.post.model.entity.CommentLike;
 import com.lumina.backend.post.model.entity.Post;
 import com.lumina.backend.post.model.entity.PostLike;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
+import com.lumina.backend.post.model.request.UploadPostRequest;
 import com.lumina.backend.post.repository.CommentLikeRepository;
+import com.lumina.backend.post.repository.PostHashtagRepository;
 import com.lumina.backend.post.repository.PostLikeRepository;
+import com.lumina.backend.post.repository.PostRepository;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +49,8 @@ public class LuminaServiceImpl implements LuminaService {
     private final DonationRepository donationRepository;
     private final UserDonationRepository userDonationRepository;
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final PostHashtagRepository postHashtagRepository;
 
     private final FindUtil findUtil;
 
@@ -58,6 +64,9 @@ public class LuminaServiceImpl implements LuminaService {
 
     @Value("${GEMMA_CATEGORY}")
     private String gemmaCategory;
+
+    @Value("${GEMMA_POST_CATEGORY}")
+    private String gemmaPostCategory;
 
 
     /**
@@ -136,7 +145,7 @@ public class LuminaServiceImpl implements LuminaService {
         // AI 평가 서버 호출 부분
         GetCategoryResponse response = requestRecommendCategory(requestPayload);
 
-        Long categoryId = categoryRepository.findIdByCategoryName(response.getCategory());
+        Long categoryId = categoryRepository.findIdByCategoryName(response.getCategoryName());
         List<Donation> donationList = donationRepository.findByCategoryId(categoryId);
 
         // 기존 AI 추천 내역 삭제
@@ -153,6 +162,32 @@ public class LuminaServiceImpl implements LuminaService {
         // 사용자 좋아요 카운트 초기화
         user.resetUserLickCnt();
         userRepository.save(user);
+    }
+
+
+    /**
+     * 게시글 카테고리를 추가해준다.
+     *
+     * @param request 게시물 관련 요청값
+     */
+    @Override
+    @Transactional
+    public void getPostCategory(
+            Long postId, UploadPostRequest request) {
+
+        Post post = findUtil.getPostById(postId);
+        List<String> hashtagList = postHashtagRepository.findHashtagNamesByPostId(postId);
+
+        Map<String, Object> requestPayload = new HashMap<>();
+        requestPayload.put("postImage", post.getPostImage());
+        requestPayload.put("postContent", request.getPostContent());
+        requestPayload.put("hashtags", hashtagList);
+
+        GetCategoryResponse response = requestCategory(requestPayload);
+        Category category = findUtil.getCategoryByCategoryName(response.getCategoryName());
+
+        post.updateCategory(category);
+        postRepository.save(post);
     }
 
 
@@ -247,6 +282,29 @@ public class LuminaServiceImpl implements LuminaService {
 
         GetCategoryResponse response = webClient.post()
                 .uri(gemmaCategory)
+                .bodyValue(requestPayload)
+                .retrieve()
+                .bodyToMono(GetCategoryResponse.class)
+                .block(); // 동기 방식
+
+        if (response == null) {
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "카테고리 추천 서버에서 응답이 없습니다.");
+        }
+
+        return response;
+    }
+
+    /**
+     * 게시물 카테고리 요청을 보내고 응답을 반환합니다.
+     *
+     * @param requestPayload 게시물 요청 데이터
+     * @return GetCategoryResponse 게시물 카테고리 응답 결과
+     * @throws CustomException 서버 응답이 없을 때 예외 발생
+     */
+    private GetCategoryResponse requestCategory(Map<String, Object> requestPayload) {
+
+        GetCategoryResponse response = webClient.post()
+                .uri(gemmaPostCategory)
                 .bodyValue(requestPayload)
                 .retrieve()
                 .bodyToMono(GetCategoryResponse.class)

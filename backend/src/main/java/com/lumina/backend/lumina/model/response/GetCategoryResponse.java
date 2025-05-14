@@ -7,5 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class GetCategoryResponse {
 
-    private String category;
+    private String categoryName;
 }
