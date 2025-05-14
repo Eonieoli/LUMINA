@@ -134,24 +134,24 @@ deploy_service() {
     
     # 새 컨테이너 배포
     echo "Starting new $service-$target_color container..."
-    docker compose up $service-$target_color -d
+    # docker compose up $service-$target_color -d
     
-    # if [ "$service" == "frontend" ]; then
-    #     docker run -d --name "$service-$target_color" \
-    #         --network lumina-network \
-    #         -p $port:$container_port \
-    #         --restart always \
-    #         --label environment=$ENV \
-    #         "rublin322/lumina-$service:$image_tag"
-    # else
-    #     docker run -d --name "$service-$target_color" \
-    #         --network lumina-network \
-    #         -p $port:$container_port \
-    #         --env-file "$DEPLOY_PATH/.env" \
-    #         --restart always \
-    #         --label environment=$ENV \
-    #         "rublin322/lumina-$service:$image_tag"
-    # fi
+    if [ "$service" == "frontend" ]; then
+        docker run -d --name "$service-$target_color" \
+            --network lumina-network \
+            -p $port:$container_port \
+            --restart always \
+            --label environment=$ENV \
+            "rublin322/lumina-$service:$image_tag"
+    else
+        docker run -d --name "$service-$target_color" \
+            --network lumina-network \
+            -p $port:$container_port \
+            --env-file "$DEPLOY_PATH/.env" \
+            --restart always \
+            --label environment=$ENV \
+            "rublin322/lumina-$service:$image_tag"
+    fi
     
     # 건강 상태 확인
     echo "Performing health check for $service-$target_color..."
