@@ -3,14 +3,12 @@ import { apiClient } from './axios';
 // 게시물 등록
 interface CreatePostParams {
     postImageFile?: File | null;
-    categoryName: string;
     hashtag: string[];
     postContent: string;
 }
 
 export const createPost = async ({
     postImageFile,
-    categoryName,
     hashtag,
     postContent,
 }: CreatePostParams) => {
@@ -20,7 +18,6 @@ export const createPost = async ({
         if (postImageFile) {
             formData.append('postImageFile', postImageFile);
         }
-        formData.append('categoryName', categoryName);
         formData.append('hashtag', JSON.stringify(hashtag));
         formData.append('postContent', postContent);
 
