@@ -512,6 +512,12 @@ main() {
             exit $result
         fi
     fi
+
+    # 모니터링 서비스 재시작 추가
+    echo "Restarting monitoring services to apply changes..."
+    cd "$DEPLOY_PATH/monitoring"
+    docker-compose -f monitoring-compose.yml -p monitoring down
+    docker-compose -f monitoring-compose.yml -p monitoring up -d
     
     # 성공적으로 배포 완료 후 정리
     cleanup
