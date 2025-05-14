@@ -281,7 +281,7 @@ initialize_environment() {
     
     # monitoring 설정
     cd "$DEPLOY_PATH/monitoring"
-    docker-compose -f monitoring-compose.yml -p monitoring up -d
+    docker-compose --env-file "$DEPLOY_PATH/.env" -f monitoring-compose.yml -p monitoring up -d
     
     # 초기 배포 표시 파일 생성
     local init_flag=""
@@ -516,8 +516,8 @@ main() {
     # 모니터링 서비스 재시작 추가
     echo "Restarting monitoring services to apply changes..."
     cd "$DEPLOY_PATH/monitoring"
-    docker-compose -f monitoring-compose.yml -p monitoring down
-    docker-compose -f monitoring-compose.yml -p monitoring up -d
+    docker-compose --env-file "$DEPLOY_PATH/.env" -f monitoring-compose.yml -p monitoring down
+    docker-compose --env-file "$DEPLOY_PATH/.env" -f monitoring-compose.yml -p monitoring up -d
     
     # 성공적으로 배포 완료 후 정리
     cleanup
