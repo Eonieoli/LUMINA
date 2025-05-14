@@ -12,6 +12,9 @@ import { Replies } from './boards/Replies';
 // 마이페이지
 import HamburgerSheet from './mypage/Hamburger';
 
+// 관리자
+import CheckAdmin from './CheckAdmin';
+
 export {
     Navbar,
     Header,
@@ -22,4 +25,5 @@ export {
     BottomSheet,
     Replies,
     HamburgerSheet,
+    CheckAdmin
 };

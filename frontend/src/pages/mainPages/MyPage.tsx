@@ -225,6 +225,7 @@ export default function MyPage() {
                             postViews={post.postViews}
                             likeCnt={post.likeCnt}
                             commentCnt={post.commentCnt}
+                            createdAt={post.createdAt}
                             isLike={post.isLike}
                             onDelete={(id) =>
                                 setUserposts((prev) => prev.filter((p) => p.postId !== id))

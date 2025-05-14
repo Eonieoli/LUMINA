@@ -21,6 +21,7 @@ interface BoardProps {
     postViews: number;
     likeCnt: number;
     commentCnt: number;
+    createdAt: string;
     isLike: boolean;
     onDelete: (postId: number) => void;
 }
@@ -36,6 +37,7 @@ export const Board = ({
     postViews,
     likeCnt: initialLikeCnt,
     commentCnt,
+    createdAt,
     isLike: initialIsLike,
     onDelete,
 }: BoardProps) => {
@@ -114,6 +116,32 @@ export const Board = ({
         return () => mediaQuery.removeEventListener("change", handler);
       }, []);
 
+      function formatCreatedAt(createdAt: string): string {
+        const createdDate = new Date(createdAt);
+        const now = new Date();
+      
+        // 오늘 00:00 기준으로 비교하기 위해 시간 제거
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfCreated = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
+      
+        const msInDay = 1000 * 60 * 60 * 24;
+        const diffInMs = startOfToday.getTime() - startOfCreated.getTime();
+        const diffInDays = Math.floor(diffInMs / msInDay);
+      
+        if (diffInDays < 0) {
+          return '미래 날짜'; // 예외 처리
+        } else if (diffInDays === 0) {
+          return '오늘';
+        } else if (diffInDays <= 7) {
+          return `${diffInDays}일 전`;
+        } else {
+          const yy = String(createdDate.getFullYear()).slice(2);
+          const mm = String(createdDate.getMonth() + 1).padStart(2, '0');
+          const dd = String(createdDate.getDate()).padStart(2, '0');
+          return `${yy}.${mm}.${dd}`;
+        }
+      }
+
     return (
         <>
             <div className="flex w-full flex-col gap-y-2 border-b-3 border-gray-200 px-5 py-2">
@@ -123,7 +151,7 @@ export const Board = ({
                         <img
                             src={profileImage ? profileImage : DefaultProfile}
                             alt="프로필 이미지"
-                            className="h-7 w-7 rounded-full"
+                            className="h-7 w-7 rounded-full object-cover"
                         />
                         <span className="font-bold">{nickname}</span>
                     </div>
@@ -170,6 +198,7 @@ export const Board = ({
                         {isExpanded ? '접기' : '더보기'}
                     </button>
                 )}
+                <div className='text-sm text-gray-500 flex items-center'>{formatCreatedAt(createdAt)}</div>
                 {/* 좋아요, 댓글 및 공유 */}
                 <div className="flex justify-between items-center">
                     <div className='flex gap-x-4'>
