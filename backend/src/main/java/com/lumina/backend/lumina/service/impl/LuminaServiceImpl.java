@@ -19,6 +19,7 @@ import com.lumina.backend.post.model.entity.PostLike;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.request.UploadPostRequest;
 import com.lumina.backend.post.repository.CommentLikeRepository;
+import com.lumina.backend.post.repository.PostHashtagRepository;
 import com.lumina.backend.post.repository.PostLikeRepository;
 import com.lumina.backend.post.repository.PostRepository;
 import com.lumina.backend.user.model.entity.User;
@@ -49,6 +50,7 @@ public class LuminaServiceImpl implements LuminaService {
     private final UserDonationRepository userDonationRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final PostHashtagRepository postHashtagRepository;
 
     private final FindUtil findUtil;
 
@@ -174,12 +176,12 @@ public class LuminaServiceImpl implements LuminaService {
             Long postId, UploadPostRequest request) {
 
         Post post = findUtil.getPostById(postId);
+        List<String> hashtagList = postHashtagRepository.findHashtagNamesByPostId(postId);
 
         Map<String, Object> requestPayload = new HashMap<>();
-        if (request.getPostImageFile() != null && !request.getPostImageFile().isEmpty()) {
-            requestPayload.put("postImageFile", request.getPostImageFile());
-        }
+        requestPayload.put("postImage", post.getPostImage());
         requestPayload.put("postContent", request.getPostContent());
+        requestPayload.put("hashtags", hashtagList);
 
         GetCategoryResponse response = requestCategory(requestPayload);
         Category category = findUtil.getCategoryByCategoryName(response.getCategoryName());
