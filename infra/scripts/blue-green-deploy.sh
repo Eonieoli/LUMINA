@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Blue-Green 무중단 배포 스크립트
-# 사용법: ./blue-green-deploy.sh [dev|prod] [frontend|backend|all]
+# 사용법: ./blue-green-deploy.sh [dev|prod] [frontend|backend|ai|all]
 
 # 변수 초기화
 ENV=$1
@@ -17,7 +17,7 @@ fi
 
 if [[ "$TARGET" != "frontend" && "$TARGET" != "backend" && "$TARGET" != "ai" && "$TARGET" != "all" ]]; then
     echo "Error: Second argument must be 'frontend', 'backend', 'ai', or 'all'"
-    echo "Usage: ./blue-green-deploy.sh [dev|prod] [frontend|backend|all]"
+    echo "Usage: ./blue-green-deploy.sh [dev|prod] [frontend|backend|ai|all]"
     exit 1
 fi
 
@@ -134,23 +134,24 @@ deploy_service() {
     
     # 새 컨테이너 배포
     echo "Starting new $service-$target_color container..."
+    docker compose up $service-$target_color -d
     
-    if [ "$service" == "frontend" ]; then
-        docker run -d --name "$service-$target_color" \
-            --network lumina-network \
-            -p $port:$container_port \
-            --restart always \
-            --label environment=$ENV \
-            "rublin322/lumina-$service:$image_tag"
-    else
-        docker run -d --name "$service-$target_color" \
-            --network lumina-network \
-            -p $port:$container_port \
-            --env-file "$DEPLOY_PATH/.env" \
-            --restart always \
-            --label environment=$ENV \
-            "rublin322/lumina-$service:$image_tag"
-    fi
+    # if [ "$service" == "frontend" ]; then
+    #     docker run -d --name "$service-$target_color" \
+    #         --network lumina-network \
+    #         -p $port:$container_port \
+    #         --restart always \
+    #         --label environment=$ENV \
+    #         "rublin322/lumina-$service:$image_tag"
+    # else
+    #     docker run -d --name "$service-$target_color" \
+    #         --network lumina-network \
+    #         -p $port:$container_port \
+    #         --env-file "$DEPLOY_PATH/.env" \
+    #         --restart always \
+    #         --label environment=$ENV \
+    #         "rublin322/lumina-$service:$image_tag"
+    # fi
     
     # 건강 상태 확인
     echo "Performing health check for $service-$target_color..."
@@ -261,10 +262,10 @@ initialize_environment() {
     
     # 기본 인프라 시작
     cd "$DEPLOY_PATH"
-    docker-compose up -d mysql redis
+    docker compose up -d mysql redis
     
     # 모든 서비스 배포 - blue와 green 인스턴스 모두 시작
-    docker-compose up -d frontend-blue frontend-green backend-blue backend-green ai-server-blue ai-server-green
+    docker compose up -d frontend-blue frontend-green backend-blue backend-green ai-server-blue ai-server-green
     
     # 각 서비스의 건강 상태 확인 기다리기
     echo "Waiting for services to initialize..."
@@ -277,11 +278,11 @@ initialize_environment() {
     
     # proxy 설정
     cd "$DEPLOY_PATH/proxy"
-    docker-compose -f proxy-compose.yml -p proxy up -d
+    docker compose -f proxy-compose.yml -p proxy up -d
     
     # monitoring 설정
     cd "$DEPLOY_PATH/monitoring"
-    docker-compose --env-file "$DEPLOY_PATH/.env" -f monitoring-compose.yml -p monitoring up -d
+    docker compose --env-file "$DEPLOY_PATH/.env" -f monitoring-compose.yml -p monitoring up -d
     
     # 초기 배포 표시 파일 생성
     local init_flag=""
@@ -516,8 +517,8 @@ main() {
     # 모니터링 서비스 재시작 추가
     echo "Restarting monitoring services to apply changes..."
     cd "$DEPLOY_PATH/monitoring"
-    docker-compose --env-file "$DEPLOY_PATH/.env" -f monitoring-compose.yml -p monitoring down
-    docker-compose --env-file "$DEPLOY_PATH/.env" -f monitoring-compose.yml -p monitoring up -d
+    docker compose --env-file "$DEPLOY_PATH/.env" -f monitoring-compose.yml -p monitoring down
+    docker compose --env-file "$DEPLOY_PATH/.env" -f monitoring-compose.yml -p monitoring up -d
     
     # 성공적으로 배포 완료 후 정리
     cleanup
