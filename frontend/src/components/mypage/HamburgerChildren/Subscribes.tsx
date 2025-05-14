@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { HamburgerProps } from "../Hamburger";
 import { useEffect, useState } from "react";
 import { getCategories, subscribeCategory } from "@/apis/board";
-import { HeartDefaultIcon, HeartFilledIcon } from "@/assets/images";
+import { BackIcon, HeartDefaultIcon, HeartFilledIcon } from "@/assets/images";
 
 interface category {
     categoryId: number;
@@ -43,20 +43,22 @@ export default function Subscribes({isVisible, onClose}: HamburgerProps) {
                     animate={{ opacity: 1, x: 0 }}  // 등장 시
                     exit={{ opacity: 0, x: 100 }}    // 사라질 때
                     transition={{ duration: 0.4 }}
-                    className="fixed md:absolute z-50 w-full h-full bg-[#eeeeee]"
+                    className="fixed md:absolute z-50 w-full h-full bg-[#ffffff]"
                 >
                 <div className="relative w-full h-full flex flex-col">
-                    <div className="relative flex justify-center items-center text-2xl font-bold p-4">
+                    <div className="relative flex justify-center items-center text-xl font-semibold p-6 text-gray-700">
                         구독 목록
-                        <div className="absolute left-4 cursor-pointer" onClick={onClose}>↩</div>
+                        <img src={BackIcon} className="absolute w-5 left-6 cursor-pointer" onClick={onClose}/>
                     </div>
-                    <div className="flex-1 flex flex-col justify-between text-xl font-semibold my-4">
-                        <div className="flex flex-col gap-y-2 px-10">
+
+                    {/* 카테고리 목록 */}
+                    <div className="flex-1 flex flex-col justify-between text-xl font-medium text-gray-700 ">
+                        <div className="flex flex-col gap-y-1 px-10 py-5 border-2 mx-6 rounded-2xl border-gray-400">
                             {categories.map((category) => (
                                 <div key={category.categoryId} className="flex justify-between py-2">
                                     <div>{category.categoryName}</div>
                                     <img
-                                        className="w-6 cursor-pointer"
+                                        className="h-6 cursor-pointer"
                                         onClick={() => heartClick(category.categoryId)}
                                         src={
                                             category.isSubscribe
