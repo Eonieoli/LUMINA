@@ -364,7 +364,7 @@ cleanup() {
     # 필요한 경우에만 Docker 시스템 정리
     if [ "$ENV" == "dev" ]; then
         # 디스크 사용량이 70% 이상인 경우에만 정리
-        disk_usage=$(df -h | grep /dev/sda1 | awk '{print $5}' | sed 's/%//')
+        disk_usage=$(df -h | grep /dev/sda1 | awk '{print $5}' | sed 's/%//' | tr -d '\n')
         if [ "$disk_usage" -gt 70 ]; then
             echo "Disk usage is high ($disk_usage%), cleaning up Docker resources..."
             docker image prune -f
