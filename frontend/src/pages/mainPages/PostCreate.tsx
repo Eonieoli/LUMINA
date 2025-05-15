@@ -1,6 +1,6 @@
 import { createPost } from '@/apis/board';
 import { elizaBoard } from '@/apis/eliza';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -11,6 +11,14 @@ export default function PostCreate() {
     const [tagInput, setTagInput] = useState('');
     const [tags, setTags] = useState<string[]>([]);
     const navigate = useNavigate();
+    
+    useEffect(() => {
+        return () => {
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+        };
+    }, [previewUrl]);
 
     const postUpload = async () => {
         if (!content.trim()) {
@@ -38,8 +46,18 @@ export default function PostCreate() {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (file.size > 5 * 1024 * 1024) { // 5MB 제한
+                toast.error('이미지 파일은 5MB 이하만 업로드 가능합니다.');
+                return;
+            }
+            
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+
+            const newUrl = URL.createObjectURL(file);
             setImage(file);
-            setPreviewUrl(URL.createObjectURL(file));
+            setPreviewUrl(newUrl);
         }
     };
 
@@ -56,9 +74,17 @@ export default function PostCreate() {
     const removeTag = (tag: string) => {
         setTags(tags.filter((t) => t !== tag));
     };
+    
+    const handleRemoveImage = () => {
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+        }
+        setImage(null);
+        setPreviewUrl(null);
+    };
 
     return (
-        <div className="flex h-full w-full flex-col gap-4 p-4 bg-white">
+        <div className="flex min-h-full w-full flex-col gap-4 p-4 bg-white">
             {/* <Toaster /> */}
             {/* 헤더 */}
             <div className="flex items-center justify-between">
@@ -78,26 +104,38 @@ export default function PostCreate() {
             </div>
 
             {/* 이미지 업로드 */}
-            <div
-                className={`relative flex w-full items-center justify-center overflow-hidden bg-gray-100 ${previewUrl ? null : 'aspect-square'}`}
-            >
-                {previewUrl ? (
-                    <img
-                        src={previewUrl}
-                        alt="preview"
-                        className="h-full w-full object-cover"
-                    />
-                ) : (
-                    <label className="flex h-full w-full cursor-pointer items-center justify-center text-sm text-gray-400">
-                        이미지 업로드
-                        <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handleImageChange}
-                        />
-                    </label>
-                )}
+            <div>
+                <label className="text-sm text-gray-600 font-medium">이미지 (선택)</label>
+                <div
+                    className={`relative flex w-full items-center justify-center overflow-hidden bg-gray-100 ${previewUrl ? null : 'aspect-square'}`}
+                >
+                    {previewUrl ? (
+                        <div className='w-full aspect-square'>
+                            <img
+                                src={previewUrl}
+                                alt="preview"
+                                className="h-full object-contain"
+                            />
+                            <button
+                                type="button"
+                                onClick={handleRemoveImage}
+                                className="absolute top-2 right-2 rounded-full bg-black bg-opacity-60 px-2 py-1 text-xs text-white"
+                            >
+                                삭제
+                            </button>
+                        </div>
+                    ) : (
+                        <label className="flex h-full w-full cursor-pointer items-center justify-center text-sm text-gray-400">
+                            이미지 업로드
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleImageChange}
+                            />
+                        </label>
+                    )}
+                </div>
             </div>
 
             {/* 내용 입력 */}
@@ -114,7 +152,7 @@ export default function PostCreate() {
 
             {/* 해시태그 입력 */}
             <div>
-                <label className="text-gray-600 text-sm font-medium">해시태그</label>
+                <label className="text-gray-600 text-sm font-medium">해시태그 (선택)</label>
                 <input
                     type="text"
                     className="mt-1 w-full rounded border-2 border-gray-400 px-3 py-2"
