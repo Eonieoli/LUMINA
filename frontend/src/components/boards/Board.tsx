@@ -178,7 +178,7 @@ export const Board = ({
                     </div>
                     {authStore.data.nickname === nickname ? (
                         <div
-                            onClick={() => deleteClick(postId)}
+                            onClick={() => deleteClick()}
                             className="relative flex h-4 w-4 cursor-pointer gap-x-1 py-2"
                         >
                             <div className="absolute top-1/2 left-0 h-[2px] w-4 -translate-y-1/2 rotate-45 bg-black"></div>
