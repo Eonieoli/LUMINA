@@ -21,3 +21,28 @@ datasources:
           datasourceUid: prometheus
     secureJsonData:
       httpHeaderValue1: "Bearer"
+  
+  - name: Google Analytics
+    type: grafana-googlesheets-datasource
+    access: proxy
+    uid: google_analytics
+    isDefault: false
+    editable: true
+    jsonData:
+      authType: jwt
+      serviceAccountKey: ${GA_SERVICE_ACCOUNT_KEY}
+      tokenUri: https://oauth2.googleapis.com/token
+      clientEmail: ${GA_CLIENT_EMAIL}
+      defaultProjectId: ${GA_PROJECT_ID}
+      dataSourceType: googleAnalytics
+      propertyId: ${GA_DEV_PROPERTY_ID}
+      dateRanges:
+        - name: "Last 30 days"
+          startDate: "30daysAgo"
+          endDate: "today"
+        - name: "Last 7 days"
+          startDate: "7daysAgo"
+          endDate: "today"
+        - name: "Yesterday"
+          startDate: "yesterday"
+          endDate: "yesterday"

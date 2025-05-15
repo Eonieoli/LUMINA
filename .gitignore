@@ -249,3 +249,6 @@ HELP.md
 # 빠담 legacy
 ai/finetuned-kcelectra/
 ai/goodness-electra-v3/
+
+# Grafana
+ga-service-account.json

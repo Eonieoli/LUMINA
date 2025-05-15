@@ -51,6 +51,7 @@ public class JWTFilter extends OncePerRequestFilter {
         return path.equals("/")
                 || path.startsWith("/actuator/")
                 || path.startsWith("/api/v1/dev/")
+                || (path.equals("/api/v1/lumina/post") && "POST".equalsIgnoreCase(method))
                 || (path.equals("/api/v1/user")
                 && "GET".equalsIgnoreCase(method)
                 && ("google".equalsIgnoreCase(type) || "kakao".equalsIgnoreCase(type)));

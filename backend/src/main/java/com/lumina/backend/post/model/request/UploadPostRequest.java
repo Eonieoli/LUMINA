@@ -11,7 +11,6 @@ import java.util.List;
 public class UploadPostRequest {
 
     private MultipartFile postImageFile;
-    private String categoryName;
     private List<String> hashtag;
     private String postContent;
 }

@@ -29,11 +29,17 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+      - ./grafana/secrets:/etc/grafana/secrets:ro
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_SERVER_ROOT_URL=https://k12s306.p.ssafy.io/grafana
       - GF_SERVER_DOMAIN=k12s306.p.ssafy.io
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      # Google Analytics Environment Variables
+      - GA_SERVICE_ACCOUNT_KEY=${GA_SERVICE_ACCOUNT_KEY}
+      - GA_CLIENT_EMAIL=${GA_CLIENT_EMAIL}
+      - GA_PROJECT_ID=${GA_PROJECT_ID}
+      - GA_PROD_PROPERTY_ID=${GA_PROD_PROPERTY_ID}
       # - GF_SECURITY_ALLOW_EMBEDDING=true
       # - GF_PANELS_DISABLE_SANITIZE_HTML=true
       # - GF_AUTH_ANONYMOUS_ENABLED=false
@@ -45,6 +51,14 @@ services:
     labels:
       org.label-schema.group: "monitoring"
       environment: "production"
+    # Install Google Analytics Plugin
+    user: "0"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        grafana-cli plugins install grafana-googlesheets-datasource
+        exec /run.sh
     
   node-exporter:
     image: prom/node-exporter:latest

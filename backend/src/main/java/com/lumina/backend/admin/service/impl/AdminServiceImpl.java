@@ -82,7 +82,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public void deleteUser(Long myId, Long userId) {
 
-        checkAdmin(userId);
+        checkAdmin(myId);
 
         User user = findUtil.getUserById(userId);
         user.deleteUser();
@@ -138,7 +138,7 @@ public class AdminServiceImpl implements AdminService {
     public Map<String, Object> getUserPost(
             Long myId, Long userId, int pageNum) {
 
-        checkAdmin(userId);
+        checkAdmin(myId);
 
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postPage = postRepository.findByUserId(userId, pageRequest);
@@ -169,7 +169,7 @@ public class AdminServiceImpl implements AdminService {
     public Map<String, Object> getUserComment(
             Long myId, Long userId, int pageNum) {
 
-        checkAdmin(userId);
+        checkAdmin(myId);
 
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Comment> commentPage = commentRepository.findByUserId(userId, pageRequest);

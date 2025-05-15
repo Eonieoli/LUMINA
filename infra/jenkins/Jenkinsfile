@@ -113,6 +113,12 @@ pipeline {
                                 writeFile file: 'infra/dev/proxy/.htpasswd', text: htpasswdContent
                             }
                         }
+                        withCredentials([file(credentialsId: 'ga-service-account-dev', variable: "GA_SERVICE_ACCOUNT_DEV_PATH")]) {
+                            script {
+                                def gaServiceAccountContent = readFile(GA_SERVICE_ACCOUNT_DEV_PATH)
+                                writeFile file: 'infra/dev/monitoring/grafana/secrets/ga-service-account.json', text: gaServiceAccountContent
+                            }
+                        }
                     }
                 }
                 
@@ -137,6 +143,12 @@ pipeline {
                             script {
                                 def htpasswdContent = readFile(HTPASSWD_PROD_PATH)
                                 writeFile file: 'infra/prod/proxy/.htpasswd', text: htpasswdContent
+                            }
+                        }
+                        withCredentials([file(credentialsId: 'ga-service-account-prod', variable: "GA_SERVICE_ACCOUNT_PROD_PATH")]) {
+                            script {
+                                def gaServiceAccountContent = readFile(GA_SERVICE_ACCOUNT_PROD_PATH)
+                                writeFile file: 'infra/prod/monitoring/grafana/secrets/ga-service-account.json', text: gaServiceAccountContent
                             }
                         }
                     }
@@ -216,12 +228,16 @@ pipeline {
                                     sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/ai-server'"
                                     sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/prometheus'"
                                     sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/secrets'"
                                     sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/scripts'"
                                     
                                     // 환경 설정 파일 전송
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/.env ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/.env"
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/.env.front ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/.env.front"
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/docker-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/docker-compose.yml"
+
+                                    // Google Analytics 서비스 계정 키 파일 전송
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/grafana/secrets/ga-service-account.json ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/secrets/ga-service-account.json"
                                     
                                     // 프록시 설정 파일 전송
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/.htpasswd ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/.htpasswd"
@@ -341,12 +357,16 @@ pipeline {
                                     sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/ai-server'"
                                     sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/prometheus'"
                                     sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/dashboards'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/secrets'"
                                     sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/scripts'"
                                     
                                     // 환경 설정 파일 전송
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/.env ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/.env"
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/.env.front ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/.env.front"
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/docker-compose.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/docker-compose.yml"
+
+                                    // Google Analytics 서비스 계정 키 파일 전송
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/secrets/ga-service-account.json ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/secrets/ga-service-account.json"
                                     
                                     // 프록시 설정 파일 전송
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/.htpasswd ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/.htpasswd"
