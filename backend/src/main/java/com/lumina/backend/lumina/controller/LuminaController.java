@@ -63,7 +63,7 @@ public class LuminaController {
 
         Long luminaId = userRepository.findIdByNickname("Luna");
         UploadPostRequest uploadPostRequest = new UploadPostRequest(
-                null, "기타", null, request.getPostContent());
+                null, null, request.getPostContent());
         postService.uploadPost(luminaId, uploadPostRequest);
 
         return ResponseEntity.ok(BaseResponse.withMessage("Luna 게시물 작성 완료"));
