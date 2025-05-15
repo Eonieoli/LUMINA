@@ -1,6 +1,6 @@
 import { getDonationDetail, toggleDonationSubscribe } from "@/apis/donation"
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useParams, useLocation } from "react-router-dom"
 import { HeartDefaultIcon, HeartFilledIcon, CoinIcon } from "@/assets/images"
 import { useNavigate } from "react-router-dom"
 import { defaultDonationThumbnail, donationImageMap } from "@/components/donate/DonationImageMap"
@@ -19,14 +19,13 @@ interface DonationDetail {
 
 export default function DonationDetailPage() {
 
-  // const params = useParams()
-  // const donationId = params.donationId
   const { donationId } = useParams()
+  const location = useLocation()
+  const {donationName: donationNameFromState} = location.state || {}
+
   const [donation, setDonation] = useState<DonationDetail | null>(null)
 
-  // params로 가져온건 string이니까 number로 바꿔주기
-  const donaionIdToNum = Number(donationId)
-  const donationImg = donationImageMap[donaionIdToNum] || defaultDonationThumbnail
+  const donationImg = donationImageMap[donationNameFromState] || defaultDonationThumbnail
 
   const navigate = useNavigate()
 
