@@ -21,6 +21,8 @@ export default function ProfileEditPage () {
   const [nicknameError, setNicknameError] = useState<string>("")
   const [messageError, setMessageError] = useState<string>("")
 
+  const [imageError, setImageError] = useState<string>("")
+
   // 이미지 선택
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -28,7 +30,7 @@ export default function ProfileEditPage () {
       setProfileImageFile(file)
     }
   }
-
+  
   //나의 정보 가져오기
   useEffect(() => {
     const fetchMyData = async () => {
@@ -88,8 +90,16 @@ export default function ProfileEditPage () {
       authData.setData(updated.data);
       navigate(`/mypage/${authData.data.userId}`)
     } 
-    catch (error) {
+    catch (error:any) {
       console.error(error)
+      const errMsg = error.message
+
+      if(errMsg.includes("업로드")) {
+        setImageError("업로드 가능한 파일 크기는 최대 5MB입니다.")
+      } 
+      else {
+        setImageError("프로필 사진 수정에 오류가 발생했습니다.")
+      }
     }
   }
 
@@ -117,6 +127,10 @@ export default function ProfileEditPage () {
             </label>
             <img src={CircleXIcon} alt="이미지 삭제" onClick={() => setProfileImageFile(null)} className="w-4 absolute top-5 right-0 z-50 cursor-pointer"/>
           </div>
+
+          {imageError && 
+            <div className="text-sm text-red-500 ml-1">{imageError}</div>
+          }
 
           <div className="w-2/3">
             {/* 닉네임 */}

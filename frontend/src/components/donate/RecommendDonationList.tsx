@@ -1,5 +1,5 @@
 import DonationCard from './DonationCard';
-import { PokerLuna, ComputerHandsupLuna } from '@/assets/images';
+import { PokerLuna, HeartLuna } from '@/assets/images';
 // 슬라이드 swiper 관련
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
@@ -59,7 +59,7 @@ export default function RecommendDonationList() {
             {/* 추천 기부처 목록 */}
             {slides.length === 0 ? (
                 <div className='flex flex-col items-center cursor-pointer' onClick={goToMainPage} >
-                    <img src={ComputerHandsupLuna} alt="기부처 루나" className='w-2/4' />
+                    <img src={HeartLuna} alt="기부처 루나" className='w-2/4' />
                     <div className="w-full h-20 flex items-center justify-center text-gray-400 text-[15px]">
                     게시글에 좋아요를 눌러보세요!
                     
