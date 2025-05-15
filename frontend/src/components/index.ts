@@ -15,6 +15,9 @@ import HamburgerSheet from './mypage/Hamburger';
 // 관리자
 import CheckAdmin from './CheckAdmin';
 
+// 구글 애널리틱스
+import GAListener from './GAListener';
+
 export {
     Navbar,
     Header,
@@ -25,5 +28,6 @@ export {
     BottomSheet,
     Replies,
     HamburgerSheet,
-    CheckAdmin
+    CheckAdmin,
+    GAListener,
 };
