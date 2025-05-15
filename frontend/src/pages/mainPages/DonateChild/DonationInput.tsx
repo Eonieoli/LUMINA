@@ -1,4 +1,4 @@
-import { CoinIcon, WinkLuna } from "@/assets/images"
+import { CoinIcon, ComputerTypingLuna } from "@/assets/images"
 import { useEffect, useState } from "react"
 import DonationLayout from "./DonationLayout"
 import { useNavigate, useParams } from "react-router-dom"
@@ -99,7 +99,7 @@ export default function DonationInputPage() {
           </div>
 
           {/* 루미나 이미지 */}
-            <img src={WinkLuna} alt="윙크하는루미나" className="w-50 mt-10 mb-15"/>  
+            <img src={ComputerTypingLuna} alt="윙크하는루미나" className="w-50 mt-10 mb-15"/>  
           
           {/* 포인트 입력창 */}
           <div className="flex justify-center items-center w-2/5 pb-0.5 text-gray-400">
