@@ -54,9 +54,12 @@ export const profileEdit = async (formData: FormData) => {
         const response = await apiClient.patch('/user/profile', formData)
         logApiEvent("profileEdit", "success");
         return response.data.message
-    } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
         console.error("프로필 수정 실패", error)
         logApiEvent("profileEdit", "error");
-        throw error
+        
+        const errMsg = error?.response?.data?.message || "프로필 수정 알 수 없는 에러"
+        throw new Error(errMsg)
     }
 }

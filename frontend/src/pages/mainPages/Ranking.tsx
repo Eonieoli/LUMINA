@@ -98,8 +98,8 @@ export default function RankingPage() {
             <div className="flex flex-col sm:flex-row sm:gap-10 items-center gap-2">
               <p className="sm:text-xl text-[15px]">
                 {rankings[0]?.rank <= 3
-                  ? `${rankings[0]?.nickname}님! Top3 에요! 👑`
-                  : `${rankings[0]?.nickname}님! 조금만 더 힘내요! 💪`
+                  ? `Top3 에요! 👑`
+                  : `조금만 더 힘내요! 💪`
                 }
               </p>
               <div>
