@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import DonationLayout from "./DonationLayout";
-import { ComputerHandsupLuna } from "@/assets/images";
+import { StandingLuna } from "@/assets/images";
 import { getPointInfo } from "@/apis/donation";
 import { useNavigate } from "react-router-dom";
 
@@ -43,7 +43,7 @@ export default function DonationThanks () {
             </span>
             드립니다.
           </div>
-          <img src={ComputerHandsupLuna} alt="루나 이미지" className="w-1/2 mt-10" />
+          <img src={StandingLuna} alt="루나 이미지" className="w-1/2 mt-10" />
         </div>
     </DonationLayout>
   )
