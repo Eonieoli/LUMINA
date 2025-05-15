@@ -75,15 +75,4 @@ public class ValidationUtil {
             throw new CustomException(HttpStatus.BAD_REQUEST, "보유 point가 부족합니다.");
         }
     }
-
-    // 사진 크기 검사
-    public static void validatePostImageFile(MultipartFile postImageFile) {
-        if (postImageFile != null && !postImageFile.isEmpty()) {
-            System.out.println("postImageFile = " + postImageFile.getSize());
-            long maxSizeInBytes = 5 * 1024 * 1024; // 5MB
-            if (postImageFile.getSize() > maxSizeInBytes) {
-                throw new CustomException(HttpStatus.BAD_REQUEST, "이미지 파일 크기는 5MB를 초과할 수 없습니다.");
-            }
-        }
-    }
 }
