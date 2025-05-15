@@ -5,6 +5,7 @@ import { HeartDefaultIcon, HeartFilledIcon, CoinIcon } from "@/assets/images"
 import { useNavigate } from "react-router-dom"
 import { defaultDonationThumbnail, donationImageMap } from "@/components/donate/DonationImageMap"
 import DonationLayout from "./DonationLayout"
+import donationDescriptionMap from "@/components/donate/DonationDescriptionMap"
 
 interface DonationDetail {
   donationId: number
@@ -83,7 +84,9 @@ export default function DonationDetailPage() {
               }
             </div>
           </div>
-          <p className="text-[16px] text-gray-600 text-center">생명에 대한 존중과 차별없는 동물권을 지향하는 시민들의 모임</p>
+          <p className="text-[16px] text-gray-600 text-center">
+            {donationDescriptionMap[donation.donationName]}
+          </p>
 
         </div>
 
