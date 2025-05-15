@@ -25,13 +25,22 @@ import DownIcon from './donate/Ic_down.svg'
 import BackIcon from './donate/Ic_back.svg'
 
 // 루나 이미지
-import SmileLuna from './donate/smileLuna.webp';
-import AngryLuna from './donate/angryLuna.webp'
-import PokerLuna from './donate/Luna.webp';
-import WinkLuna from './donate/wink_Luna.webp'
-import ComputerHandsupLuna from './donate/computer_handsup_Luna.webp'
-import ComputerTypingLuna from './donate/computer_typing_Luna.webp'
-import CuriousLuna from './search/curiousLuna.webp'
+// import SmileLuna from './donate/smileLuna.webp';
+// import AngryLuna from './donate/angryLuna.webp'
+// import PokerLuna from './donate/Luna.webp';
+// import ComputerTypingLuna from './donate/computer_typing_Luna.webp'
+// import CuriousLuna from './search/curiousLuna.webp'
+// import WinkLuna from './donate/wink_Luna.webp'
+// import ComputerHandsupLuna from './donate/computer_handsup_Luna.webp'
+
+// 타이커 루나 이미지
+import SmileLuna from './tigerLuna/SmileLuna.png' 
+import AngryLuna from './tigerLuna/AngryLuna.png'
+import PokerLuna from './tigerLuna/PokerLuna.png'
+import ComputerTypingLuna from './tigerLuna/ComputerTypingLuna.png'
+import CuriousLuna from './tigerLuna/CuriousLuna.png'
+import HeartLuna from './tigerLuna/HeartLuna.png'
+import StandingLuna from './tigerLuna/StandingLuna.png'
 
 // 네브바 아이콘
 import DonationIcon from './navbar/Ic_donate.webp';
@@ -68,13 +77,13 @@ export {
     MainText,
     MainBackground,
     MainBackgroundShort,
-    WinkLuna,
-    ComputerHandsupLuna,
     Hamburger,
     XIcon,
     ComputerTypingLuna,
     CuriousLuna,
     CircleXIcon,
     PencilIcon,
-    AngryLuna
+    AngryLuna,
+    HeartLuna,
+    StandingLuna
 }
