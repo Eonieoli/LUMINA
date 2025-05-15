@@ -8,10 +8,15 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: 'spring-actuator'
+  - job_name: 'spring-actuator-blue'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['backend:8080']
+      - targets: ['backend-blue:8080']
+
+  - job_name: 'spring-actuator-green'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['backend-green:8080']
 
   - job_name: 'node-exporter'
     static_configs:
