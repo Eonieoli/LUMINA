@@ -4,7 +4,7 @@ import ReactGA from 'react-ga4';
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID; // GA4 측정 ID
 
 export const initGA = () => {
-  ReactGA.initialize(GA_MEASUREMENT_ID, {testMode: true});
+  ReactGA.initialize(GA_MEASUREMENT_ID);
 };
 
 export const pageView = (path: string, title?: string) => {

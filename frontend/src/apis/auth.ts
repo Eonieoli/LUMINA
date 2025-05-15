@@ -10,7 +10,7 @@ export const getMyProfile = async () => {
         return response.data;
     } catch (error) {
         console.error('내 정보 조회 api 요청 에러!');
-        logApiEvent("getMyProfile", "success");
+        logApiEvent("getMyProfile", "error");
         throw error;
     }
 };
@@ -25,7 +25,7 @@ export const getUserProfile = async (userId:number) => {
     }
     catch (error) {
         console.error("유저 정보 가져오기 실패!", error)
-        logApiEvent("getUserProfile", "success");
+        logApiEvent("getUserProfile", "error");
         throw error;
     }
 }
@@ -43,7 +43,7 @@ export const signOut = async () => {
         return response.data
     } catch (error) {
         console.error('로그아웃 API 에러', error);
-        logApiEvent("signOut", "success");
+        logApiEvent("signOut", "error");
         throw error
     }
 }
@@ -56,7 +56,7 @@ export const profileEdit = async (formData: FormData) => {
         return response.data.message
     } catch (error) {
         console.error("프로필 수정 실패", error)
-        logApiEvent("profileEdit", "success");
+        logApiEvent("profileEdit", "error");
         throw error
     }
 }
