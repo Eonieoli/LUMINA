@@ -49,6 +49,8 @@ export const Board = ({
     const contentRef = useRef<HTMLDivElement>(null);
     const [showComments, setShowComments] = useState(false);
     const [isDesktop, setIsDesktop] = useState(false);
+    const [isModalOpened, setIsModalOpened] = useState<boolean>(false);
+
     const navigate = useNavigate();
 
     const toggleContent = () => setIsExpanded(!isExpanded);
@@ -65,14 +67,19 @@ export const Board = ({
         }
     };
 
-    const deleteClick = async (postId: number) => {
+    const deleteClick = () => {
+        setIsModalOpened(true);
+    };
+
+    const deleteConfirm = async (postId: number) => {
         try {
             await deletePost(postId);
             onDelete(postId);
+            setIsModalOpened(false);
         } catch (error) {
             console.error(error);
         }
-    };
+    }
 
     const profileClick = (userId: number) => {
         navigate(`/mypage/${userId}`);
@@ -144,6 +151,20 @@ export const Board = ({
 
     return (
         <>
+            {/* 삭제 확인 모달 */}
+            <div onClick={() => setIsModalOpened(false)} className={`fixed flex justify-center items-center z-50 left-0 top-0 w-full h-full bg-[#00000050] ${isModalOpened ? 'block' : 'hidden'}`}>
+                <div
+                    onClick={(e) => e.stopPropagation()}
+                    className='relative overflow-hidden flex flex-col justify-center items-center rounded-2xl bg-white w-4/5 aspect-square max-w-96 md:ml-20 p-10'
+                >
+                    <p>게시물을 삭제하시겠습니까?</p>
+                    <p>게시물을 삭제하시는 경우 복구가 불가능합니다.</p>
+                    <div className='absolute grid grid-cols-1 bottom-0 w-full h-1/3 text-lg font-semibold'>
+                        <div onClick={() => deleteConfirm(postId)} className='flex justify-center items-center border-t border-gray-300 cursor-pointer hover:bg-gray-100 transition duration-300 text-red-500'>삭제</div>
+                        <div onClick={() => setIsModalOpened(false)} className='flex justify-center items-center border-t border-gray-300 cursor-pointer hover:bg-gray-100 transition duration-300'>취소</div>
+                    </div>
+                </div>
+            </div>
             <div className="flex w-full flex-col gap-y-2 border-b-3 border-gray-200 px-5 py-2">
                 {/* 사용자 프로필 */}
                 <div className="flex items-center justify-between">
