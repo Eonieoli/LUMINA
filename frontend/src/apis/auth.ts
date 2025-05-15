@@ -45,8 +45,10 @@ export const profileEdit = async (formData: FormData) => {
     try{
         const response = await apiClient.patch('/user/profile', formData)
         return response.data.message
-    } catch (error) {
+    } catch (error: any) {
         console.error("프로필 수정 실패", error)
-        throw error
+
+        const errMsg = error?.response?.data?.message || "프로필 수정 알 수 없는 에러"
+        throw new Error(errMsg)
     }
 }
