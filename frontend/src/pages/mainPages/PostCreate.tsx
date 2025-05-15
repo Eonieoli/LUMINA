@@ -1,7 +1,7 @@
 import { createPost } from '@/apis/board';
 import { elizaBoard } from '@/apis/eliza';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 export default function PostCreate() {
@@ -10,6 +10,7 @@ export default function PostCreate() {
     const [content, setContent] = useState('');
     const [tagInput, setTagInput] = useState('');
     const [tags, setTags] = useState<string[]>([]);
+    const [isCreating, setIsCreating] = useState<boolean>(false);
     const navigate = useNavigate();
     
     useEffect(() => {
@@ -21,23 +22,33 @@ export default function PostCreate() {
     }, [previewUrl]);
 
     const postUpload = async () => {
+        if (isCreating) return;
+
         if (!content.trim()) {
             toast.error('내용을 입력해주세요.');
             return;
         }
 
         try {
-            const response = await createPost({
+            setIsCreating(true);
+            toast.promise(createPost({
                 postImageFile: image,
                 hashtag: tags,
                 postContent: content,
-            });
+            }), {
+                loading: '카테고리 추출 중...',
+                success: (res) => {
+                    console.log(res);
+                    elizaBoard(res.data.postId);
+                    navigate('/');
+                    return `업로드 완료!`;
+                },
+                error: 'Error',
+              });
 
-            elizaBoard(response.data.postId);
-            toast.success('업로드 성공');
 
-            navigate('/');
         } catch (error) {
+            setIsCreating(false);
             console.error('게시물 업로드 실패:', error);
             toast.error('게시물 업로드 실패');
         }
@@ -50,7 +61,7 @@ export default function PostCreate() {
                 toast.error('이미지 파일은 5MB 이하만 업로드 가능합니다.');
                 return;
             }
-            
+
             if (previewUrl) {
                 URL.revokeObjectURL(previewUrl);
             }
@@ -88,12 +99,13 @@ export default function PostCreate() {
             {/* <Toaster /> */}
             {/* 헤더 */}
             <div className="flex items-center justify-between">
-                <Link to="/">
-                    <div className='flex relative w-4 h-full'>
-                        <div className='absolute top-0 w-4 h-[1.5px] bg-black rotate-45'></div>
-                        <div className='absolute top-0 w-4 h-[1.5px] bg-black -rotate-45'></div>
-                    </div>
-                </Link>
+                <div
+                    onClick={() => navigate('/')}
+                    className="relative flex h-4 w-4 cursor-pointer gap-x-1 py-2"
+                >
+                    <div className="absolute top-1/2 left-0 h-[2px] w-4 -translate-y-1/2 rotate-45 bg-black"></div>
+                    <div className="absolute top-1/2 left-0 h-[2px] w-4 -translate-y-1/2 -rotate-45 bg-black"></div>
+                </div>
                 <h1 className="text-lg font-semibold">새 게시물</h1>
                 <button
                     onClick={postUpload}
