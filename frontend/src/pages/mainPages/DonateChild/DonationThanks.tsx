@@ -23,7 +23,7 @@ export default function DonationThanks () {
     <DonationLayout
       bottomButton = {
         <button 
-          className="w-full h-full relative p-3"
+          className="w-full h-full relative p-3 cursor-pointer"
           //기부처 디테일 페이지(뒤로가기 문제)로 이동하게 할건지 마이페이지로 이동하게 할건지 고민
           // onClick={() => {
           //   if (donationId) navigate(`/donate/${donationId}`);

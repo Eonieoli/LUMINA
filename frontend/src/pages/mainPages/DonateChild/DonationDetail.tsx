@@ -75,7 +75,7 @@ export default function DonationDetailPage() {
 
           <div className="mb-2 flex items-center">
             <p className="text-xl font-bold text-gray-600 mr-2">{donation.donationName}</p>
-            <div>
+            <div className="cursor-pointer">
               {donation.isSubscribe ? 
                 <img src={HeartFilledIcon} alt="구독중" onClick={handleToggleSubscribe} />
                 :

@@ -17,14 +17,35 @@ export default function Rewards({isVisible, onClose}: HamburgerProps) {
     const [rewards, setRewards] = useState<Reward[]>([]);
 
     useEffect(() => {
+        document.body.style.overflow = 'hidden';
         const fetchRewards = async () => {
             const response = await getUserReward();
             setRewards(response.data);
             console.log(response.data)
         }
-
+        
         fetchRewards();
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [])
+    
+    useEffect(() => {
+        const scrollContainer = document.getElementById('scrollable-container');
+
+        if (!scrollContainer) return;
+
+        if (isVisible) {
+            scrollContainer.style.overflow = 'hidden';
+        } else {
+            scrollContainer.style.overflow = 'auto';
+        }
+        
+
+        return () => {
+            scrollContainer.style.overflow = 'auto';
+        };
+    }, [isVisible]);
 
     return (
         <AnimatePresence>

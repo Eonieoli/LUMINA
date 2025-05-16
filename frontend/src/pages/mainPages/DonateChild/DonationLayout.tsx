@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 interface DonationLayoutProps {
   children: ReactNode
   bottomButton?: ReactNode
-  isModalOpen?: Boolean
+  isModalOpen?: boolean
 }
 
 export default function DonationLayout({children, bottomButton, isModalOpen}: DonationLayoutProps) {

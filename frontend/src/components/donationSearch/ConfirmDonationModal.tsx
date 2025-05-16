@@ -29,11 +29,11 @@ export default function ConfirmDonationModal({donationName, point, onCancel, onC
         <div className="flex justify-between mt-6">
           <button 
             onClick={onCancel}
-            className="w-30 py-2 border-2 border-[#9C97FA] text-[#5D56F1] font-semibold rounded-lg mr-5"
+            className="w-30 py-2 border-2 border-[#9C97FA] text-[#5D56F1] font-semibold rounded-lg mr-5 cursor-pointer"
           >취소</button>
           <button 
             onClick={onConfirm}
-            className="w-30 py-2 bg-[#9C97FA] text-white font-semibold rounded-lg"
+            className="w-30 py-2 bg-[#9C97FA] text-white font-semibold rounded-lg cursor-pointer"
           >기부하기</button>
         </div>
 
