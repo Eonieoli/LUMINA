@@ -15,7 +15,6 @@ import PencilIcon from './board/Ic_pencil.webp'
 // 헤더 관련 에셋
 import BellIcon from './header/bell.webp';
 import PlusIcon from './header/plus.webp';
-import LuminaLogo from './header/logo.webp';
 import Hamburger from './header/hamburger.webp'
 
 // 기부 페이지 
@@ -24,23 +23,14 @@ import SearchIconGray from './navbar/Ic_search.webp'
 import DownIcon from './donate/Ic_down.svg'
 import BackIcon from './donate/Ic_back.svg'
 
-// 루나 이미지
-// import SmileLuna from './donate/smileLuna.webp';
-// import AngryLuna from './donate/angryLuna.webp'
-// import PokerLuna from './donate/Luna.webp';
-// import ComputerTypingLuna from './donate/computer_typing_Luna.webp'
-// import CuriousLuna from './search/curiousLuna.webp'
-// import WinkLuna from './donate/wink_Luna.webp'
-// import ComputerHandsupLuna from './donate/computer_handsup_Luna.webp'
-
 // 타이커 루나 이미지
-import SmileLuna from './tigerLuna/SmileLuna.png' 
-import AngryLuna from './tigerLuna/AngryLuna.png'
-import PokerLuna from './tigerLuna/PokerLuna.png'
-import ComputerTypingLuna from './tigerLuna/ComputerTypingLuna.png'
-import CuriousLuna from './tigerLuna/CuriousLuna.png'
-import HeartLuna from './tigerLuna/HeartLuna.png'
-import StandingLuna from './tigerLuna/StandingLuna.png'
+import SmileLuna from './tigerLuna/SmileLuna.webp' 
+import AngryLuna from './tigerLuna/AngryLuna.webp'
+import PokerLuna from './tigerLuna/PokerLuna.webp'
+import ComputerTypingLuna from './tigerLuna/ComputerTypingLuna.webp'
+import CuriousLuna from './tigerLuna/CuriousLuna.webp'
+import HeartLuna from './tigerLuna/HeartLuna.webp'
+import StandingLuna from './tigerLuna/StandingLuna.webp'
 
 // 네브바 아이콘
 import DonationIcon from './navbar/Ic_donate.webp';
@@ -49,9 +39,10 @@ import RankingIcon from './navbar/Ic_ranking.webp';
 import SearchIcon from './navbar/Ic_search.webp';
 
 // 메인 이미지
-import MainText from './main/main_text.webp';
+import MainText from './main/main_text_logo.png';
 import MainBackground from './main/background_img.webp'
 import MainBackgroundShort from './main/background_img_short.webp'
+import logo from '@/assets/images/header/logo.png'
 
 export {
     DefaultProfile,
@@ -71,7 +62,6 @@ export {
     SearchIconGray,
     BellIcon,
     PlusIcon,
-    LuminaLogo,
     DownIcon,
     BackIcon,
     MainText,
@@ -85,5 +75,6 @@ export {
     PencilIcon,
     AngryLuna,
     HeartLuna,
-    StandingLuna
+    StandingLuna,
+    logo
 }
