@@ -104,8 +104,8 @@
         {
           "refId": "A",
           "dateRange": "Last 30 days",
-          "metrics": "activeUsers",
-          "dimensions": "date"
+          "metrics": ["activeUsers"],
+          "dimensions": ["date"]
         }
       ]
     }
