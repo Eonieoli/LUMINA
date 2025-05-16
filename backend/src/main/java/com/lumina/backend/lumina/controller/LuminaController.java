@@ -6,6 +6,7 @@ import com.lumina.backend.lumina.model.request.GetPostRequest;
 import com.lumina.backend.lumina.service.LuminaService;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.request.UploadPostRequest;
+import com.lumina.backend.post.model.response.UploadPostResponse;
 import com.lumina.backend.post.service.CommentService;
 import com.lumina.backend.post.service.PostService;
 import com.lumina.backend.user.repository.UserRepository;
@@ -64,7 +65,8 @@ public class LuminaController {
         Long luminaId = userRepository.findIdByNickname("Luna");
         UploadPostRequest uploadPostRequest = new UploadPostRequest(
                 null, null, request.getPostContent());
-        postService.uploadPost(luminaId, uploadPostRequest);
+        UploadPostResponse response = postService.uploadPost(luminaId, uploadPostRequest);
+        luminaService.getPostCategory(response.getPostId(), uploadPostRequest);
 
         return ResponseEntity.ok(BaseResponse.withMessage("Luna 게시물 작성 완료"));
     }
