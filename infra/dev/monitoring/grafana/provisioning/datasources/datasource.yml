@@ -37,6 +37,7 @@
       "editable": true,
       "jsonData": {
         "authType": "jwt",
+        "keyJsonFilePath": "/etc/grafana/secrets/ga-service-account.json",
         "serviceAccountKeyPath": "/etc/grafana/secrets/ga-service-account.json",
         "tokenUri": "https://oauth2.googleapis.com/token",
         "clientEmail": "${GA_CLIENT_EMAIL}",
