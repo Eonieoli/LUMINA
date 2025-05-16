@@ -57,7 +57,6 @@ export default function Hamburger({isVisible, onClose}: HamburgerProps) {
                         </div>
                         <div className="flex-1 flex flex-col justify-between text-[18px] font-medium">
                             <div className="flex flex-col gap-2 text-gray-600">
-                                <div className="p-2 px-10 cursor-pointer">내 기부 내역</div>
                                 <div onClick={() => {
                                     setIsRewardsOpened(true)
                                     setIsRewardsAnimation(true)}}
