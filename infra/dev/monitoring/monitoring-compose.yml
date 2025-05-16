@@ -29,7 +29,7 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
-      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards/prometheus:/var/lib/grafana/dashboards/prometheus:ro
       - ./grafana/dashboards/ga:/var/lib/grafana/dashboards/ga:ro
       - ./grafana/secrets:/etc/grafana/secrets:ro
