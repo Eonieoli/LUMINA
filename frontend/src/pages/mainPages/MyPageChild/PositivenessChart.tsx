@@ -22,7 +22,7 @@ export default function PositivenessChart ({positiveness = 0}: PositivenessChart
   const messageData = isPositive ? messages.positive : messages.negative
 
   return (
-    <div className="text-center p-4 flex flex-col items-center ml-4 mr-4">
+    <div className="text-center p-4 flex flex-col items-center ml-4 mr-4 bg-white">
 
       {/* 말풍선 */}
       <div

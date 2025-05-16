@@ -15,7 +15,6 @@ import PencilIcon from './board/Ic_pencil.webp'
 // 헤더 관련 에셋
 import BellIcon from './header/bell.webp';
 import PlusIcon from './header/plus.webp';
-import LuminaLogo from './header/logo.webp';
 import Hamburger from './header/hamburger.webp'
 
 // 기부 페이지 
@@ -40,9 +39,10 @@ import RankingIcon from './navbar/Ic_ranking.webp';
 import SearchIcon from './navbar/Ic_search.webp';
 
 // 메인 이미지
-import MainText from './main/main_text.webp';
+import MainText from './main/main_text_logo.png';
 import MainBackground from './main/background_img.webp'
 import MainBackgroundShort from './main/background_img_short.webp'
+import logo from '@/assets/images/header/logo.png'
 
 export {
     DefaultProfile,
@@ -62,7 +62,6 @@ export {
     SearchIconGray,
     BellIcon,
     PlusIcon,
-    LuminaLogo,
     DownIcon,
     BackIcon,
     MainText,
@@ -76,5 +75,6 @@ export {
     PencilIcon,
     AngryLuna,
     HeartLuna,
-    StandingLuna
+    StandingLuna,
+    logo
 }
