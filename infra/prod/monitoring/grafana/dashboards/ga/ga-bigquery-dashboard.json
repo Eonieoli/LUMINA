@@ -82,7 +82,7 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -111,105 +111,12 @@
             "type": "grafana-bigquery-datasource",
             "uid": "google_bigquery"
           },
-          "editorMode": "code",
-          "format": 0,
-          "rawSql": "SELECT\n  event_date,\n  COUNT(DISTINCT user_pseudo_id) as active_users\nFROM\n  `${GA_PROJECT_ID}.analytics_${GA_PROD_PROPERTY_ID}.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN\n    FORMAT_DATE(\"%Y%m%d\", DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)) AND\n    FORMAT_DATE(\"%Y%m%d\", CURRENT_DATE())\nGROUP BY\n  event_date\nORDER BY\n  event_date ASC",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  timestamp_trunc(timestamp, DAY) as day,\n  count(*) as requests\nFROM\n  `elevated-cargo-439808-e0.analytics_1234567.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\nGROUP BY\n  day\nORDER BY\n  day",
           "refId": "A"
         }
       ],
-      "title": "일별 활성 사용자 수",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-bigquery-datasource",
-        "uid": "google_bigquery"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 0
-      },
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.3.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-bigquery-datasource",
-            "uid": "google_bigquery"
-          },
-          "editorMode": "code",
-          "format": 0,
-          "rawSql": "SELECT\n  event_date,\n  AVG(engagement_time_msec) / 1000 as avg_session_duration\nFROM\n  `${GA_PROJECT_ID}.analytics_${GA_PROD_PROPERTY_ID}.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN\n    FORMAT_DATE(\"%Y%m%d\", DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)) AND\n    FORMAT_DATE(\"%Y%m%d\", CURRENT_DATE())\nGROUP BY\n  event_date\nORDER BY\n  event_date ASC",
-          "refId": "A"
-        }
-      ],
-      "title": "평균 세션 지속 시간",
+      "title": "일일 요청 수 (30일)",
       "type": "timeseries"
     },
     {
@@ -239,8 +146,8 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
-        "y": 8
+        "x": 12,
+        "y": 0
       },
       "options": {
         "displayMode": "gradient",
@@ -264,14 +171,74 @@
             "type": "grafana-bigquery-datasource",
             "uid": "google_bigquery"
           },
-          "editorMode": "code",
-          "format": 0,
-          "rawSql": "WITH page_views AS (\n  SELECT\n    (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'page_location') AS page_path,\n    COUNT(*) AS view_count\n  FROM\n    `${GA_PROJECT_ID}.analytics_${GA_PROD_PROPERTY_ID}.events_*`\n  WHERE\n    event_name = 'page_view'\n    AND _TABLE_SUFFIX BETWEEN\n      FORMAT_DATE(\"%Y%m%d\", DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)) AND\n      FORMAT_DATE(\"%Y%m%d\", CURRENT_DATE())\n  GROUP BY\n    page_path\n)\n\nSELECT\n  page_path,\n  view_count\nFROM\n  page_views\nORDER BY\n  view_count DESC\nLIMIT 10",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  event_name,\n  COUNT(*) as count\nFROM\n  `elevated-cargo-439808-e0.analytics_1234567.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\nGROUP BY\n  event_name\nORDER BY\n  count DESC\nLIMIT 10",
           "refId": "A"
         }
       ],
-      "title": "상위 10개 페이지",
+      "title": "상위 10개 이벤트",
       "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "grafana-bigquery-datasource",
+        "uid": "google_bigquery"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-bigquery-datasource",
+            "uid": "google_bigquery"
+          },
+          "rawQuery": true,
+          "rawSql": "SELECT\n  device.category as device_category,\n  COUNT(*) as sessions\nFROM\n  `elevated-cargo-439808-e0.analytics_1234567.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\nGROUP BY\n  device_category\nORDER BY\n  sessions DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "기기 카테고리별 세션",
+      "type": "piechart"
     },
     {
       "datasource": {
@@ -325,13 +292,12 @@
             "type": "grafana-bigquery-datasource",
             "uid": "google_bigquery"
           },
-          "editorMode": "code",
-          "format": 0,
-          "rawSql": "SELECT\n  geo.country AS country,\n  COUNT(DISTINCT user_pseudo_id) AS user_count\nFROM\n  `${GA_PROJECT_ID}.analytics_${GA_PROD_PROPERTY_ID}.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN\n    FORMAT_DATE(\"%Y%m%d\", DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)) AND\n    FORMAT_DATE(\"%Y%m%d\", CURRENT_DATE())\nGROUP BY\n  country\nORDER BY\n  user_count DESC\nLIMIT 10",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  geo.country as country,\n  COUNT(DISTINCT user_pseudo_id) as users\nFROM\n  `elevated-cargo-439808-e0.analytics_1234567.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\nGROUP BY\n  country\nORDER BY\n  users DESC\nLIMIT 10",
           "refId": "A"
         }
       ],
-      "title": "사용자 국가 분포",
+      "title": "상위 10개 국가별 사용자",
       "type": "bargauge"
     },
     {
@@ -339,6 +305,7 @@
         "type": "grafana-bigquery-datasource",
         "uid": "google_bigquery"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -388,13 +355,13 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 24,
         "x": 0,
         "y": 16
       },
@@ -417,74 +384,13 @@
             "type": "grafana-bigquery-datasource",
             "uid": "google_bigquery"
           },
-          "editorMode": "code",
-          "format": 0,
-          "rawSql": "WITH api_events AS (\n  SELECT\n    event_date,\n    (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'api_name') AS api_name,\n    (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'status') AS status,\n    COUNT(*) AS event_count\n  FROM\n    `${GA_PROJECT_ID}.analytics_${GA_PROD_PROPERTY_ID}.events_*`\n  WHERE\n    event_name = 'api_call'\n    AND _TABLE_SUFFIX BETWEEN\n      FORMAT_DATE(\"%Y%m%d\", DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)) AND\n      FORMAT_DATE(\"%Y%m%d\", CURRENT_DATE())\n  GROUP BY\n    event_date, api_name, status\n)\n\nSELECT\n  event_date,\n  api_name,\n  status,\n  event_count\nFROM\n  api_events\nORDER BY\n  event_date ASC",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  timestamp_trunc(timestamp, HOUR) as hour,\n  event_name,\n  COUNT(*) as count\nFROM\n  `elevated-cargo-439808-e0.analytics_1234567.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\n  AND event_name IN ('page_view', 'api_call', 'user_login', 'form_submit')\nGROUP BY\n  hour, event_name\nORDER BY\n  hour",
           "refId": "A"
         }
       ],
-      "title": "API 호출 이벤트",
+      "title": "주요 이벤트별 시간대별 추이 (최근 7일)",
       "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-bigquery-datasource",
-        "uid": "google_bigquery"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 16
-      },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "sum"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.3.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-bigquery-datasource",
-            "uid": "google_bigquery"
-          },
-          "editorMode": "code",
-          "format": 0,
-          "rawSql": "SELECT\n  event_name,\n  COUNT(*) as event_count\nFROM\n  `${GA_PROJECT_ID}.analytics_${GA_PROD_PROPERTY_ID}.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN\n    FORMAT_DATE(\"%Y%m%d\", DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)) AND\n    FORMAT_DATE(\"%Y%m%d\", CURRENT_DATE())\nGROUP BY\n  event_name\nORDER BY\n  event_count DESC",
-          "refId": "A"
-        }
-      ],
-      "title": "이벤트 유형별 발생 횟수",
-      "type": "stat"
     }
   ],
   "refresh": "5m",
@@ -492,8 +398,7 @@
   "style": "dark",
   "tags": [
     "bigquery",
-    "google-analytics",
-    "user-behavior"
+    "google-analytics"
   ],
   "templating": {
     "list": []
@@ -517,8 +422,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "Google Analytics Dashboard (BigQuery)",
-  "uid": "ga-bigquery",
+  "title": "Google BigQuery Dashboard",
+  "uid": "bigquery-dash",
   "version": 1,
   "weekStart": ""
 }

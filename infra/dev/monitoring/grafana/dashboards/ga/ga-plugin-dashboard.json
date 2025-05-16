@@ -30,7 +30,7 @@
   "panels": [
     {
       "datasource": {
-        "type": "grafana-googlesheets-datasource",
+        "type": "blackcowmoo-googleanalytics-datasource",
         "uid": "google_analytics"
       },
       "fieldConfig": {
@@ -108,7 +108,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-googlesheets-datasource",
+            "type": "blackcowmoo-googleanalytics-datasource",
             "uid": "google_analytics"
           },
           "dimensions": [
@@ -134,7 +134,7 @@
     },
     {
       "datasource": {
-        "type": "grafana-googlesheets-datasource",
+        "type": "blackcowmoo-googleanalytics-datasource",
         "uid": "google_analytics"
       },
       "fieldConfig": {
@@ -212,7 +212,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-googlesheets-datasource",
+            "type": "blackcowmoo-googleanalytics-datasource",
             "uid": "google_analytics"
           },
           "dimensions": [
@@ -238,7 +238,7 @@
     },
     {
       "datasource": {
-        "type": "grafana-googlesheets-datasource",
+        "type": "blackcowmoo-googleanalytics-datasource",
         "uid": "google_analytics"
       },
       "fieldConfig": {
@@ -285,7 +285,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-googlesheets-datasource",
+            "type": "blackcowmoo-googleanalytics-datasource",
             "uid": "google_analytics"
           },
           "dimensions": [
@@ -311,7 +311,7 @@
     },
     {
       "datasource": {
-        "type": "grafana-googlesheets-datasource",
+        "type": "blackcowmoo-googleanalytics-datasource",
         "uid": "google_analytics"
       },
       "fieldConfig": {
@@ -358,7 +358,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-googlesheets-datasource",
+            "type": "blackcowmoo-googleanalytics-datasource",
             "uid": "google_analytics"
           },
           "dimensions": [
@@ -384,7 +384,7 @@
     },
     {
       "datasource": {
-        "type": "grafana-googlesheets-datasource",
+        "type": "blackcowmoo-googleanalytics-datasource",
         "uid": "google_analytics"
       },
       "fieldConfig": {
@@ -462,7 +462,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-googlesheets-datasource",
+            "type": "blackcowmoo-googleanalytics-datasource",
             "uid": "google_analytics"
           },
           "dimensions": [
@@ -495,7 +495,7 @@
     },
     {
       "datasource": {
-        "type": "grafana-googlesheets-datasource",
+        "type": "blackcowmoo-googleanalytics-datasource",
         "uid": "google_analytics"
       },
       "fieldConfig": {
@@ -541,7 +541,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "grafana-googlesheets-datasource",
+            "type": "blackcowmoo-googleanalytics-datasource",
             "uid": "google_analytics"
           },
           "dimensions": [
@@ -571,7 +571,6 @@
   "style": "dark",
   "tags": [
     "google-analytics",
-    "google-sheets",
     "user-behavior"
   ],
   "templating": {
@@ -596,7 +595,7 @@
     ]
   },
   "timezone": "browser",
-  "title": "Google Analytics Dashboard (Plugin)",
+  "title": "Google Analytics Dashboard",
   "uid": "ga-plugin",
   "version": 1,
   "weekStart": ""
