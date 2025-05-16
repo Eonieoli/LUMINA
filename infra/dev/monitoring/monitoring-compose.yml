@@ -28,7 +28,6 @@ services:
     restart: always
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards/prometheus:/var/lib/grafana/dashboards/prometheus:ro
       - ./grafana/dashboards/ga:/var/lib/grafana/dashboards/ga:ro
