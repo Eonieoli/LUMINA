@@ -38,7 +38,7 @@ export const oAuth = async (type: string) => {
 // 로그아웃
 export const signOut = async () => {
     try {
-        const response = await apiClient.post('/user');
+        const response = await apiClient.post('/user/logout');
         logApiEvent("signOut", "success");
         return response.data
     } catch (error) {
