@@ -1,13 +1,16 @@
 package com.lumina.backend.common.service;
 
 import com.lumina.backend.common.exception.CustomException;
+import com.lumina.backend.common.utill.FindUtil;
 import com.lumina.backend.common.utill.RedisUtil;
 import com.lumina.backend.user.model.dto.CustomOAuth2User;
 import com.lumina.backend.user.model.dto.UserDto;
+import com.lumina.backend.user.model.entity.Follow;
 import com.lumina.backend.user.model.entity.User;
 import com.lumina.backend.user.model.response.GoogleResponse;
 import com.lumina.backend.user.model.response.KakaoResponse;
 import com.lumina.backend.user.model.response.OAuth2Response;
+import com.lumina.backend.user.repository.FollowRepository;
 import com.lumina.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,8 +27,10 @@ import java.util.Map;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final FollowRepository followRepository;
 
     private final RedisUtil redisUtil;
+    private final FindUtil findUtil;
 
 
     /**
@@ -94,6 +99,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String nickname = oAuth2Response.getName() + "_" + registrationId + savedUser.getId();
         savedUser.createNickname(nickname);
         userRepository.save(savedUser);
+
+        // Luna 팔로우하기
+        User luna = findUtil.getUserById(userRepository.findIdByNickname("Luna"));
+        followRepository.save(new Follow(savedUser, luna));
 
         // 랭킹 집합에 0점으로 추가
         redisUtil.addSumPointToZSetWithTTL("sum-point:rank", "user:" + savedUser.getId(), 0);
