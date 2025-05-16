@@ -4,6 +4,8 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { LocalLLMClient } from "./local-llm";
+import { PostGenerator } from "../services/post-generator";
+import { PostScheduler } from "../services/scheduler";
 
 export class LocalLLMInterface {
   private runtime: IAgentRuntime;
@@ -11,6 +13,8 @@ export class LocalLLMInterface {
   private server: any;
   private port: number;
   private localLLMClient: LocalLLMClient;
+  private postGenerator: PostGenerator;
+  private postScheduler: PostScheduler;
 
   constructor(runtime: IAgentRuntime) {
     this.runtime = runtime;
@@ -23,6 +27,15 @@ export class LocalLLMInterface {
         process.env.LOCAL_LLM_ENDPOINT || "http://43.200.21.116:8000/predict",
       model: process.env.LOCAL_LLM_MODEL || "Gemma",
     });
+
+    // 포스트 생성기 초기화 - 이 부분 추가
+    this.postGenerator = new PostGenerator(runtime);
+
+    // 포스트 스케줄러 초기화 (6시간마다 실행) - 이 부분 추가
+    this.postScheduler = new PostScheduler(
+      this.createScheduledPost.bind(this),
+      6 // 6시간 간격
+    );
 
     // Express 미들웨어 설정
     this.app.use(cors());
@@ -93,6 +106,28 @@ export class LocalLLMInterface {
       }
     });
 
+    // 3. 수동으로 게시글 생성 - 이 엔드포인트 추가
+    this.app.post("/api/v1/generate-post", async (req, res) => {
+      try {
+        const post = await this.createScheduledPost();
+        res.json({ success: true, post });
+      } catch (error) {
+        elizaLogger.error("게시글 생성 오류:", error);
+        res.status(500).json({ error: "게시글 생성 중 오류가 발생했습니다." });
+      }
+    });
+
+    // 스케줄러 컨트롤 API - 이 엔드포인트들 추가
+    this.app.post("/api/v1/scheduler/start", (req, res) => {
+      this.postScheduler.start();
+      res.json({ success: true, message: "스케줄러가 시작되었습니다." });
+    });
+
+    this.app.post("/api/v1/scheduler/stop", (req, res) => {
+      this.postScheduler.stop();
+      res.json({ success: true, message: "스케줄러가 중지되었습니다." });
+    });
+
     // 건강 체크 엔드포인트
     this.app.get("/api/v1/health", (req, res) => {
       res.json({ status: "ok", agent: this.runtime.character.name });
@@ -160,6 +195,59 @@ export class LocalLLMInterface {
     }
   }
 
+  // 스케줄된 게시글 생성 및 API 전송 - 이 메서드 추가
+  private async createScheduledPost(): Promise<string> {
+    try {
+      elizaLogger.info("스케줄된 게시글 생성 시작...");
+
+      // 게시글 생성
+      const postContent = await this.postGenerator.generatePost();
+
+      // 백엔드 API에 게시글 전송
+      await this.sendPostToBackend(postContent);
+
+      return postContent;
+    } catch (error) {
+      elizaLogger.error("스케줄된 게시글 생성 중 오류 발생:", error);
+      throw error;
+    }
+  }
+
+  // 백엔드 API에 게시글 전송 - 이 메서드 추가
+  private async sendPostToBackend(postContent: string): Promise<void> {
+    try {
+      // 백엔드 API URL은 환경 변수로 설정 가능
+      const backendUrl = process.env.BACKEND_API_URL || "https://picscore.net";
+
+      // 로컬 환경
+      // const backendUrl = "http://host.docker.internal:8080";\
+
+      elizaLogger.info(
+        `백엔드 API에 게시글 전송 중... URL: ${backendUrl}/api/v1/lumina/post`
+      );
+
+      const response = await fetch(`${backendUrl}/api/v1/lumina/post`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          postContent,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`백엔드 API 오류: ${response.status} ${errorText}`);
+      }
+
+      elizaLogger.info("게시글이 성공적으로 전송되었습니다.");
+    } catch (error) {
+      elizaLogger.error("백엔드 API 전송 중 오류 발생:", error);
+      console.error(error);
+      throw error;
+    }
+  }
   // 서버 시작
   private startServer(): Promise<void> {
     return new Promise((resolve) => {
@@ -168,6 +256,10 @@ export class LocalLLMInterface {
           elizaLogger.successesTitle,
           `Luna 플랫폼 API 서버가 Local LLM과 연결되어 포트 ${this.port}에서 시작되었습니다.`
         );
+
+        // 서버 시작 시 스케줄러도 시작
+        this.postScheduler.start();
+
         resolve();
       });
     });
@@ -175,6 +267,9 @@ export class LocalLLMInterface {
 
   // 서버 중지
   async stop() {
+    // 스케줄러 중지
+    this.postScheduler.stop();
+
     if (this.server) {
       await new Promise<void>((resolve) => {
         this.server.close(() => {

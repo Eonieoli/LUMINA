@@ -85,7 +85,6 @@ public class JWTFilter extends OncePerRequestFilter {
                 }
             }
             // 여기까지
-
             tokenValidationUtil.validateAccessToken(accessToken);
 
             try {
