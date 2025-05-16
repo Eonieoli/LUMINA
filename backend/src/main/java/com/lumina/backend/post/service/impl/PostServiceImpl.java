@@ -219,12 +219,13 @@ public class PostServiceImpl implements PostService {
             User user, int appliedReward,
             UploadPostRequest request) throws IOException {
 
+        Category category = findUtil.getCategoryByCategoryName("기타");
         // 이미지가 있으면 S3 업로드 후 경로 저장, 없으면 텍스트만 저장
         if (request.getPostImageFile() != null && !request.getPostImageFile().isEmpty()) {
             String postImage = s3Service.uploadImageFile(request.getPostImageFile(), "post/");
-            return new Post(user, postImage, request.getPostContent(), 0, appliedReward);
+            return new Post(user, category, postImage, request.getPostContent(), 0, appliedReward);
         } else {
-            return new Post(user, request.getPostContent(), 0, appliedReward);
+            return new Post(user, category, request.getPostContent(), 0, appliedReward);
         }
     }
 
