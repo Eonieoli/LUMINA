@@ -61,4 +61,5 @@ datasources:
       clientEmail: grafana@elevated-cargo-439808-e0.iam.gserviceaccount.com
       tokenUri: https://oauth2.googleapis.com/token
       keyJsonFilePath: /etc/grafana/secrets/ga-service-account.json
+      defaultLocation: asia-northeast3
     secureJsonData: {}

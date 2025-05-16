@@ -111,21 +111,9 @@
             "type": "blackcowmoo-googleanalytics-datasource",
             "uid": "google_analytics"
           },
-          "dimensions": [
-            {
-              "name": "dateRange",
-              "label": "Last 30 days"
-            },
-            {
-              "name": "metrics",
-              "label": "activeUsers"
-            },
-            {
-              "name": "dimensions",
-              "label": "date"
-            }
-          ],
-          "limit": 1000,
+          "dateRange": "Last 30 days",
+          "metrics": ["activeUsers"],
+          "dimensions": "date",
           "refId": "A"
         }
       ],
@@ -215,21 +203,9 @@
             "type": "blackcowmoo-googleanalytics-datasource",
             "uid": "google_analytics"
           },
-          "dimensions": [
-            {
-              "name": "dateRange",
-              "label": "Last 30 days"
-            },
-            {
-              "name": "metrics",
-              "label": "averageSessionDuration"
-            },
-            {
-              "name": "dimensions",
-              "label": "date"
-            }
-          ],
-          "limit": 1000,
+          "dateRange": "Last 30 days",
+          "metrics": ["averageSessionDuration"],
+          "dimensions": "date",
           "refId": "A"
         }
       ],
@@ -288,20 +264,9 @@
             "type": "blackcowmoo-googleanalytics-datasource",
             "uid": "google_analytics"
           },
-          "dimensions": [
-            {
-              "name": "dateRange",
-              "label": "Last 30 days"
-            },
-            {
-              "name": "metrics",
-              "label": "screenPageViews"
-            },
-            {
-              "name": "dimensions",
-              "label": "pagePath"
-            }
-          ],
+          "dateRange": "Last 30 days",
+          "metrics": ["screenPageViews"],
+          "dimensions": "pagePath",
           "limit": 10,
           "refId": "A"
         }
@@ -361,20 +326,9 @@
             "type": "blackcowmoo-googleanalytics-datasource",
             "uid": "google_analytics"
           },
-          "dimensions": [
-            {
-              "name": "dateRange",
-              "label": "Last 30 days"
-            },
-            {
-              "name": "metrics",
-              "label": "totalUsers"
-            },
-            {
-              "name": "dimensions",
-              "label": "country"
-            }
-          ],
+          "dateRange": "Last 30 days",
+          "metrics": ["totalUsers"],
+          "dimensions": "country",
           "limit": 10,
           "refId": "A"
         }
@@ -465,25 +419,13 @@
             "type": "blackcowmoo-googleanalytics-datasource",
             "uid": "google_analytics"
           },
-          "dimensions": [
-            {
-              "name": "dateRange",
-              "label": "Last 30 days"
-            },
-            {
-              "name": "metrics",
-              "label": "eventCount"
-            },
-            {
-              "name": "dimensions",
-              "label": "date,eventName"
-            }
-          ],
-          "limit": 1000,
+          "dateRange": "Last 30 days",
+          "metrics": ["eventCount"],
+          "dimensions": "date,eventName",
           "refId": "A",
-          "where": [
+          "filters": [
             {
-              "name": "eventName",
+              "key": "eventName",
               "operator": "EXACT",
               "value": "api_call"
             }
@@ -544,20 +486,9 @@
             "type": "blackcowmoo-googleanalytics-datasource",
             "uid": "google_analytics"
           },
-          "dimensions": [
-            {
-              "name": "dateRange",
-              "label": "Last 30 days"
-            },
-            {
-              "name": "metrics",
-              "label": "eventCount"
-            },
-            {
-              "name": "dimensions",
-              "label": "eventName"
-            }
-          ],
+          "dateRange": "Last 30 days",
+          "metrics": ["eventCount"],
+          "dimensions": "eventName",
           "limit": 1000,
           "refId": "A"
         }
