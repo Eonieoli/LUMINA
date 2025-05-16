@@ -37,12 +37,12 @@
       "editable": true,
       "jsonData": {
         "authType": "jwt",
-        "serviceAccountKeyPath": "/etc/grafana/secrets/ga-service-account.json",
+        "keyJsonFilePath": "/etc/grafana/secrets/ga-service-account.json",
         "tokenUri": "https://oauth2.googleapis.com/token",
-        "clientEmail": "${GA_CLIENT_EMAIL}",
-        "defaultProjectId": "${GA_PROJECT_ID}",
+        "clientEmail": "grafana@elevated-cargo-439808-e0.iam.gserviceaccount.com",
+        "defaultProjectId": "elevated-cargo-439808-e0",
         "dataSourceType": "googleAnalytics",
-        "propertyId": "${GA_PROD_PROPERTY_ID}",
+        "propertyId": "G-4NGWW4YN9L",
         "dateRanges": [
           {
             "name": "Last 30 days",
@@ -60,7 +60,8 @@
             "endDate": "yesterday"
           }
         ]
-      }
+      },
+      "secureJsonData": {}
     },
     {
       "name": "Google BigQuery",
@@ -71,12 +72,13 @@
       "editable": true,
       "jsonData": {
         "authenticationType": "jwt",
-        "defaultProject": "${GA_PROJECT_ID}",
+        "defaultProject": "elevated-cargo-439808-e0",
         "processedQueries": true,
-        "clientEmail": "${GA_CLIENT_EMAIL}",
+        "clientEmail": "grafana@elevated-cargo-439808-e0.iam.gserviceaccount.com",
         "tokenUri": "https://oauth2.googleapis.com/token",
         "keyJsonFilePath": "/etc/grafana/secrets/ga-service-account.json"
-      }
+      },
+      "secureJsonData": {}
     }
   ]
 }
