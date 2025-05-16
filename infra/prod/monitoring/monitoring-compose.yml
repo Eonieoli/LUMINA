@@ -48,13 +48,13 @@ services:
     labels:
       org.label-schema.group: "monitoring"
       environment: "production"
-    # Install Google Analytics Plugin
+    # Install Required Plugins
     user: "0"
     entrypoint:
       - /bin/sh
       - -c
       - |
-        grafana-cli plugins install grafana-googlesheets-datasource
+        grafana-cli plugins install blackcowmoo-googleanalytics-datasource
         grafana-cli plugins install grafana-bigquery-datasource
         exec /run.sh
     
