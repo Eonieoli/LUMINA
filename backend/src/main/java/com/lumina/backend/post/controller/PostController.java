@@ -2,6 +2,7 @@ package com.lumina.backend.post.controller;
 
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.common.utill.TokenUtil;
+import com.lumina.backend.lumina.service.LuminaService;
 import com.lumina.backend.post.model.request.UploadPostRequest;
 import com.lumina.backend.post.model.response.UploadPostResponse;
 import com.lumina.backend.post.service.PostService;
@@ -19,6 +20,7 @@ import java.util.Map;
 public class PostController {
 
     private final PostService postService;
+    private final LuminaService luminaService;
 
     private final TokenUtil tokenUtil;
 
@@ -30,6 +32,7 @@ public class PostController {
 
         Long userId = tokenUtil.findIdByToken(request);
         UploadPostResponse response = postService.uploadPost(userId, uploadPostRequest);
+        luminaService.getPostCategory(response.getPostId(), uploadPostRequest);
 
         return ResponseEntity.ok(BaseResponse.success("게시물 등록 완료", response));
     }

@@ -38,7 +38,7 @@ public class S3Service {
             throw new CustomException(HttpStatus.BAD_REQUEST, "업로드 파일이 유효하지 않습니다");
         }
 
-        String fileName = UUID.randomUUID() + "." + getFileExtension(file.getOriginalFilename());
+        String fileName = UUID.randomUUID() + getFileExtension(file.getOriginalFilename());
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)

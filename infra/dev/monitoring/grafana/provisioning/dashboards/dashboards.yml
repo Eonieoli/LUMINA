@@ -1,0 +1,23 @@
+apiVersion: 1
+
+providers:
+  # <string> 프로바이더 이름
+  - name: 'Default'
+    # <string> 조직 이름. 기본값은 'Main Org.'
+    orgId: 1
+    # <string> 프로바이더 유형. 기본값은 'file'
+    type: file
+    # <bool> 디스에이블 여부
+    disableDeletion: false
+    # <bool> 대시보드 업데이트 허용 여부
+    allowUiUpdates: true
+    # <bool> 폴더 이름 변경 가능 여부
+    allowOrgId: 1
+    # <int> 대시보드 업데이트 간격(초)
+    updateIntervalSeconds: 10
+    # <string> 대시보드 폴더 설정
+    options:
+      # <string> 대시보드 파일이 있는 경로
+      path: /etc/grafana/dashboards
+      # <bool> 모든 폴더 검색 여부
+      foldersFromFilesStructure: true

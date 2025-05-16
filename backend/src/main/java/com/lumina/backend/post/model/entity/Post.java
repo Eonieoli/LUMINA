@@ -25,7 +25,7 @@ public class Post extends BaseEntity {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @Column(name = "post_image", length = 300)
@@ -60,5 +60,9 @@ public class Post extends BaseEntity {
 
     public void plusViews(Integer postViews) {
         this.postViews += postViews;
+    }
+
+    public void updateCategory(Category category) {
+        this.category = category;
     }
 }
