@@ -1,4 +1,4 @@
-import { CoinIcon, WinkLuna } from "@/assets/images"
+import { CoinIcon, ComputerTypingLuna } from "@/assets/images"
 import { useEffect, useState } from "react"
 import DonationLayout from "./DonationLayout"
 import { useNavigate, useParams } from "react-router-dom"
@@ -81,7 +81,7 @@ export default function DonationInputPage() {
 
     <DonationLayout
       bottomButton = {
-        <button className="w-full h-full relative p-3" onClick={checkPointValue}>확인</button>
+        <button className="w-full h-full relative p-3 cursor-pointer" onClick={checkPointValue}>확인</button>
       }
       isModalOpen={isModalOpen}
     >
@@ -92,14 +92,14 @@ export default function DonationInputPage() {
           <div className="text-[20px] font-medium text-gray-600 mt-10">
             <p>
               기부하실
-              <span className="font-bold text-[#5D56F1]">포인트</span>
+              <span className="font-bold text-[#5D56F1]"> 포인트</span>
               <span className="font-bold">를 입력</span>
               해주세요!
             </p>
           </div>
 
           {/* 루미나 이미지 */}
-            <img src={WinkLuna} alt="윙크하는루미나" className="w-50 mt-10 mb-15"/>  
+            <img src={ComputerTypingLuna} alt="윙크하는루미나" className="w-50 mt-10 mb-15"/>  
           
           {/* 포인트 입력창 */}
           <div className="flex justify-center items-center w-2/5 pb-0.5 text-gray-400">
@@ -107,7 +107,7 @@ export default function DonationInputPage() {
               type="text" 
               value={point}
               onChange={(e) => {setPoint(e.target.value)}}
-              placeholder="100"
+              placeholder="0"
               className="text-2xl font-semibold text-center outline-none w-full mr-1"
             />
             <img src={CoinIcon} alt="코인" className="w-6" />

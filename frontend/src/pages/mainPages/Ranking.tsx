@@ -1,6 +1,6 @@
 import { RankingInfo } from "@/apis/ranking";
 import { useEffect, useState } from "react";
-import { LuminaLogo } from "@/assets/images";
+import { logo } from "@/assets/images";
 import { DefaultProfile, SmileLuna, PokerLuna } from '@/assets/images';
 import { useNavigate } from "react-router-dom";
 
@@ -41,7 +41,7 @@ export default function RankingPage() {
   return (
   <div className="p-6 h-full overflow-y-auto bg-white">
     {/* 로고 */}
-    <img src={LuminaLogo} alt="루미나 로고" className="w-25"/>
+    <img src={logo} alt="루미나 로고" className="w-25"/>
 
     {/* top 3 */}
     <div className="flex w-full justify-between items-end gap-2 mb-5">
@@ -85,29 +85,37 @@ export default function RankingPage() {
           <img src={PokerLuna} alt="루나 이미지" className="w-10" />
           {rankings[0]?.nickname}님의 랭킹
         </div>
-        <div className="bg-[#9C97FA] w-full h-20 rounded-2xl mt-2d flex items-center justify-between pr-5 pl-5 text-white mt-3">
+        <div className="bg-[#9c97fa] w-full p-5 h-23 sm:h-20 rounded-2xl mt-2d pr-5 pl-5 text-white mt-3">
 
-          <div className="flex h-full items-center gap-5">
-            <img 
+          <div className="flex sm:flex-row justify-evenly h-full items-center gap-5">
+
+            <img
               src={rankings[0]?.profileImage ?? DefaultProfile}
               alt="나의 프로필 이미지" 
-              className="w-15 aspect-square object-cover bg-white rounded-full"/>
-          </div>
-          <p className="text-[16px]">
-            {rankings[0]?.rank <= 3
-              ? "Top3 에요! 👑"
-              : "조금만 더 힘내요! 💪"}
-          </p>
-          <div>
-            <p className="flex justify-center font-semibold text-[16px]">
-              <span className="font-normal ">
-                {rankings[0]?.sumPoint}점 /&nbsp;
-              </span>
-              {rankings[0]?.rank}위
-            </p>
-            <p className="text-sm font-normal">
-              전체 {totalPeople}명 중 상위 {Math.round(rankings[0]?.rank / totalPeople * 100)}%
-            </p>
+              className="w-18 sm:w-15 aspect-square object-cover bg-white rounded-full"
+            />
+
+            <div className="flex flex-col sm:flex-row sm:gap-10 items-center gap-2">
+              <p className="sm:text-xl text-[15px]">
+                {rankings[0]?.rank <= 3
+                  ? `Top3 에요! 👑`
+                  : `조금만 더 힘내요! 💪`
+                }
+              </p>
+              <div>
+                <p className="flex justify-center sm:justify-end font-semibold sm:text-[16px] text-[14px]">
+                  <span className="font-normal ">
+                    {rankings[0]?.sumPoint}점 /&nbsp;
+                  </span>
+                  {rankings[0]?.rank}위
+                </p>
+                <p className="sm:text-sm font-light text-[14px]">
+                  전체 <span className="font-bold">{totalPeople}명</span> 중 상위 
+                  <span className="font-bold"> {Math.round(rankings[0]?.rank / totalPeople * 100)}%</span>
+                </p>
+              </div>
+            
+            </div>  
           </div>
         </div>
       </div>
@@ -130,7 +138,7 @@ export default function RankingPage() {
           >
             {/* 왼쪽: 순위, 이미지, 닉네임 */}
             <div className="flex items-center gap-3">
-              <span className="text-[20px] text-[#5D56F1] w-5 text-center">{user.rank}</span>
+              <span className="text-[20px] font-semmibold text-[#5D56F1] w-5 text-center">{user.rank}</span>
               <img
                 src={user.profileImage ?? DefaultProfile}
                 alt="프로필"

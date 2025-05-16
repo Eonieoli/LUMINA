@@ -5,6 +5,7 @@ import com.lumina.backend.post.model.entity.Comment;
 import com.lumina.backend.post.model.entity.Post;
 import com.lumina.backend.user.model.entity.User;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 public class ValidationUtil {
 

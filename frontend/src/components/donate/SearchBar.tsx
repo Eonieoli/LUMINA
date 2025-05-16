@@ -35,7 +35,7 @@ export default function DonateSearchBar({
             <img
                 src={SearchIconGray}
                 alt="searchIcon"
-                className="m-4 w-3 text-gray-300"
+                className="m-4 w-3 text-gray-300 cursor-pointer"
                 onClick={onSearchClick}
             />
         </div>

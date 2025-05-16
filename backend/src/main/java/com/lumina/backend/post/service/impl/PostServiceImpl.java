@@ -62,14 +62,12 @@ public class PostServiceImpl implements PostService {
     public UploadPostResponse uploadPost(
             Long userId, UploadPostRequest request) throws IOException {
 
-        ValidationUtil.validateRequiredField(request.getCategoryName(), "카테고리");
         ValidationUtil.validateRequiredField(request.getPostContent(), "게시물 내용");
 
         User user = findUtil.getUserById(userId);
-        Category category = findUtil.getCategoryByCategoryName(request.getCategoryName());
 
         int appliedReward = aiService.textReward(user, request.getPostContent()); // AI 기반 보상 산출
-        Post post = createPost(user, category, appliedReward, request);
+        Post post = createPost(user, appliedReward, request);
         Post savedPost = postRepository.save(post);
 
         savePostHashtags(request.getHashtag(), savedPost); // 해시태그 저장
@@ -213,15 +211,15 @@ public class PostServiceImpl implements PostService {
      * 게시물 엔티티 생성
      *
      * @param user          게시글 작성자
-     * @param category      카테고리
      * @param appliedReward AI 산출 보상
      * @param request       업로드 요청 DTO
      * @return Post 생성된 게시물 엔티티
      */
     private Post createPost(
-            User user, Category category, int appliedReward,
+            User user, int appliedReward,
             UploadPostRequest request) throws IOException {
 
+        Category category = findUtil.getCategoryByCategoryName("기타");
         // 이미지가 있으면 S3 업로드 후 경로 저장, 없으면 텍스트만 저장
         if (request.getPostImageFile() != null && !request.getPostImageFile().isEmpty()) {
             String postImage = s3Service.uploadImageFile(request.getPostImageFile(), "post/");

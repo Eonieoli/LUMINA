@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 interface DonationLayoutProps {
   children: ReactNode
   bottomButton?: ReactNode
-  isModalOpen?: Boolean
+  isModalOpen?: boolean
 }
 
 export default function DonationLayout({children, bottomButton, isModalOpen}: DonationLayoutProps) {
@@ -25,7 +25,7 @@ const goToBack = () => {
       <div className="flex items-center justify-between mb-6 h-6">
         <img 
           src={BackIcon} alt="뒤로가기" 
-          className="w-5"
+          className="w-5 cursor-pointer"
           onClick={goToBack}
         />
         <PointInfo />

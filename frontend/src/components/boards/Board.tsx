@@ -21,6 +21,7 @@ interface BoardProps {
     postViews: number;
     likeCnt: number;
     commentCnt: number;
+    createdAt: string;
     isLike: boolean;
     onDelete: (postId: number) => void;
 }
@@ -36,6 +37,7 @@ export const Board = ({
     postViews,
     likeCnt: initialLikeCnt,
     commentCnt,
+    createdAt,
     isLike: initialIsLike,
     onDelete,
 }: BoardProps) => {
@@ -47,6 +49,8 @@ export const Board = ({
     const contentRef = useRef<HTMLDivElement>(null);
     const [showComments, setShowComments] = useState(false);
     const [isDesktop, setIsDesktop] = useState(false);
+    const [isModalOpened, setIsModalOpened] = useState<boolean>(false);
+
     const navigate = useNavigate();
 
     const toggleContent = () => setIsExpanded(!isExpanded);
@@ -63,14 +67,19 @@ export const Board = ({
         }
     };
 
-    const deleteClick = async (postId: number) => {
+    const deleteClick = () => {
+        setIsModalOpened(true);
+    };
+
+    const deleteConfirm = async (postId: number) => {
         try {
             await deletePost(postId);
             onDelete(postId);
+            setIsModalOpened(false);
         } catch (error) {
             console.error(error);
         }
-    };
+    }
 
     const profileClick = (userId: number) => {
         navigate(`/mypage/${userId}`);
@@ -114,8 +123,48 @@ export const Board = ({
         return () => mediaQuery.removeEventListener("change", handler);
       }, []);
 
+      function formatCreatedAt(createdAt: string): string {
+        const createdDate = new Date(createdAt);
+        const now = new Date();
+      
+        // 오늘 00:00 기준으로 비교하기 위해 시간 제거
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfCreated = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
+      
+        const msInDay = 1000 * 60 * 60 * 24;
+        const diffInMs = startOfToday.getTime() - startOfCreated.getTime();
+        const diffInDays = Math.floor(diffInMs / msInDay);
+      
+        if (diffInDays < 0) {
+          return '미래 날짜'; // 예외 처리
+        } else if (diffInDays === 0) {
+          return '오늘';
+        } else if (diffInDays <= 7) {
+          return `${diffInDays}일 전`;
+        } else {
+          const yy = String(createdDate.getFullYear()).slice(2);
+          const mm = String(createdDate.getMonth() + 1).padStart(2, '0');
+          const dd = String(createdDate.getDate()).padStart(2, '0');
+          return `${yy}.${mm}.${dd}`;
+        }
+      }
+
     return (
         <>
+            {/* 삭제 확인 모달 */}
+            <div onClick={() => setIsModalOpened(false)} className={`fixed flex justify-center items-center z-50 left-0 top-0 w-full h-full bg-[#00000050] ${isModalOpened ? 'block' : 'hidden'}`}>
+                <div
+                    onClick={(e) => e.stopPropagation()}
+                    className='relative overflow-hidden flex flex-col justify-center items-center rounded-2xl bg-white w-4/5 aspect-square max-w-96 md:ml-20 p-10'
+                >
+                    <p>게시물을 삭제하시겠습니까?</p>
+                    <p>게시물을 삭제하시는 경우 복구가 불가능합니다.</p>
+                    <div className='absolute grid grid-cols-1 bottom-0 w-full h-1/3 text-lg font-semibold'>
+                        <div onClick={() => deleteConfirm(postId)} className='flex justify-center items-center border-t border-gray-300 cursor-pointer hover:bg-gray-100 transition duration-300 text-red-500'>삭제</div>
+                        <div onClick={() => setIsModalOpened(false)} className='flex justify-center items-center border-t border-gray-300 cursor-pointer hover:bg-gray-100 transition duration-300'>취소</div>
+                    </div>
+                </div>
+            </div>
             <div className="flex w-full flex-col gap-y-2 border-b-3 border-gray-200 px-5 py-2">
                 {/* 사용자 프로필 */}
                 <div className="flex items-center justify-between">
@@ -123,13 +172,13 @@ export const Board = ({
                         <img
                             src={profileImage ? profileImage : DefaultProfile}
                             alt="프로필 이미지"
-                            className="h-7 w-7 rounded-full"
+                            className="h-7 w-7 rounded-full object-cover"
                         />
                         <span className="font-bold">{nickname}</span>
                     </div>
                     {authStore.data.nickname === nickname ? (
                         <div
-                            onClick={() => deleteClick(postId)}
+                            onClick={() => deleteClick()}
                             className="relative flex h-4 w-4 cursor-pointer gap-x-1 py-2"
                         >
                             <div className="absolute top-1/2 left-0 h-[2px] w-4 -translate-y-1/2 rotate-45 bg-black"></div>
@@ -170,6 +219,7 @@ export const Board = ({
                         {isExpanded ? '접기' : '더보기'}
                     </button>
                 )}
+                <div className='text-sm text-gray-500 flex items-center'>{formatCreatedAt(createdAt)}</div>
                 {/* 좋아요, 댓글 및 공유 */}
                 <div className="flex justify-between items-center">
                     <div className='flex gap-x-4'>
@@ -206,7 +256,7 @@ export const Board = ({
                 <div onClick={() => setShowComments(false)} className="fixed flex justify-center items-center right-0 top-0 h-full w-full bg-[#00000050] shadow-lg z-50">
                     <div onClick={(e) => e.stopPropagation()} className='grid grid-cols-5 ml-20 w-2/3 h-3/4 min-w-[688px]'>
                         <div className='flex justify-center items-center col-span-3 rounded-l-md bg-black'>
-                            <img src={postImage} className='w-full h-auto' alt="" />
+                            <img src={postImage} className='w-full h-full aspect-square object-contain' alt="" />
                         </div>
                         <Comments postId={postId} children='col-span-2 bg-white rounded-r-md justify-between' />
                     </div>

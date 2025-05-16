@@ -1,4 +1,5 @@
 import { apiClient } from "./axios";
+import { logApiEvent } from '@/utils/analytics';
 
 // 팔로잉 추가, 삭제
 export const followToggle = async (followingId:number) => {
@@ -7,10 +8,12 @@ export const followToggle = async (followingId:number) => {
       followingId:followingId
     })
     console.log(response.data.message)
+    logApiEvent("followToggle", "success");
     return response.data
   }
   catch(error) {
     console.log("팔로우 토글 실패!", error)
+    logApiEvent("followToggle", "error");
     throw error
   }
 }
@@ -23,10 +26,12 @@ export const getFollowers = async (profileUserId: number) => {
         userId: profileUserId,
     }})
     console.log(`${profileUserId}`,"님의 팔로워 리스트 가져오기 성공",response.data.data)
+    logApiEvent("getFollowers", "success");
     return response.data.data
   }
   catch(error){
     console.log("팔로워 조회 실패!", error)
+    logApiEvent("getFollowers", "error");
     throw error
   }
 }
@@ -40,10 +45,12 @@ export const getFollowings = async (profileUserId: number) => {
       }
     })
     console.log(`${profileUserId}`,"님의 팔로잉 리스트 가져오기 성공",response.data.data)
+    logApiEvent("getFollowings", "success");
     return response.data.data
   }
   catch(error){
     console.log("팔로잉 조회 실패!", error)
+    logApiEvent("getFollowings", "error");
     throw error
   }
 }
@@ -53,9 +60,11 @@ export const deleteFollwer = async (userId: number) => {
   try {
     await apiClient.delete(`/follower/${userId}`)
     console.log(`${userId}님 팔로워에서 삭제`)
+    logApiEvent("deleteFollwer", "success");
   }
   catch (error) {
     console.log("내 팔로워 삭제 실패", error)
+    logApiEvent("deleteFollwer", "error");
     throw error
   }
 }

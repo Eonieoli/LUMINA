@@ -1,16 +1,15 @@
 import { apiClient } from './axios';
+import { logApiEvent } from '@/utils/analytics';
 
 // 게시물 등록
 interface CreatePostParams {
     postImageFile?: File | null;
-    categoryName: string;
     hashtag: string[];
     postContent: string;
 }
 
 export const createPost = async ({
     postImageFile,
-    categoryName,
     hashtag,
     postContent,
 }: CreatePostParams) => {
@@ -20,7 +19,6 @@ export const createPost = async ({
         if (postImageFile) {
             formData.append('postImageFile', postImageFile);
         }
-        formData.append('categoryName', categoryName);
         formData.append('hashtag', JSON.stringify(hashtag));
         formData.append('postContent', postContent);
 
@@ -30,9 +28,11 @@ export const createPost = async ({
             },
         });
 
+        logApiEvent("createPost", "success");
         return response.data;
     } catch (error) {
         console.error('게시물 생성 API 요청 에러:', error);
+        logApiEvent("createPost", "error");
         throw error;
     }
 };
@@ -44,9 +44,11 @@ export const getPosts = async (pageNum: number, feedType: string) => {
             params: { pageNum, feedType },
         });
 
+        logApiEvent("getPosts", "success");
         return response.data;
     } catch (error) {
         console.error('게시물 전체 조회 API 요청 에러 : ', error);
+        logApiEvent("getPosts", "error");
         throw error;
     }
 };
@@ -57,10 +59,13 @@ export const getUserPosts = async (userId: number, pageNum: number) => {
         const response = await apiClient.get('/post', {
             params: {userId, pageNum},
         })
+            
+        logApiEvent("getUserPosts", "success");
         return response.data.data
     }
     catch (error) {
         console.log("특정 유저 게시물 조회 실패!", error)
+        logApiEvent("getUserPosts", "error");
         throw error
     }
 }
@@ -73,9 +78,11 @@ export const getComments = async (pageNum: number, postId: number) => {
             params: { pageNum },
         });
 
+        logApiEvent("getComments", "success");
         return response.data;
     } catch (error) {
         console.error('댓글 조회 API 요청 에러 : ', error);
+        logApiEvent("getComments", "error");
         throw error;
     }
 };
@@ -87,9 +94,11 @@ export const getReplies = async (postId: number, commentId: number) => {
             '/post/' + postId + '/comment/' + commentId
         );
 
+        logApiEvent("getReplies", "success");
         return response.data;
     } catch (error) {
         console.error('대댓글 조회 API 요청 에러 : ', error);
+        logApiEvent("getReplies", "error");
         throw error;
     }
 };
@@ -99,9 +108,11 @@ export const deletePost = async (postId: number) => {
     try {
         const response = await apiClient.delete('/post/' + postId);
 
+        logApiEvent("deletePost", "success");
         return response.data;
     } catch (error) {
         console.error('게시물 삭제 API 요청 에러 : ', error);
+        logApiEvent("deletePost", "error");
         throw error;
     }
 };
@@ -111,9 +122,11 @@ export const postLike = async (postId: number) => {
     try {
         const response = await apiClient.post('/post/' + postId + '/like');
 
+        logApiEvent("postLike", "success");
         return response.data;
     } catch (error) {
         console.error('게시물 좋아요 API 요청 에러 : ', error);
+        logApiEvent("postLike", "error");
         throw error;
     }
 };
@@ -135,9 +148,11 @@ export const postComment = async (
         }
 
         const response = await apiClient.post(`/post/${postId}/comment`, data);
+        logApiEvent("postComment", "success");
         return response.data;
     } catch (error) {
         console.error('게시물 댓글 등록 API 요청 에러: ', error);
+        logApiEvent("postComment", "success");
         throw error;
     }
 };
@@ -149,9 +164,11 @@ export const deleteComment = async (postId: number, commentId: number) => {
             '/post/' + postId + '/comment/' + commentId
         );
 
+        logApiEvent("deleteComment", "success");
         return response.data;
     } catch (error) {
         console.error('게시물 댓글 삭제 API 요청 에러: ', error);
+        logApiEvent("deleteComment", "error");
         throw error;
     }
 };
@@ -163,9 +180,11 @@ export const commentLike = async (postId: number, commentId: number) => {
             '/post/' + postId + '/comment/' + commentId + '/like'
         );
 
+        logApiEvent("commentLike", "success");
         return response.data;
     } catch (error) {
         console.error('게시물 댓글 삭제 API 요청 에러: ', error);
+        logApiEvent("commentLike", "error");
         throw error;
     }
 };
@@ -178,9 +197,11 @@ export const getCategoryExplore = async (pageNum: number, ) => {
                 pageNum
             }
         })
+        logApiEvent("getCategoryExplore", "success");
         return response.data
     } catch (error) {
         console.error("카테고리 검색 API 요청 에러: ", error);
+        logApiEvent("getCategoryExplore", "error");
         throw error
     }
 }
@@ -189,9 +210,11 @@ export const getCategoryExplore = async (pageNum: number, ) => {
 export const getCategories = async () => {
     try {
         const response = await apiClient.get('/category');
+        logApiEvent("getCategories", "success");
         return response.data
     } catch (error) {
         console.error("카테고리 전체 조회회 API 에러: ", error);
+        logApiEvent("getCategories", "success");
         throw error
     }
 }
@@ -200,9 +223,11 @@ export const getCategories = async () => {
 export const subscribeCategory = async (categoryId: number) => {
     try {
         const response = await apiClient.post('/category/' + categoryId);
+        logApiEvent("subscribeCategory", "success");
         return response.data
     } catch (error) {
         console.error("카테고리 구독 요청 API 에러: ", error);
+        logApiEvent("subscribeCategory", "success");
         throw error
     }
 }
@@ -217,9 +242,11 @@ export const getUser = async (keyword: string) => {
             }
         })
 
+        logApiEvent("getUser", "success");
         return response.data
     } catch (error) {
         console.error('유저 검색 API 요청 에러: ', error);
+        logApiEvent("getUser", "error");
         throw error
     }
 }
@@ -234,9 +261,11 @@ export const getHashtagPosts = async (keyword: string, pageNum: number) => {
             }
         })
 
+        logApiEvent("getHashtagPosts", "success");
         return response.data
     } catch (error) {
         console.error('해시태그 게시물 조회 API 요청 에러: ', error);
+        logApiEvent("getHashtagPosts", "error");
         throw error
     }
 }
