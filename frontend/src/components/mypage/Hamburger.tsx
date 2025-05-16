@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { signOut } from "@/apis/auth";
 import { Rewards, Subscribes } from './HamburgerChildren'
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { XIcon } from "@/assets/images";
 
 export interface HamburgerProps {
@@ -16,10 +16,13 @@ export default function Hamburger({isVisible, onClose}: HamburgerProps) {
     const [isSubscribeAnimation, setIsSubscribeAnimation] = useState(false);
     const [isRewardsAnimation, setIsRewardsAnimation] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
     const state = location.state;
 
     const handleSignOut = async () => {
         await signOut();
+        navigate('/login');
+        
     }
 
     const handleClose = (name: string) => {
