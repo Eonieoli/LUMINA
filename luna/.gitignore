@@ -5,6 +5,8 @@ dist
 !luna-client.ts
 !local-llm-server.ts
 !local-llm.ts
+!post-generator.ts
+!scheduler.ts
 .env
 node_modules
 dist/
