@@ -122,7 +122,7 @@ export default function PostCreate() {
                     className={`relative flex w-full items-center justify-center overflow-hidden bg-gray-100 ${previewUrl ? null : 'aspect-square'}`}
                 >
                     {previewUrl ? (
-                        <div className='w-full aspect-square'>
+                        <div className='w-full flex justify-center items-center aspect-square'>
                             <img
                                 src={previewUrl}
                                 alt="preview"
