@@ -43,6 +43,7 @@ import SearchIcon from './navbar/Ic_search.webp';
 import MainText from './main/main_text.webp';
 import MainBackground from './main/background_img.webp'
 import MainBackgroundShort from './main/background_img_short.webp'
+import logo from '@/assets/images/header/logo.png'
 
 export {
     DefaultProfile,
@@ -76,5 +77,6 @@ export {
     PencilIcon,
     AngryLuna,
     HeartLuna,
-    StandingLuna
+    StandingLuna,
+    logo
 }
