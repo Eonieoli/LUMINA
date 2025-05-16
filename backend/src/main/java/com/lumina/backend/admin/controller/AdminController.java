@@ -1,5 +1,6 @@
 package com.lumina.backend.admin.controller;
 
+import com.lumina.backend.admin.model.response.GetUserRoleResponse;
 import com.lumina.backend.admin.service.AdminService;
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.common.utill.TokenUtil;
@@ -18,6 +19,16 @@ public class AdminController {
     private final AdminService adminService;
 
     private final TokenUtil tokenUtil;
+
+
+    @GetMapping("")
+    public ResponseEntity<BaseResponse<GetUserRoleResponse>> getUserRole(HttpServletRequest request) {
+
+        String role = tokenUtil.findRoleByToken(request);
+        GetUserRoleResponse response = new GetUserRoleResponse(role);
+
+        return ResponseEntity.ok(BaseResponse.success("사용자 role 조회 완료", response));
+    }
 
 
     @GetMapping("/user")

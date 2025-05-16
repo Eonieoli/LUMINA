@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import DonationLayout from "./DonationLayout";
-import { ComputerHandsupLuna } from "@/assets/images";
+import { StandingLuna } from "@/assets/images";
 import { getPointInfo } from "@/apis/donation";
 import { useNavigate } from "react-router-dom";
 
@@ -23,7 +23,7 @@ export default function DonationThanks () {
     <DonationLayout
       bottomButton = {
         <button 
-          className="w-full h-full relative p-3"
+          className="w-full h-full relative p-3 cursor-pointer"
           //기부처 디테일 페이지(뒤로가기 문제)로 이동하게 할건지 마이페이지로 이동하게 할건지 고민
           // onClick={() => {
           //   if (donationId) navigate(`/donate/${donationId}`);
@@ -43,7 +43,7 @@ export default function DonationThanks () {
             </span>
             드립니다.
           </div>
-          <img src={ComputerHandsupLuna} alt="루나 이미지" className="w-1/2 mt-10" />
+          <img src={StandingLuna} alt="루나 이미지" className="w-1/2 mt-10" />
         </div>
     </DonationLayout>
   )

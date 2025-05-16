@@ -1,37 +1,54 @@
 import { createPost } from '@/apis/board';
 import { elizaBoard } from '@/apis/eliza';
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 export default function PostCreate() {
     const [image, setImage] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [content, setContent] = useState('');
-    const [category, setCategory] = useState('환경');
     const [tagInput, setTagInput] = useState('');
     const [tags, setTags] = useState<string[]>([]);
+    const [isCreating, setIsCreating] = useState<boolean>(false);
     const navigate = useNavigate();
+    
+    useEffect(() => {
+        return () => {
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+        };
+    }, [previewUrl]);
 
     const postUpload = async () => {
+        if (isCreating) return;
+
         if (!content.trim()) {
             toast.error('내용을 입력해주세요.');
             return;
         }
 
         try {
-            const response = await createPost({
+            setIsCreating(true);
+            toast.promise(createPost({
                 postImageFile: image,
-                categoryName: category,
                 hashtag: tags,
                 postContent: content,
-            });
+            }), {
+                loading: '카테고리 추출 중...',
+                success: (res) => {
+                    console.log(res);
+                    elizaBoard(res.data.postId);
+                    navigate('/');
+                    return `업로드 완료!`;
+                },
+                error: 'Error',
+              });
 
-            elizaBoard(response.data.postId);
-            toast.success('업로드 성공');
 
-            navigate('/');
         } catch (error) {
+            setIsCreating(false);
             console.error('게시물 업로드 실패:', error);
             toast.error('게시물 업로드 실패');
         }
@@ -40,8 +57,18 @@ export default function PostCreate() {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (file.size > 5 * 1024 * 1024) { // 5MB 제한
+                toast.error('이미지 파일은 5MB 이하만 업로드 가능합니다.');
+                return;
+            }
+
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+
+            const newUrl = URL.createObjectURL(file);
             setImage(file);
-            setPreviewUrl(URL.createObjectURL(file));
+            setPreviewUrl(newUrl);
         }
     };
 
@@ -58,18 +85,27 @@ export default function PostCreate() {
     const removeTag = (tag: string) => {
         setTags(tags.filter((t) => t !== tag));
     };
+    
+    const handleRemoveImage = () => {
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+        }
+        setImage(null);
+        setPreviewUrl(null);
+    };
 
     return (
-        <div className="flex h-full w-full flex-col gap-4 p-4">
+        <div className="flex min-h-full w-full flex-col gap-4 p-4 bg-white">
             {/* <Toaster /> */}
             {/* 헤더 */}
             <div className="flex items-center justify-between">
-                <Link to="/">
-                    <div className='flex relative w-4 h-full'>
-                        <div className='absolute top-0 w-4 h-[1.5px] bg-black rotate-45'></div>
-                        <div className='absolute top-0 w-4 h-[1.5px] bg-black -rotate-45'></div>
-                    </div>
-                </Link>
+                <div
+                    onClick={() => navigate('/')}
+                    className="relative flex h-4 w-4 cursor-pointer gap-x-1 py-2"
+                >
+                    <div className="absolute top-1/2 left-0 h-[2px] w-4 -translate-y-1/2 rotate-45 bg-black"></div>
+                    <div className="absolute top-1/2 left-0 h-[2px] w-4 -translate-y-1/2 -rotate-45 bg-black"></div>
+                </div>
                 <h1 className="text-lg font-semibold">새 게시물</h1>
                 <button
                     onClick={postUpload}
@@ -80,71 +116,62 @@ export default function PostCreate() {
             </div>
 
             {/* 이미지 업로드 */}
-            <div
-                className={`relative flex w-full items-center justify-center overflow-hidden bg-gray-100 ${previewUrl ? null : 'aspect-square'}`}
-            >
-                {previewUrl ? (
-                    <img
-                        src={previewUrl}
-                        alt="preview"
-                        className="h-full w-full object-cover"
-                    />
-                ) : (
-                    <label className="flex h-full w-full cursor-pointer items-center justify-center text-sm text-gray-400">
-                        이미지 업로드
-                        <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handleImageChange}
-                        />
-                    </label>
-                )}
-            </div>
-
-            {/* 카테고리 선택 */}
             <div>
-                <label className="text-sm font-medium">카테고리</label>
-                <select
-                    className="mt-1 w-full rounded border px-3 py-2"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
+                <label className="text-sm text-gray-600 font-medium">이미지 (선택)</label>
+                <div
+                    className={`relative flex w-full items-center justify-center overflow-hidden bg-gray-100 ${previewUrl ? null : 'aspect-square'}`}
                 >
-                    <option value="환경">환경</option>
-                    <option value="다문화">다문화</option>
-                    <option value="장애">장애</option>
-                    <option value="동물">동물</option>
-                    <option value="의료">의료</option>
-                    <option value="재난">재난</option>
-                    <option value="노인">노인</option>
-                    <option value="한부모">한부모</option>
-                    <option value="아동">아동</option>
-                    <option value="기타">기타</option>
-                </select>
+                    {previewUrl ? (
+                        <div className='w-full flex justify-center items-center aspect-square'>
+                            <img
+                                src={previewUrl}
+                                alt="preview"
+                                className="h-full object-contain"
+                            />
+                            <button
+                                type="button"
+                                onClick={handleRemoveImage}
+                                className="absolute top-2 right-2 rounded-full bg-black bg-opacity-60 px-2 py-1 text-xs text-white"
+                            >
+                                삭제
+                            </button>
+                        </div>
+                    ) : (
+                        <label className="flex h-full w-full cursor-pointer items-center justify-center text-sm text-gray-400">
+                            이미지 업로드
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleImageChange}
+                            />
+                        </label>
+                    )}
+                </div>
             </div>
 
             {/* 내용 입력 */}
             <div>
-                <label className="text-sm font-medium">내용</label>
+                <label className="text-sm text-gray-600 font-medium">내용</label>
                 <textarea
-                    className="mt-1 w-full resize-none rounded border px-3 py-2"
+                    className="mt-1 w-full resize-none rounded border-2 border-gray-400 px-3 py-2"
                     rows={3}
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    placeholder="내용을 입력하세요..."
+                    placeholder="내용을 입력하세요."
                 />
             </div>
 
             {/* 해시태그 입력 */}
             <div>
-                <label className="text-sm font-medium">해시태그</label>
+                <label className="text-gray-600 text-sm font-medium">해시태그 (선택)</label>
                 <input
                     type="text"
-                    className="mt-1 w-full rounded border px-3 py-2"
+                    className="mt-1 w-full rounded border-2 border-gray-400 px-3 py-2"
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={handleTagKeyDown}
-                    placeholder="해시태그를 입력 후 Enter를 누르세요"
+                    placeholder="해시태그를 입력 후 Enter를 누르세요."
                 />
                 <div className="mt-2 flex flex-wrap gap-2">
                     {tags.map((tag) => (

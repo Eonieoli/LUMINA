@@ -22,11 +22,11 @@ export default function PositivenessChart ({positiveness = 0}: PositivenessChart
   const messageData = isPositive ? messages.positive : messages.negative
 
   return (
-    <div className="text-center p-4 flex flex-col items-center ml-4 mr-4">
+    <div className="text-center p-4 flex flex-col items-center ml-4 mr-4 bg-white">
 
       {/* 말풍선 */}
       <div
-        className={`p-1 pl-5 pr-5 rounded-full text-[14px] text-white text-center ${isPositive ? 'bg-blue-300' : 'bg-red-300 '} `}
+        className={`p-1 pl-5 pr-5 rounded-full text-[14px] text-white text-center ${isPositive ? 'bg-[#9C97FA]' : 'bg-red-300 '} `}
       >
         {messageData.message}
       </div>
@@ -55,7 +55,7 @@ export default function PositivenessChart ({positiveness = 0}: PositivenessChart
             style={{
               width: positiveness >= 0 ? `${Math.min(100, Math.abs(positiveness))}%` : '0%'
             }}
-            className={`bg-blue-300 h-full rounded-full transition-all duration-500 ease-in-out`}
+            className={`bg-[#9C97FA] h-full rounded-full transition-all duration-500 ease-in-out`}
           />
         </div>
       </div>

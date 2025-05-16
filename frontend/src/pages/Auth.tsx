@@ -47,7 +47,7 @@ export default function Auth() {
             <div>
                 <img className='w-2/3 max-h-56 md:max-h-70' src={MainText} alt="" />
             </div>
-            <div className='flex flex-col justify-center items-center gap-y-2'>
+            <div className='absolute md:static bottom-10 flex flex-col justify-center items-center gap-y-2'>
                 <button className="h-fit w-fit" onClick={() => handleOAuth("kakao")}>
                     <img className="h-auto w-full rounded-md border border-gray-200 cursor-pointer" src={KakaoAuthButton} alt="" />
                 </button>

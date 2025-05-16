@@ -14,6 +14,7 @@ export interface Post {
     hashtagList: string[];
     likeCnt: number;
     commentCnt: number;
+    createdAt: string;
     isLike: boolean;
 }
 
@@ -115,6 +116,7 @@ export default function HomePage() {
                             postViews={post.postViews}
                             likeCnt={post.likeCnt}
                             commentCnt={post.commentCnt}
+                            createdAt={post.createdAt}
                             isLike={post.isLike}
                             onDelete={handleDelete}
                         />

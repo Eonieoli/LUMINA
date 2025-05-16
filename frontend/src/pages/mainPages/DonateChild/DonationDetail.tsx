@@ -1,10 +1,11 @@
 import { getDonationDetail, toggleDonationSubscribe } from "@/apis/donation"
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useParams, useLocation } from "react-router-dom"
 import { HeartDefaultIcon, HeartFilledIcon, CoinIcon } from "@/assets/images"
 import { useNavigate } from "react-router-dom"
 import { defaultDonationThumbnail, donationImageMap } from "@/components/donate/DonationImageMap"
 import DonationLayout from "./DonationLayout"
+import donationDescriptionMap from "@/components/donate/DonationDescriptionMap"
 
 interface DonationDetail {
   donationId: number
@@ -18,14 +19,13 @@ interface DonationDetail {
 
 export default function DonationDetailPage() {
 
-  // const params = useParams()
-  // const donationId = params.donationId
   const { donationId } = useParams()
+  const location = useLocation()
+  const {donationName: donationNameFromState} = location.state || {}
+
   const [donation, setDonation] = useState<DonationDetail | null>(null)
 
-  // params로 가져온건 string이니까 number로 바꿔주기
-  const donaionIdToNum = Number(donationId)
-  const donationImg = donationImageMap[donaionIdToNum] || defaultDonationThumbnail
+  const donationImg = donationImageMap[donationNameFromState] || defaultDonationThumbnail
 
   const navigate = useNavigate()
 
@@ -75,7 +75,7 @@ export default function DonationDetailPage() {
 
           <div className="mb-2 flex items-center">
             <p className="text-xl font-bold text-gray-600 mr-2">{donation.donationName}</p>
-            <div>
+            <div className="cursor-pointer">
               {donation.isSubscribe ? 
                 <img src={HeartFilledIcon} alt="구독중" onClick={handleToggleSubscribe} />
                 :
@@ -83,7 +83,9 @@ export default function DonationDetailPage() {
               }
             </div>
           </div>
-          <p className="text-[16px] text-gray-600 text-center">생명에 대한 존중과 차별없는 동물권을 지향하는 시민들의 모임</p>
+          <p className="text-[16px] text-gray-600 text-center">
+            {donationDescriptionMap[donation.donationName]}
+          </p>
 
         </div>
 
@@ -93,8 +95,8 @@ export default function DonationDetailPage() {
           <div className="flex justify-between">
             <p className="font-semibold">총 기부 금액 </p>
             <div className="flex">
-              <p className="text-[#5D56F1]">{donation.sumPoint}</p>
-              <p>&nbsp;/&nbsp;100</p>
+              <p className="text-[#5D56F1] mr-1">{donation.sumPoint}</p>
+              <img src={CoinIcon} alt="포인트이미지" className="w-4 object-contain "/>
             </div>
           </div>
 

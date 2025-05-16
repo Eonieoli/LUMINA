@@ -1,5 +1,5 @@
 import { donationImageMap, defaultDonationThumbnail } from "./DonationImageMap"
-import { useNavigate } from "react-router-dom"
+import { useNavigate} from "react-router-dom"
 
 export interface DonationProps {
     donationId: number;
@@ -12,13 +12,13 @@ export default function DonationCard({
 }: DonationProps) {
 
   // 만약 donationId와 일치하는 썸네일이 없다면 디폴트 이미지로 대체
-  const donationImg = donationImageMap[donationId] || defaultDonationThumbnail 
+  const donationImg = donationImageMap[donationName] || defaultDonationThumbnail 
 
   const navigate = useNavigate()
 
   // 클릭했을 때 상세 페이지로 이동하기
   const goToDonationDetail = () => {
-    navigate(`/donate/${donationId}`)
+    navigate(`/donate/${donationId}`, {state: {donationName}})
   }
 
   return (
@@ -30,7 +30,7 @@ export default function DonationCard({
           className="w-50 h-40 object-contain"
         />
       </div>
-      <p className="text-l font-medium text-center text-gray-600">{donationName}</p>
+      <p className="text-[15px] font-medium text-center w-full text-gray-600 truncate">{donationName}</p>
 
     </div>
   )
