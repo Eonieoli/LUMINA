@@ -1,0 +1,82 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+
+# Android Studio 관련
+.gradle/
+.idea/
+.local/
+*.iml
+build/
+captures/
+.externalNativeBuild/
+
+# Mac 관련
+.DS_Store
+
+# 로그 파일
+*.log
+
+# Gradle 캐시
+.gradle/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# 바이너리/오브젝트 파일
+*.apk
+*.ap_
+*.dex
+*.class
+*.jar
+*.war
+*.ear
+
+# Android NDK 빌드
+obj/
+*.so
+
+# 기타 캐시
+.cxx/
+.cache/
+*.tmp
+
+# IntelliJ에서 생성하는 설정 파일
+out/
+gen/
+*.ipr
+*.iws
+
+# 로컬 환경 설정
+local.properties
+
+# Kotlin 관련
+*.kts~
+*.main.kts~
+
+# Jetpack Compose Preview 캐시
+.idea/assetWizardSettings.xml
+.idea/gradle.xml
+.idea/misc.xml
+.idea/vcs.xml
+.idea/modules.xml
+
+# Signing key (개발자 키는 절대 커밋 금지!)
+**/keystore.jks
+**/*.jks
+**/debug.keystore
+
+# Firebase 관련
+google-services.json
