@@ -3,10 +3,7 @@ package com.lumina.backend.user.controller;
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.common.utill.TokenUtil;
 import com.lumina.backend.user.model.request.UpdateMyProfileRequest;
-import com.lumina.backend.user.model.response.GetMyProfileResponse;
-import com.lumina.backend.user.model.response.GetMyRewardRespond;
-import com.lumina.backend.user.model.response.GetUserPointResponse;
-import com.lumina.backend.user.model.response.GetUserProfileResponse;
+import com.lumina.backend.user.model.response.*;
 import com.lumina.backend.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -91,5 +88,16 @@ public class UserController {
         List<GetMyRewardRespond> response = userService.getMyReward(userId);
 
         return ResponseEntity.ok(BaseResponse.success("리워드 조회 성공", response));
+    }
+
+
+    @GetMapping("/donation")
+    public ResponseEntity<BaseResponse<List<GetUserDonation>>> getUserDonation(
+            HttpServletRequest request) {
+
+        Long userId = tokenUtil.findIdByToken(request);
+        List<GetUserDonation> response = userService.getUserDonation(userId);
+
+        return ResponseEntity.ok(BaseResponse.success("기부내역 조회 성공", response));
     }
 }
