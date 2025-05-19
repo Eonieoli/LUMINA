@@ -13,10 +13,10 @@ scrape_configs:
     static_configs:
       - targets: ['backend-blue:8080']
 
-  - job_name: 'spring-actuator-blue'
+  - job_name: 'spring-actuator-green'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['backend-blue:8080']
+      - targets: ['backend-green:8080']
 
   - job_name: 'node-exporter'
     static_configs:

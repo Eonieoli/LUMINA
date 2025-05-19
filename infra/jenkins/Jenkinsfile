@@ -113,12 +113,6 @@ pipeline {
                                 writeFile file: 'infra/dev/proxy/.htpasswd', text: htpasswdContent
                             }
                         }
-                        withCredentials([file(credentialsId: 'ga-service-account-dev', variable: "GA_SERVICE_ACCOUNT_DEV_PATH")]) {
-                            script {
-                                def gaServiceAccountContent = readFile(GA_SERVICE_ACCOUNT_DEV_PATH)
-                                writeFile file: 'infra/dev/monitoring/grafana/secrets/ga-service-account.json', text: gaServiceAccountContent
-                            }
-                        }
                     }
                 }
                 
@@ -143,12 +137,6 @@ pipeline {
                             script {
                                 def htpasswdContent = readFile(HTPASSWD_PROD_PATH)
                                 writeFile file: 'infra/prod/proxy/.htpasswd', text: htpasswdContent
-                            }
-                        }
-                        withCredentials([file(credentialsId: 'ga-service-account-prod', variable: "GA_SERVICE_ACCOUNT_PROD_PATH")]) {
-                            script {
-                                def gaServiceAccountContent = readFile(GA_SERVICE_ACCOUNT_PROD_PATH)
-                                writeFile file: 'infra/prod/monitoring/grafana/secrets/ga-service-account.json', text: gaServiceAccountContent
                             }
                         }
                     }
@@ -226,41 +214,20 @@ pipeline {
                                     sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend'"
                                     sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/backend'"
                                     sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/proxy/blue-green/ai-server'"
-                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/prometheus'"
                                     sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana'"
-                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/secrets'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/prometheus'"
                                     sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/scripts'"
                                     
                                     // 환경 설정 파일 전송
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/.env ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/.env"
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/.env.front ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/.env.front"
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/docker-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/docker-compose.yml"
-
-                                    // Google Analytics 서비스 계정 키 파일 전송
-                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/grafana/secrets/ga-service-account.json ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/secrets/ga-service-account.json"
-
-                                    // 그라파나 프로비저닝 디렉토리 생성
-                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/provisioning/dashboards'"
-                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/provisioning/datasources'"
-                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/dashboards/prometheus'"
-                                    sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/dashboards/ga'"
-
-                                    // 그라파나 프로비저닝 설정 파일 전송
-                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/grafana/provisioning/dashboards/dashboards.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/provisioning/dashboards/dashboards.yml"
-                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/grafana/provisioning/datasources/datasource.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/provisioning/datasources/datasource.yml"
-
-                                    // 대시보드 JSON 파일 전송 - Prometheus 대시보드
-                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/grafana/dashboards/prometheus/system-resources.json ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/dashboards/prometheus/system-resources.json"
-                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/grafana/dashboards/prometheus/container-monitoring.json ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/dashboards/prometheus/container-monitoring.json"
-
-                                    // 대시보드 JSON 파일 전송 - Google Analytics 대시보드
-                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/grafana/dashboards/ga/ga-plugin-dashboard.json ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/dashboards/ga/ga-plugin-dashboard.json"
-                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/grafana/dashboards/ga/ga-bigquery-dashboard.json ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/dashboards/ga/ga-bigquery-dashboard.json"
                                     
                                     // 모니터링 설정 파일 전송
-                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/monitoring-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/monitoring-compose.yml"
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/grafana/datasource.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/grafana/datasource.yml"
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/prometheus/prometheus.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/prometheus/prometheus.yml"
-                                    
+                                    sh "scp -o StrictHostKeyChecking=no infra/dev/monitoring/monitoring-compose.yml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/monitoring/monitoring-compose.yml"
+
                                     // 프록시 설정 파일 전송
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/.htpasswd ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/.htpasswd"
                                     sh "scp -o StrictHostKeyChecking=no infra/dev/proxy/nginx.conf ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/infra/dev/proxy/nginx.conf"
@@ -372,40 +339,19 @@ pipeline {
                                     sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend'"
                                     sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/backend'"
                                     sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/proxy/blue-green/ai-server'"
+                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana'"
                                     sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/prometheus'"
-                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/dashboards'"
-                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/secrets'"
                                     sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/scripts'"
                                     
                                     // 환경 설정 파일 전송
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/.env ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/.env"
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/.env.front ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/.env.front"
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/docker-compose.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/docker-compose.yml"
-
-                                    // Google Analytics 서비스 계정 키 파일 전송
-                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/secrets/ga-service-account.json ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/secrets/ga-service-account.json"
-
-                                    // 그라파나 프로비저닝 디렉토리 생성
-                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/provisioning/dashboards'"
-                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/provisioning/datasources'"
-                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/dashboards/prometheus'"
-                                    sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/dashboards/ga'"
-
-                                    // 그라파나 프로비저닝 설정 파일 전송
-                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/provisioning/dashboards/dashboards.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/provisioning/dashboards/dashboards.yml"
-                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/provisioning/datasources/datasource.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/provisioning/datasources/datasource.yml"
-
-                                    // 대시보드 JSON 파일 전송 - Prometheus 대시보드
-                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/dashboards/prometheus/system-resources.json ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/dashboards/prometheus/system-resources.json"
-                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/dashboards/prometheus/container-monitoring.json ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/dashboards/prometheus/container-monitoring.json"
-
-                                    // 대시보드 JSON 파일 전송 - Google Analytics 대시보드
-                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/dashboards/ga/ga-plugin-dashboard.json ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/dashboards/ga/ga-plugin-dashboard.json"
-                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/dashboards/ga/ga-bigquery-dashboard.json ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/dashboards/ga/ga-bigquery-dashboard.json"
                                     
                                     // 모니터링 설정 파일 전송
-                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/monitoring-compose.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/monitoring-compose.yml"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/grafana/datasource.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/grafana/datasource.yml"
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/prometheus/prometheus.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/prometheus/prometheus.yml"
+                                    sh "scp -o StrictHostKeyChecking=no infra/prod/monitoring/monitoring-compose.yml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/monitoring/monitoring-compose.yml"
                                     
                                     // 프록시 설정 파일 전송
                                     sh "scp -o StrictHostKeyChecking=no infra/prod/proxy/.htpasswd ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/infra/prod/proxy/.htpasswd"
