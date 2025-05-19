@@ -24,4 +24,6 @@ public interface UserService {
     Map<String, Object> getSumPointRank(Long userId);
 
     List<GetMyRewardRespond> getMyReward(Long userId);
+
+    List<GetUserDonation> getUserDonation(Long userId);
 }

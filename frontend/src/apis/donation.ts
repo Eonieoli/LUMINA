@@ -120,3 +120,16 @@ export const getUserReward = async () => {
     throw error
   }
 }
+
+// 유저 기부 내역 조회
+export const getUserDonations = async () => {
+  try {
+    const response = await apiClient.get('/user/donation');
+    logApiEvent("getUserDonations", "success");
+    return response.data
+  } catch (error) {
+    console.error("유저 기부 내역 조회 실패", error);
+    logApiEvent("getUserDonations", "error");
+    throw error
+  }
+}
