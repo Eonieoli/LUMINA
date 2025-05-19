@@ -23,6 +23,8 @@ export default function ProtectedRoute() {
                     console.error('프로필 불러오기 실패:', error);
                     setIsAuthenticated(false);
                 }
+            } else {
+                setIsAuthenticated(true);
             }
         };
 
