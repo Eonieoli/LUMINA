@@ -13,7 +13,7 @@ import {
   FollowPage,
   ProfileEditPage
 } from "@/pages/mainPages";
-import { Navbar } from "@/components";
+import { Navbar, ProtectedRoute } from "@/components";
 import { useState, createRef, RefObject } from "react";
 import { CSSTransition, SwitchTransition } from "react-transition-group";
 
@@ -69,18 +69,42 @@ export default function Main() {
               className="relative h-dvh overflow-y-scroll w-full min-w-80 md:w-[600px] md:h-[90dvh] pb-20 md:pb-0 md:ml-20 md:border border-gray-300 md:rounded-xl"
             >
               <Routes location={location}>
-                <Route index element={<HomePage />} />
-                <Route path="post" element={<PostCreatePage />} />
-                <Route path="search" element={<SearchPage />} />
-                <Route path="donate" element={<DonatePage key={location.key} />} />
-                <Route path="ranking" element={<RankingPage />} />
-                <Route path="mypage/:userId?" element={<MyPage />} />
-                <Route path="donate/research/:keyword" element={<DonationSearchResultPage />} />
-                <Route path="donate/:donationId" element={<DonationDetailPage />} />
-                <Route path="donate/:donationId/point" element={<DonationInputPage />} />
-                <Route path="donate/thanks" element={<DonationThanksPage />} />
-                <Route path="mypage/:profileUserId/follow" element={<FollowPage/>} /> 
-                <Route path="mypage/:profileUserId/edit" element={<ProfileEditPage/>} /> 
+                <Route element={<ProtectedRoute />}>
+                  <Route index element={<HomePage />} />
+                </Route>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="post" element={<PostCreatePage />} />
+                </Route>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="search" element={<SearchPage />} />
+                </Route>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="donate" element={<DonatePage key={location.key} />} />
+                </Route>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="ranking" element={<RankingPage />} />
+                </Route>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="mypage/:userId?" element={<MyPage />} />
+                </Route>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="donate/research/:keyword" element={<DonationSearchResultPage />} />
+                </Route>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="donate/:donationId" element={<DonationDetailPage />} />
+                </Route>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="donate/:donationId/point" element={<DonationInputPage />} />
+                </Route>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="donate/thanks" element={<DonationThanksPage />} />
+                </Route>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="mypage/:profileUserId/follow" element={<FollowPage/>} /> 
+                </Route>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="mypage/:profileUserId/edit" element={<ProfileEditPage/>} /> 
+                </Route>
               </Routes>
             </div>
           </div>
