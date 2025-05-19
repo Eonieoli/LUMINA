@@ -31,8 +31,7 @@ export class LunaClientInterface {
 
     // 포스트 스케줄러 초기화 (6시간마다 실행)
     this.postScheduler = new PostScheduler(
-      this.createScheduledPost.bind(this),
-      6 // 6시간 간격
+      this.createScheduledPost.bind(this) // 6시간 간격
     );
 
     // Express 미들웨어 설정
