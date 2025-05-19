@@ -1,0 +1,58 @@
+# Xcode
+*.xcuserdata
+*.xcuserstate
+*.xccheckout
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+*.xcworkspace/*
+!*.xcworkspace/contents.xcworkspacedata
+
+# SwiftPM
+.build/
+Packages/
+Package.resolved
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/Build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Archives & DerivedData
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# User-specific files
+*.moved-aside
+*.swp
+*~.nib
+*.orig
+
+# Simulator logs
+coreSimulatorLogs/
+
+# Crash reports
+*.crash
+
+# macOS metadata
+.DS_Store
+
+# SwiftPM Xcode integration
+.swiftpm/
+
+# Environment
+.env
