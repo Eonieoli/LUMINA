@@ -60,6 +60,141 @@ export class PostGenerator {
     });
   }
 
+  async generatePost(): Promise<string> {
+    try {
+      // 1. 데이터베이스 읽기
+      const db = this.readNewsDatabase();
+
+      if (!db || !db.articles || db.articles.length === 0) {
+        elizaLogger.warn(
+          "뉴스 데이터베이스가 비어있습니다. 기본 게시글을 생성합니다."
+        );
+        return this.generateDefaultPost();
+      }
+
+      // 2. 현재 시간대에 맞는 기사 선택
+      const article = this.selectArticleForCurrentTime(db.articles);
+
+      if (!article) {
+        elizaLogger.warn(
+          "선택할 수 있는 기사가 없습니다. 기본 게시글을 생성합니다."
+        );
+        return this.generateDefaultPost();
+      }
+
+      try {
+        // 3. 게시글 작성을 위한 프롬프트 구성
+        const prompt = this.createPostPromptFromArticle(article);
+
+        // 4. LLM에 게시글 생성 요청
+        const postContent = await this.requestPostFromLLM(prompt);
+
+        // 5. 데이터베이스 업데이트
+        this.updateDatabase(db, article, postContent);
+
+        return postContent;
+      } catch (innerError) {
+        elizaLogger.error("LLM 호출 또는 게시글 생성 오류:", innerError);
+
+        // 오류 발생해도 데이터베이스는 업데이트 (기사를 used=true로 표시)
+        const defaultPost = this.generateDefaultPost();
+        this.updateDatabase(db, article, defaultPost);
+
+        return defaultPost;
+      }
+    } catch (error) {
+      elizaLogger.error("게시글 생성 중 오류 발생:", error);
+      return this.generateDefaultPost();
+    }
+  }
+
+  // 데이터베이스 업데이트 로직을 별도 메소드로 분리
+  private updateDatabase(
+    db: NewsDatabase,
+    article: Article,
+    postContent: string
+  ): void {
+    try {
+      const now = new Date().toISOString();
+
+      // 현재 시간대 결정
+      const hour = new Date().getHours();
+      let timeSlot = "";
+
+      if (hour >= 0 && hour < 7) {
+        timeSlot = "night";
+      } else if (hour >= 7 && hour < 13) {
+        timeSlot = "morning";
+      } else if (hour >= 13 && hour < 19) {
+        timeSlot = "afternoon";
+      } else {
+        timeSlot = "evening";
+      }
+
+      // 디버그 로그
+      elizaLogger.info("==== 데이터베이스 업데이트 시작 ====");
+      elizaLogger.info(
+        `선택된 기사 ID: ${article.id}, 타입: ${typeof article.id}`
+      );
+
+      // ID 비교 로직 수정 - 문자열 비교로 통일
+      const articleIndex = db.articles.findIndex(
+        (a) => String(a.id) === String(article.id)
+      );
+
+      elizaLogger.info(`찾은 기사 인덱스: ${articleIndex}`);
+
+      if (articleIndex !== -1) {
+        // 기사 상태 업데이트
+        db.articles[articleIndex].used = true;
+        db.articles[articleIndex].used_at = now;
+        db.articles[articleIndex].time_slot = timeSlot;
+
+        elizaLogger.info("기사 상태 업데이트 성공");
+        elizaLogger.info(`used: ${db.articles[articleIndex].used}`);
+        elizaLogger.info(`used_at: ${db.articles[articleIndex].used_at}`);
+      } else {
+        elizaLogger.error(
+          `선택된 기사를 DB에서 찾을 수 없음 (ID: ${article.id})`
+        );
+      }
+
+      // 게시 이력 추가
+      db.post_history.push({
+        article_id: article.id,
+        posted_at: now,
+        generated_content: postContent,
+        time_slot: timeSlot,
+      });
+
+      elizaLogger.info("게시 이력 추가 성공");
+
+      // 데이터베이스 저장 전 상태 확인
+      const usedCount = db.articles.filter((a) => a.used === true).length;
+      elizaLogger.info(
+        `저장 전 DB 상태: 총 ${db.articles.length}개 기사 중 ${usedCount}개 사용됨`
+      );
+
+      // 데이터베이스 저장
+      this.writeNewsDatabase(db);
+
+      // 저장 후 확인
+      const verifyDb = this.readNewsDatabase();
+      if (verifyDb) {
+        const verifyUsedCount = verifyDb.articles.filter(
+          (a) => a.used === true
+        ).length;
+        elizaLogger.info(
+          `저장 후 DB 상태: 총 ${verifyDb.articles.length}개 기사 중 ${verifyUsedCount}개 사용됨`
+        );
+      }
+
+      elizaLogger.info("==== 데이터베이스 업데이트 완료 ====");
+    } catch (dbError) {
+      elizaLogger.error("데이터베이스 업데이트 중 오류:", dbError);
+    }
+  }
+
   // 뉴스 데이터베이스 읽기
   private readNewsDatabase(): NewsDatabase | null {
     try {
@@ -94,13 +229,76 @@ export class PostGenerator {
     }
   }
 
-  // 뉴스 데이터베이스 쓰기
+  // // 뉴스 데이터베이스 쓰기
+  // private writeNewsDatabase(db: NewsDatabase): void {
+  //   try {
+  //     fs.writeFileSync(this.dbFilePath, JSON.stringify(db, null, 2), "utf8");
+  //     elizaLogger.info(`뉴스 데이터베이스 저장 완료: ${this.dbFilePath}`);
+  //   } catch (error) {
+  //     elizaLogger.error(`뉴스 데이터베이스 쓰기 오류: ${error}`);
+  //   }
+  // }
+
+  // writeNewsDatabase 함수 수정
   private writeNewsDatabase(db: NewsDatabase): void {
     try {
-      fs.writeFileSync(this.dbFilePath, JSON.stringify(db, null, 2), "utf8");
-      elizaLogger.info(`뉴스 데이터베이스 저장 완료: ${this.dbFilePath}`);
+      console.log("==== 파일 쓰기 시작 ====");
+      console.log(`현재 작업 디렉토리: ${process.cwd()}`);
+      console.log(`DB 파일 절대 경로: ${path.resolve(this.dbFilePath)}`);
+
+      // 파일 존재 여부 및 권한 확인
+      const fileExists = fs.existsSync(this.dbFilePath);
+      console.log(`파일 존재 여부: ${fileExists}`);
+
+      if (fileExists) {
+        try {
+          fs.accessSync(this.dbFilePath, fs.constants.W_OK);
+          console.log("파일 쓰기 권한 있음");
+        } catch (err) {
+          console.error("파일 쓰기 권한 없음:", err);
+        }
+      }
+
+      // 파일 쓰기 전 내용 확인
+      if (fileExists) {
+        try {
+          const oldContent = fs.readFileSync(this.dbFilePath, "utf8");
+          const oldDb = JSON.parse(oldContent);
+          console.log(
+            `쓰기 전 파일 내용: used=true 기사 수: ${
+              oldDb.articles.filter((a) => a.used === true).length
+            }`
+          );
+        } catch (err) {
+          console.error("기존 파일 읽기 실패:", err);
+        }
+      }
+
+      // 데이터베이스 저장
+      const jsonString = JSON.stringify(db, null, 2);
+      fs.writeFileSync(this.dbFilePath, jsonString, "utf8");
+      console.log(`뉴스 데이터베이스 저장 완료: ${this.dbFilePath}`);
+
+      // 파일 쓰기 후 내용 확인
+      try {
+        // 파일 캐시 비우기 위해 직접 다시 읽기
+        const newContent = fs.readFileSync(this.dbFilePath, "utf8");
+        const newDb = JSON.parse(newContent);
+        console.log(
+          `쓰기 후 파일 내용: used=true 기사 수: ${
+            newDb.articles.filter((a) => a.used === true).length
+          }`
+        );
+        console.log(
+          `쓰기 후 5번 기사 used 상태: ${
+            newDb.articles.find((a) => a.id === "5")?.used
+          }`
+        );
+      } catch (err) {
+        console.error("새 파일 읽기 실패:", err);
+      }
     } catch (error) {
-      elizaLogger.error(`뉴스 데이터베이스 쓰기 오류: ${error}`);
+      console.error(`뉴스 데이터베이스 쓰기 오류: ${error}`);
     }
   }
 
@@ -110,11 +308,11 @@ export class PostGenerator {
     let timeSlot = "";
 
     // 시간대 결정
-    if (hour >= 0 && hour < 6) {
+    if (hour >= 0 && hour < 7) {
       timeSlot = "night";
-    } else if (hour >= 6 && hour < 12) {
+    } else if (hour >= 7 && hour < 13) {
       timeSlot = "morning";
-    } else if (hour >= 12 && hour < 18) {
+    } else if (hour >= 13 && hour < 19) {
       timeSlot = "afternoon";
     } else {
       timeSlot = "evening";
@@ -122,8 +320,31 @@ export class PostGenerator {
 
     elizaLogger.info(`현재 시간대: ${timeSlot} (${hour}시)`);
 
-    // 1. 미사용 기사 필터링
+    // 미사용 기사 필터링 전에 추가할 디버깅 코드
+    console.log("==== 전체 기사 목록 및 상태 ====");
+    for (const article of articles) {
+      console.log(
+        `ID: ${article.id}, 제목: ${article.title.substring(0, 20)}..., used: ${
+          article.used
+        }, 타입: ${typeof article.used}`
+      );
+    }
+
+    // 미사용 기사 필터링
     const unusedArticles = articles.filter((a) => !a.used);
+
+    console.log("==== 미사용 기사 필터링 결과 ====");
+    console.log(
+      `전체 기사 수: ${articles.length}, 미사용 기사 수: ${unusedArticles.length}`
+    );
+    console.log("미사용 기사 리스트: ");
+    for (const article of unusedArticles) {
+      console.log(
+        `ID: ${article.id}, 제목: ${article.title.substring(0, 20)}..., used: ${
+          article.used
+        }`
+      );
+    }
 
     if (unusedArticles.length === 0) {
       elizaLogger.warn("미사용 기사가 없습니다. 임의의 기사를 선택합니다.");
@@ -185,78 +406,6 @@ export class PostGenerator {
 
   // 최종 게시글만 반환해주세요.`
 
-  // 게시글 생성 메인 메소드
-  async generatePost(): Promise<string> {
-    try {
-      // 1. 데이터베이스 읽기
-      const db = this.readNewsDatabase();
-
-      if (!db || !db.articles || db.articles.length === 0) {
-        elizaLogger.warn(
-          "뉴스 데이터베이스가 비어있습니다. 기본 게시글을 생성합니다."
-        );
-        return this.generateDefaultPost();
-      }
-
-      // 2. 현재 시간대에 맞는 기사 선택
-      const article = this.selectArticleForCurrentTime(db.articles);
-
-      if (!article) {
-        elizaLogger.warn(
-          "선택할 수 있는 기사가 없습니다. 기본 게시글을 생성합니다."
-        );
-        return this.generateDefaultPost();
-      }
-
-      // 3. 게시글 작성을 위한 프롬프트 구성
-      const prompt = this.createPostPromptFromArticle(article);
-
-      // 4. LLM에 게시글 생성 요청
-      const postContent = await this.requestPostFromLLM(prompt);
-
-      // 5. 데이터베이스 업데이트
-      const now = new Date().toISOString();
-
-      // 현재 시간대 결정
-      const hour = new Date().getHours();
-      let timeSlot = "";
-
-      if (hour >= 0 && hour < 6) {
-        timeSlot = "night";
-      } else if (hour >= 6 && hour < 12) {
-        timeSlot = "morning";
-      } else if (hour >= 12 && hour < 18) {
-        timeSlot = "afternoon";
-      } else {
-        timeSlot = "evening";
-      }
-
-      // 기사 사용 상태 업데이트
-      const articleIndex = db.articles.findIndex((a) => a.id === article.id);
-      if (articleIndex !== -1) {
-        db.articles[articleIndex].used = true;
-        db.articles[articleIndex].used_at = now;
-        db.articles[articleIndex].time_slot = timeSlot;
-      }
-
-      // 게시 이력 추가
-      db.post_history.push({
-        article_id: article.id,
-        posted_at: now,
-        generated_content: postContent,
-        time_slot: timeSlot,
-      });
-
-      // 데이터베이스 저장
-      this.writeNewsDatabase(db);
-
-      return postContent;
-    } catch (error) {
-      elizaLogger.error("게시글 생성 중 오류 발생:", error);
-      return this.generateDefaultPost();
-    }
-  }
-
   // LLM에 게시글 생성 요청
   private async requestPostFromLLM(prompt: string): Promise<string> {
     elizaLogger.info("LLM에 게시글 생성 요청 중...: ", prompt);
@@ -274,27 +423,6 @@ export class PostGenerator {
       elizaLogger.error("Local LLM 호출 오류:", error);
       throw error;
     }
-
-    // const response = await fetch(
-    //   `http://localhost:${this.serverPort}/${this.runtime.character.name}/message`,
-    //   {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({
-    //       text: prompt,
-    //       userId: "system_scheduler",
-    //       userName: "system_scheduler",
-    //     }),
-    //   }
-    // );
-
-    // const data = await response.json();
-    // return data[0].text;
-
-    // catch (error) {
-    //   elizaLogger.error("LLM 요청 중 오류 발생:", error);
-    //   throw error;
-    // }
   }
 
   // 기본 게시글 생성
