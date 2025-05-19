@@ -3,7 +3,7 @@ import Main from './pages/Main';
 import Auth from './pages/Auth';
 import Admin from './pages/Admin';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { ScrollToTop, ProtectedRoute, CheckAdmin, GAListener } from './components';
+import { ScrollToTop, CheckAdmin, GAListener } from './components';
 import { useEffect } from 'react';
 import { pageView } from './utils/analytics';
 
@@ -38,9 +38,7 @@ function App() {
                 <ScrollToTop />
                 <Routes>
                     <Route path="/login" element={<Auth />} />
-                    {/* <Route element={<ProtectedRoute />}> */}
                         <Route path="/*" element={<Main />} />
-                    {/* </Route> */}
                     <Route element={<CheckAdmin />}>
                         <Route path='/admin' element={<Admin />} />
                     </Route>

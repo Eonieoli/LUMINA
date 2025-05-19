@@ -288,7 +288,7 @@ public class LuminaServiceImpl implements LuminaService {
                 .block(); // 동기 방식
 
         if (response == null) {
-            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "카테고리 추천 서버에서 응답이 없습니다.");
+            return new GetCategoryResponse("기타");
         }
 
         return response;
