@@ -7,7 +7,7 @@ import {
 } from '@/assets/images';
 import { useAuthStore} from '@/stores/auth';
 import { DefaultProfile } from '@/assets/images';
-import { getUserProfile } from "@/apis/auth";
+import { getMyProfile } from "@/apis/auth";
 import { useEffect, useState } from 'react';
 
 export default function Navbar() {
@@ -20,7 +20,7 @@ export default function Navbar() {
     //나의 정보 가져오기
     useEffect(() => {
     const fetchMyData = async () => {
-        const response = await getUserProfile(authData.data.userId)
+        const response = await getMyProfile()
         setProfileImageFile(response.data.profileImage)
     }
     fetchMyData()
