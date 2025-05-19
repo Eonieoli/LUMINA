@@ -76,7 +76,7 @@ async def startup_event():
     global goodness_tokenizer, goodness_model
 
     logger.info("서버 시작 - 욕설 리스트 및 모델 로딩")
-    filter.load_badwords("C:/Users/SSAFY/Desktop/lumina/S12P31S306/ai/badwords.txt")
+    filter.load_badwords("./badwords.txt")
 
     # 정규화 딕셔너리 값도 bad_words에 추가
     normalized_abuse = {
