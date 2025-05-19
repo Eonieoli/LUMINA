@@ -4,6 +4,9 @@ import com.lumina.backend.common.exception.CustomException;
 import com.lumina.backend.common.service.S3Service;
 import com.lumina.backend.common.service.TokenService;
 import com.lumina.backend.common.utill.*;
+import com.lumina.backend.donation.model.entity.Donation;
+import com.lumina.backend.donation.model.entity.UserDonation;
+import com.lumina.backend.donation.repository.UserDonationRepository;
 import com.lumina.backend.post.model.entity.Comment;
 import com.lumina.backend.post.model.entity.Post;
 import com.lumina.backend.post.repository.CommentRepository;
@@ -39,6 +42,7 @@ public class UserServiceImpl implements UserService {
     private final FollowRepository followRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final UserDonationRepository userDonationRepository;
 
     private final RedisUtil redisUtil;
     private final FindUtil findUtil;
@@ -245,6 +249,23 @@ public class UserServiceImpl implements UserService {
 
 
     /**
+     * 주어진 사용자 ID에 해당하는 기부 내역 리스트를 조회하여 응답 DTO 리스트로 변환합니다.
+     *
+     * @param userId 사용자 ID
+     * @return 사용자의 기부 내역을 담은 GetUserDonation DTO 리스트
+     */
+    @Override
+    public List<GetUserDonation> getUserDonation(Long userId) {
+
+        List<UserDonation> userDonationList = userDonationRepository.findByUserIdAndRegistration(userId, "DONATION");
+
+        return userDonationList.stream()
+                .map(this::convertToGetUserDonationResponses)
+                .collect(Collectors.toList());
+    }
+
+
+    /**
      * Redis에서 사용자 랭킹 조회
      *
      * @param userId 사용자 ID
@@ -350,6 +371,21 @@ public class UserServiceImpl implements UserService {
                 .positiveness(reward < 0 ? reward : null)
                 .createdAt(comment.getCreatedAt())
                 .build();
+    }
 
+    /**
+     * UserDonation 엔티티를 GetUserDonation 응답 DTO로 변환합니다.
+     *
+     * @param userDonation 사용자 기부 엔티티
+     * @return 변환된 GetUserDonation DTO
+     */
+    private GetUserDonation convertToGetUserDonationResponses(UserDonation userDonation) {
+
+        Donation donation = userDonation.getDonation();
+
+        return new GetUserDonation(
+                donation.getId(), donation.getDonationName(), userDonation.getDonationCnt(),
+                userDonation.getDonationSum(), userDonation.getCreatedAt()
+        );
     }
 }

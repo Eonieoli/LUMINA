@@ -4,6 +4,7 @@ import { signOut } from "@/apis/auth";
 import { Rewards, Subscribes } from './HamburgerChildren'
 import { useLocation, useNavigate } from "react-router-dom";
 import { XIcon } from "@/assets/images";
+import MyDonate from "./HamburgerChildren/MyDonate";
 
 export interface HamburgerProps {
     isVisible: boolean;
@@ -13,8 +14,10 @@ export interface HamburgerProps {
 export default function Hamburger({isVisible, onClose}: HamburgerProps) {
     const [isSubscribeOpened, setIsSubscribeOpened] = useState(false);
     const [isRewardsOpened, setIsRewardsOpened] = useState(false);
+    const [isMyDonateOpened, setIsMyDonateOpened] = useState(false);
     const [isSubscribeAnimation, setIsSubscribeAnimation] = useState(false);
     const [isRewardsAnimation, setIsRewardsAnimation] = useState(false);
+    const [isMyDonateAnimation, setIsMyDonateAnimation] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const state = location.state;
@@ -28,11 +31,14 @@ export default function Hamburger({isVisible, onClose}: HamburgerProps) {
     const handleClose = (name: string) => {
         setIsSubscribeOpened(false);
         setIsRewardsOpened(false);
+        setIsMyDonateOpened(false);
         setTimeout(() => {
             if (name == 'sub') {
                 setIsSubscribeAnimation(false);
             } else if (name == 're') {
                 setIsRewardsAnimation(false);
+            } else if (name == 'don') {
+                setIsMyDonateAnimation(false);
             }
         }, 400);
     }
@@ -61,12 +67,19 @@ export default function Hamburger({isVisible, onClose}: HamburgerProps) {
                         <div className="flex-1 flex flex-col justify-between text-[18px] font-medium">
                             <div className="flex flex-col gap-2 text-gray-600">
                                 <div onClick={() => {
+                                    setIsMyDonateOpened(true)
+                                    setIsMyDonateAnimation(true)}}
+                                    className="p-2 px-10 cursor-pointer"
+                                >
+                                    내 기부 내역
+                                </div>
+                                <div onClick={() => {
                                     setIsRewardsOpened(true)
                                     setIsRewardsAnimation(true)}}
                                     className="p-2 px-10 cursor-pointer"
                                 >
                                     리워드 내역
-                                    </div>
+                                </div>
                                 <div onClick={() => {
                                     setIsSubscribeOpened(true)
                                     setIsSubscribeAnimation(true)}}
@@ -79,6 +92,7 @@ export default function Hamburger({isVisible, onClose}: HamburgerProps) {
                         </div>
                         {isRewardsAnimation && (<Rewards isVisible={isRewardsOpened} onClose={() => handleClose('re')} />)}
                         {isSubscribeAnimation && (<Subscribes isVisible={isSubscribeOpened} onClose={() => handleClose('sub')} />)}
+                        {isMyDonateAnimation && (<MyDonate isVisible={isMyDonateOpened} onClose={() => handleClose('don')} />)}
                     </div>
                 </motion.div>
             )}
