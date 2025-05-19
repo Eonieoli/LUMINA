@@ -39,12 +39,17 @@ export default function PostCreate() {
                 loading: '카테고리 추출 중...',
                 success: (res) => {
                     console.log(res);
-                    elizaBoard(res.data.postId);
-                    navigate('/');
+                    toast.promise(elizaBoard(res.data.postId), {
+                        loading: '루나가 게시글 분석 후 댓글 생성 중...',
+                        success: () => {
+                            navigate('/');
+                            return '리워드 지급 및 댓글 생성 완료!';
+                        }
+                    })
                     return `업로드 완료!`;
                 },
                 error: 'Error',
-              });
+            });
 
 
         } catch (error) {
