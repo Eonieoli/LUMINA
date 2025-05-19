@@ -337,13 +337,13 @@ initialize_environment() {
     echo -e "upstream backend {\n    server backend-blue:8080;    # active\n    server backend-green:8080 backup;    # backup\n}" > "$backend_conf"
     echo -e "upstream ai-server {\n    server ai-server-blue:8000;    # active\n    server ai-server-green:8000 backup;    # backup\n}" > "$ai_conf"
     
-    # proxy 설정
-    cd "$DEPLOY_PATH/proxy"
-    docker compose -f proxy-compose.yml -p proxy up -d
-    
     # monitoring 설정
     cd "$DEPLOY_PATH/monitoring"
     docker compose --env-file "$DEPLOY_PATH/.env" -f monitoring-compose.yml -p monitoring up -d
+
+    # proxy 설정
+    cd "$DEPLOY_PATH/proxy"
+    docker compose -f proxy-compose.yml -p proxy up -d
     
     # 초기 배포 표시 파일 생성
     local init_flag=""
