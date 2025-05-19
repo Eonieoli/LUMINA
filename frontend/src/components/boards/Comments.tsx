@@ -164,10 +164,16 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                     // await elizaComment(postId, response.data.commentId);
                     toast.promise(elizaComment(postId, response.data.commentId), {
                         loading: '루나가 댓글 작성 중 입니다...',
-                        success: '댓글이 생성되었습니다.',
+                        success: () => {
+                            setHasMore(true);
+                            pageNumRef.current = 1;
+                            setComments([]);
+                            fetchComments();
+                            return '댓글이 생성되었습니다.'
+                        },
                         error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
                     })
-                    fetchComments();
+                    // fetchComments();
                 }
 
                 setReplyRefreshKey((prev) => prev + 1);
@@ -190,10 +196,16 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                     // await elizaComment(postId, response.data.commentId);
                     toast.promise(elizaComment(postId, response.data.commentId), {
                         loading: '루나가 댓글 작성 중 입니다...',
-                        success: '댓글이 생성되었습니다.',
+                        success: () => {
+                            setHasMore(true);
+                            pageNumRef.current = 1;
+                            setComments([]);
+                            fetchComments();
+                            return '댓글이 생성되었습니다.'
+                        },
                         error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
                     })
-                    fetchComments();
+                    // fetchComments();
                 }
                 setComments((prev) => [newComment, ...prev]);
             }
