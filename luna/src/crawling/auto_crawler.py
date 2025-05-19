@@ -30,14 +30,14 @@ def run_crawler():
         print(f"크롤링 오류 발생: {e}")
         print(f"에러 출력: {e.stderr}")
 
-# 매일 오전 6시에 실행
+# 매일 오전 7시에 실행
 schedule.every().day.at("07:00").do(run_crawler)
 
 # 시작 시 한 번 실행
 print("시작 시 크롤링 실행...")
 run_crawler()
 
-print("스케줄러 시작됨 - 매일 오전 6시에 실행")
+print("스케줄러 시작됨 - 매일 오전 7시에 실행")
 print("종료하려면 Ctrl+C를 누르세요.")
 
 # 무한 루프로 스케줄러 실행
