@@ -112,7 +112,7 @@
             "uid": "google_bigquery"
           },
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp_trunc(timestamp, DAY) as day,\n  count(*) as requests\nFROM\n  `elevated-cargo-439808-e0.analytics_1234567.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\nGROUP BY\n  day\nORDER BY\n  day",
+          "rawSql": "SELECT\n  timestamp_trunc(timestamp, DAY) as day,\n  count(*) as requests\nFROM\n  `elevated-cargo-439808-e0.analytics_484898778.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\nGROUP BY\n  day\nORDER BY\n  day",
           "refId": "A"
         }
       ],
@@ -172,7 +172,7 @@
             "uid": "google_bigquery"
           },
           "rawQuery": true,
-          "rawSql": "SELECT\n  event_name,\n  COUNT(*) as count\nFROM\n  `elevated-cargo-439808-e0.analytics_1234567.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\nGROUP BY\n  event_name\nORDER BY\n  count DESC\nLIMIT 10",
+          "rawSql": "SELECT\n  event_name,\n  COUNT(*) as count\nFROM\n  `elevated-cargo-439808-e0.analytics_484898778.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\nGROUP BY\n  event_name\nORDER BY\n  count DESC\nLIMIT 10",
           "refId": "A"
         }
       ],
@@ -233,7 +233,7 @@
             "uid": "google_bigquery"
           },
           "rawQuery": true,
-          "rawSql": "SELECT\n  device.category as device_category,\n  COUNT(*) as sessions\nFROM\n  `elevated-cargo-439808-e0.analytics_1234567.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\nGROUP BY\n  device_category\nORDER BY\n  sessions DESC",
+          "rawSql": "SELECT\n  device.category as device_category,\n  COUNT(*) as sessions\nFROM\n  `elevated-cargo-439808-e0.analytics_484898778.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\nGROUP BY\n  device_category\nORDER BY\n  sessions DESC",
           "refId": "A"
         }
       ],
@@ -293,7 +293,7 @@
             "uid": "google_bigquery"
           },
           "rawQuery": true,
-          "rawSql": "SELECT\n  geo.country as country,\n  COUNT(DISTINCT user_pseudo_id) as users\nFROM\n  `elevated-cargo-439808-e0.analytics_1234567.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\nGROUP BY\n  country\nORDER BY\n  users DESC\nLIMIT 10",
+          "rawSql": "SELECT\n  geo.country as country,\n  COUNT(DISTINCT user_pseudo_id) as users\nFROM\n  `elevated-cargo-439808-e0.analytics_484898778.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\nGROUP BY\n  country\nORDER BY\n  users DESC\nLIMIT 10",
           "refId": "A"
         }
       ],
@@ -385,7 +385,7 @@
             "uid": "google_bigquery"
           },
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp_trunc(timestamp, HOUR) as hour,\n  event_name,\n  COUNT(*) as count\nFROM\n  `elevated-cargo-439808-e0.analytics_1234567.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\n  AND event_name IN ('page_view', 'api_call', 'user_login', 'form_submit')\nGROUP BY\n  hour, event_name\nORDER BY\n  hour",
+          "rawSql": "SELECT\n  timestamp_trunc(timestamp, HOUR) as hour,\n  event_name,\n  COUNT(*) as count\nFROM\n  `elevated-cargo-439808-e0.analytics_484898778.events_*`\nWHERE\n  _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY))\n  AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())\n  AND event_name IN ('page_view', 'api_call', 'user_login', 'form_submit')\nGROUP BY\n  hour, event_name\nORDER BY\n  hour",
           "refId": "A"
         }
       ],
