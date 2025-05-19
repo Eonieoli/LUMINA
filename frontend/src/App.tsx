@@ -38,9 +38,9 @@ function App() {
                 <ScrollToTop />
                 <Routes>
                     <Route path="/login" element={<Auth />} />
-                    <Route element={<ProtectedRoute />}>
+                    {/* <Route element={<ProtectedRoute />}> */}
                         <Route path="/*" element={<Main />} />
-                    </Route>
+                    {/* </Route> */}
                     <Route element={<CheckAdmin />}>
                         <Route path='/admin' element={<Admin />} />
                     </Route>
