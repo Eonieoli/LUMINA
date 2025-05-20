@@ -47,7 +47,7 @@ FROM node:23.3.0-slim
 RUN npm install -g pnpm@9.15.1
 
 # Python 관련 패키지 설치
-COPY requirements.txt /tmp/
+COPY ./requirements.txt /tmp/
 RUN apt-get update && \
     apt-get install -y git python3 python3-pip && \
     pip3 install -r /tmp/requirements.txt --break-system-packages && \
