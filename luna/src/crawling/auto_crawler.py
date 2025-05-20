@@ -31,7 +31,7 @@ def run_crawler():
         print(f"에러 출력: {e.stderr}")
 
 # 매일 오전 7시에 실행
-schedule.every().day.at("11:00").do(run_crawler)
+schedule.every().day.at("12:00").do(run_crawler)
 
 # 시작 시 한 번 실행
 print("시작 시 크롤링 실행...")
