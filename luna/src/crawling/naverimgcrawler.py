@@ -39,9 +39,23 @@ for container in include_containers:
         href = a.get('href')
         text = a.get_text(strip=True)
         
+        # 이미지 URL 추출 코드 추가 시작
+        img_tag = a.find('img')
+        img_url = None
+        if img_tag:
+            # 'src' 속성에서 이미지 URL 가져오기
+            img_url = img_tag.get('src')
+            # 만약 data-src가 있다면 그것을 사용 (지연 로딩 이미지의 경우)
+            if not img_url or img_url.startswith('data:'):
+                img_url = img_tag.get('data-src')
+            
+            # 상대 경로인 경우 절대 경로로 변환
+            if img_url and img_url.startswith('/'):
+                img_url = 'https://search.naver.com' + img_url
+
         # 유효한 URL이고, 텍스트가 있고, 중복이 아닌 경우만 추가
         if href and text and href.startswith('http') and href not in visited_urls and len(text) > 5:
-            main_news_links.append((href, text))
+            main_news_links.append((href, text, img_url))
             visited_urls.add(href)
             # print(f"메인 기사 추가: {text[:30]}... | {href}")
 
@@ -81,10 +95,18 @@ if len(main_news_links) < 10:
 # main_news_links를 news_links 형태로 변환하는 코드
 def convert_to_dict_list(tuples_list):
     dict_list = []
-    for url, title in tuples_list:
+    for item in tuples_list:
+        # 튜플의 길이에 따라 처리 (이전 코드와의 호환성 유지)
+        if len(item) >= 3:
+            url, title, img_url = item
+        else:
+            url, title = item
+            img_url = None
+            
         dict_list.append({
             "title": title,
-            "url": url
+            "url": url,
+            "image_url": img_url  # 이미지 URL 추가
         })
     return dict_list
 
@@ -97,6 +119,7 @@ print(f"변환된 리스트에는 {len(news_links)}개의 항목이 있습니다
 for i, news in enumerate(news_links[:10], 1):
     print(f"{i}. 제목: {news['title']}")
     print(f"   URL: {news['url']}")
+    print(f"   이미지: {news['image_url'] or '이미지 없음'}")
 
 
 # 결과를 저장할 리스트
@@ -127,8 +150,9 @@ for i, news in enumerate(news_links[:10], 1):
             "title": title,  # 원래 제목 사용
             "url": url,
             "domain": domain,
-            "text_content": text_content,
-            "crawled_at": now.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+            "image_url": news.get("image_url"),  # 이미지 URL 추가
+            "text_content": text_content,  # 추출된 텍스트 저장
+            "crawled_at": time.strftime("%Y-%m-%d %H:%M:%S")
         }
 
         news_data.append(news_item)
@@ -141,6 +165,7 @@ for i, news in enumerate(news_links[:10], 1):
             "title": title,
             "url": url,
             "domain": urlparse(url).netloc.replace("www.", ""),
+            "image_url": news.get("image_url"),  # 이미지 URL 추가
             "text_content": "",  # 빈 텍스트로 설정
             "error": str(e),
             "crawled_at": time.strftime("%Y-%m-%d %H:%M:%S")
@@ -220,6 +245,7 @@ for article in news_data:
         "title": article["title"],
         "url": article["url"],
         "domain": article["domain"],
+        "image_url": article.get("image_url"),
         "text_content": article.get("text_content", ""),
         "crawled_at": article["crawled_at"],
         # 기존 상태 정보 유지 (URL이 같은 기사가 있었다면)
@@ -239,13 +265,16 @@ now = datetime.datetime.now()
 current_date = now.date()  # 현재 날짜만 가져옴
 scheduled_time = datetime.datetime.combine(current_date, datetime.time(7, 0, 0))  # 오전 7:00:00
 
-# 메타데이터에 저장
-db_data["metadata"]["last_crawled"] = now.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+# 이미 오전 7시가 지났다면 마지막 크롤링 시간은 오늘 오전 6시,
+# 아직 오전 7시가 되지 않았다면 어제 오전 6시로 설정
+last_crawled = scheduled_time if now >= scheduled_time else scheduled_time - datetime.timedelta(days=1)
 
-# 다음 크롤링 시간은 다음 날 오전 7시로 설정
-next_date = now.date() + datetime.timedelta(days=1)
-next_crawl = datetime.datetime.combine(next_date, datetime.time(7, 0, 0))
-db_data["metadata"]["next_crawl"] = next_crawl.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+# 다음 크롤링 시간 설정 (다음 날 오전 7시)
+next_crawl = scheduled_time if now < scheduled_time else scheduled_time + datetime.timedelta(days=1)
+
+# 메타데이터에 저장
+db_data["metadata"]["last_crawled"] = last_crawled.strftime("%Y-%m-%dT%H:%M:%S%z")
+db_data["metadata"]["next_crawl"] = next_crawl.strftime("%Y-%m-%dT%H:%M:%S%z")
 
 # DB 저장
 write_news_database(db_data)
