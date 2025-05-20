@@ -241,9 +241,6 @@ pipeline {
                                     // upstream.conf 초기화 파일 체크 - 초기 배포시 active와 backup 서버 모두 설정
                                     sh """
                                     ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'DEPLOY_PATH="${GCP_DEPLOY_PATH}" && 
-                                    mkdir -p "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend" && 
-                                    mkdir -p "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/backend" && 
-                                    mkdir -p "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/ai-server" && 
                                     if [ ! -f "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/upstream.conf" ]; then 
                                         echo -e "upstream frontend {\\n    server frontend-blue:80;    # active\\n    server frontend-green:80 backup;    # backup\\n}" > "\${DEPLOY_PATH}/infra/dev/proxy/blue-green/frontend/upstream.conf"; 
                                     fi && 
@@ -366,9 +363,6 @@ pipeline {
                                     // upstream.conf 초기화 파일 체크 - 초기 배포시 active와 backup 서버 모두 설정
                                     sh """
                                     ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'DEPLOY_PATH="${AWS_DEPLOY_PATH}" && 
-                                    mkdir -p "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend" && 
-                                    mkdir -p "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/backend" && 
-                                    mkdir -p "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/ai-server" && 
                                     if [ ! -f "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/upstream.conf" ]; then 
                                         echo -e "upstream frontend {\\n    server frontend-blue:80;    # active\\n    server frontend-green:80 backup;    # backup\\n}" > "\${DEPLOY_PATH}/infra/prod/proxy/blue-green/frontend/upstream.conf"; 
                                     fi && 

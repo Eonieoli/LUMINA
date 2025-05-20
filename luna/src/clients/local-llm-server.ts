@@ -6,6 +6,8 @@ import bodyParser from "body-parser";
 import { LocalLLMClient } from "./local-llm";
 import { PostGenerator } from "../services/post-generator";
 import { PostScheduler } from "../services/scheduler";
+import { spawn } from "child_process";
+import path from "path";
 
 export class LocalLLMInterface {
   private runtime: IAgentRuntime;
@@ -254,6 +256,9 @@ export class LocalLLMInterface {
           `Luna 플랫폼 API 서버가 Local LLM과 연결되어 포트 ${this.port}에서 시작되었습니다.`
         );
 
+        // Python 크롤링 스크립트 시작
+        this.startPythonCrawler();
+
         // 서버 시작 시 스케줄러도 시작
         this.postScheduler.start();
 
@@ -289,28 +294,28 @@ export class LocalLLMInterface {
     }
   }
 
-  // // Python 크롤링 스크립트 시작 메소드
-  // private startPythonCrawler(): void {
-  //   try {
-  //     // 파일 경로 설정
-  //     const scriptDir = path.join(__dirname, "../crawling");
-  //     const scriptPath = path.join(scriptDir, "auto_crawler.py");
+  // Python 크롤링 스크립트 시작 메소드
+  private startPythonCrawler(): void {
+    try {
+      // 파일 경로 설정
+      const scriptDir = path.join(__dirname, "../crawling");
+      const scriptPath = path.join(scriptDir, "auto_crawler.py");
 
-  //     // Python 실행 (백그라운드 프로세스로)
-  //     const pythonProcess = spawn("python", [scriptPath], {
-  //       detached: true, // 백그라운드 실행
-  //       stdio: "ignore", // 표준 출력/에러 무시
-  //     });
+      // Python 실행 (백그라운드 프로세스로)
+      const pythonProcess = spawn("python", [scriptPath], {
+        detached: true, // 백그라운드 실행
+        stdio: "ignore", // 표준 출력/에러 무시
+      });
 
-  //     // 부모 프로세스와 분리 (백그라운드 실행)
-  //     pythonProcess.unref();
+      // 부모 프로세스와 분리 (백그라운드 실행)
+      pythonProcess.unref();
 
-  //     elizaLogger.success(
-  //       elizaLogger.successesTitle,
-  //       `Python 크롤링 스크립트가 백그라운드로 시작되었습니다.`
-  //     );
-  //   } catch (error) {
-  //     elizaLogger.error(`Python 크롤링 스크립트 시작 오류:`, error);
-  //   }
-  // }
+      elizaLogger.success(
+        elizaLogger.successesTitle,
+        `Python 크롤링 스크립트가 백그라운드로 시작되었습니다.`
+      );
+    } catch (error) {
+      elizaLogger.error(`Python 크롤링 스크립트 시작 오류:`, error);
+    }
+  }
 }
