@@ -127,6 +127,14 @@ public class LuminaServiceImpl implements LuminaService {
     @Transactional
     public void getAiDonation(Long userId) {
 
+        User user = findUtil.getUserById(userId);
+
+        // 사용자 좋아요 카운트 초기화
+        user.resetUserLickCnt();
+
+        // 기존 AI 추천 내역 삭제
+        userDonationRepository.deleteByUserIdAndRegistration(userId, "AI");
+
         PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<PostLike> postLikePage = postLikeRepository.findByUserId(userId, pageRequest);
         Page<CommentLike> commentLikePage = commentLikeRepository.findByUserId(userId, pageRequest);
@@ -148,19 +156,12 @@ public class LuminaServiceImpl implements LuminaService {
         Long categoryId = categoryRepository.findIdByCategoryName(response.getCategoryName());
         List<Donation> donationList = donationRepository.findByCategoryId(categoryId);
 
-        // 기존 AI 추천 내역 삭제
-        userDonationRepository.deleteByUserIdAndRegistration(userId, "AI");
-
-        User user = findUtil.getUserById(userId);
-
         // 새로운 AI 추천 기부 내역 저장
         for (Donation donation : donationList) {
             UserDonation userDonation = new UserDonation(user, donation, "AI");
             userDonationRepository.save(userDonation);
         }
 
-        // 사용자 좋아요 카운트 초기화
-        user.resetUserLickCnt();
         userRepository.save(user);
     }
 

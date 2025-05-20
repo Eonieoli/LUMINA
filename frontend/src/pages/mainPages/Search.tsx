@@ -243,7 +243,7 @@ export default function Search() {
                     )}
                 </div>
             </div>
-            {posts.length === 0 ? 
+            {posts.length === 0 && !debouncedInput ? 
                 <div className="flex flex-col gap-y-4 flex-1 justify-center items-center">
                     <img src={CuriousLuna} alt="" className="h-50 w-auto" />
                     <p className="text-xl font-semibold">
