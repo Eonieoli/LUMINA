@@ -72,7 +72,7 @@ export const Board = ({
         setIsModalOpened(true);
     };
 
-    const deleteConfirm = async (postId: number) => {
+    const deleteConfirm = (postId: number) => {
         try {
             onDelete(postId);
             setIsModalOpened(false);

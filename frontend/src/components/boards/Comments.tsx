@@ -217,7 +217,7 @@ export const Comments = ({ postId, children }: CommentsProps) => {
         }
     };
 
-    const deleteClick = async (commentId: number) => {
+    const deleteClick = (commentId: number) => {
         try {
             setComments((prevComments) =>
                 prevComments.filter(

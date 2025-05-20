@@ -79,7 +79,7 @@ export const Replies = ({
         }
     };
 
-    const deleteClick = async (commentId: number) => {
+    const deleteClick = (commentId: number) => {
         try {
             setReplies((prevComments) =>
                 prevComments.filter(
