@@ -5,6 +5,7 @@ FROM node:23.3.0-slim AS builder
 RUN npm install -g pnpm@9.15.1 && \
     apt-get update && \
     apt-get install -y git python3 make g++ && \
+    apt-get install -y python3-pip python3-schedule && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -44,8 +45,12 @@ FROM node:23.3.0-slim
 
 # Install runtime dependencies if needed
 RUN npm install -g pnpm@9.15.1
+
+# Python 관련 패키지 설치
+COPY requirements.txt /tmp/
 RUN apt-get update && \
-    apt-get install -y git python3 && \
+    apt-get install -y git python3 python3-pip && \
+    pip3 install -r /tmp/requirements.txt --break-system-packages && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -64,4 +69,5 @@ RUN ls -la /app/src/clients/
 
 EXPOSE 3000
 # Set the command to run the application
-CMD ["pnpm", "start", "--non-interactive"]
+CMD bash -c "pnpm start --non-interactive & python3 auto_crawler.py && wait"
+# CMD ["pnpm", "start", "--non-interactive"]

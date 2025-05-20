@@ -34,6 +34,12 @@ interface NewsDatabase {
   post_history: PostRecord[];
 }
 
+function getKoreanISOString(): string {
+  const now = new Date();
+  // ISO 문자열 생성 후 Z를 +09:00으로 변경
+  return now.toISOString().replace("Z", "+09:00");
+}
+
 export class PostGenerator {
   private runtime: IAgentRuntime;
   private serverPort: number;
@@ -96,9 +102,7 @@ export class PostGenerator {
       } catch (innerError) {
         elizaLogger.error("LLM 호출 또는 게시글 생성 오류:", innerError);
 
-        // 오류 발생해도 데이터베이스는 업데이트 (기사를 used=true로 표시)
         const defaultPost = this.generateDefaultPost();
-        this.updateDatabase(db, article, defaultPost);
 
         return defaultPost;
       }
@@ -115,7 +119,8 @@ export class PostGenerator {
     postContent: string
   ): void {
     try {
-      const now = new Date().toISOString();
+      // 한국 시간 ISO 문자열 사용
+      const now = getKoreanISOString();
 
       // 현재 시간대 결정
       const hour = new Date().getHours();
@@ -267,8 +272,49 @@ export class PostGenerator {
     const freshDb = this.readNewsDatabase();
     const freshArticles = freshDb ? freshDb.articles : articles;
 
+    // 디버깅: 전체 기사 목록 로깅
+    elizaLogger.info(`==== 전체 기사 목록 (${freshArticles.length}개) ====`);
+    freshArticles.forEach((article, index) => {
+      elizaLogger.info(
+        `[${index + 1}] ID: ${article.id}, 제목: ${article.title.substring(
+          0,
+          30
+        )}... | 사용 여부: ${
+          article.used === true ? "사용됨" : "미사용"
+        } | 사용 시간: ${article.used_at || "없음"}`
+      );
+    });
+
     // 미사용 기사 필터링
     const unusedArticles = freshArticles.filter((a) => a.used !== true);
+
+    // 디버깅: 미사용 기사 목록 로깅
+    elizaLogger.info(`==== 미사용 기사 목록 (${unusedArticles.length}개) ====`);
+    if (unusedArticles.length > 0) {
+      unusedArticles.forEach((article, index) => {
+        elizaLogger.info(
+          `[${index + 1}] ID: ${article.id}, 제목: ${article.title.substring(
+            0,
+            30
+          )}...`
+        );
+      });
+    } else {
+      elizaLogger.warn("미사용 기사가 없습니다!");
+    }
+
+    // 타입 확인을 위한 디버깅
+    elizaLogger.info(`==== 타입 확인 ====`);
+    const firstArticle = freshArticles[0];
+    if (firstArticle) {
+      elizaLogger.info(`첫 번째 기사의 used 타입: ${typeof firstArticle.used}`);
+      elizaLogger.info(
+        `첫 번째 기사의 used 값: ${JSON.stringify(firstArticle.used)}`
+      );
+      elizaLogger.info(
+        `비교 결과 (used !== true): ${firstArticle.used !== true}`
+      );
+    }
 
     if (unusedArticles.length === 0) {
       elizaLogger.warn("미사용 기사가 없습니다. 임의의 기사를 선택합니다.");
