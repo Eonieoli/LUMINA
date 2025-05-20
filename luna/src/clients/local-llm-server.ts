@@ -31,11 +31,8 @@ export class LocalLLMInterface {
     // 포스트 생성기 초기화 - 이 부분 추가
     this.postGenerator = new PostGenerator(runtime);
 
-    // 포스트 스케줄러 초기화 (6시간마다 실행) - 이 부분 추가
-    this.postScheduler = new PostScheduler(
-      this.createScheduledPost.bind(this),
-      6 // 6시간 간격
-    );
+    // 포스트 스케줄러 초기화
+    this.postScheduler = new PostScheduler(this.createScheduledPost.bind(this));
 
     // Express 미들웨어 설정
     this.app.use(cors());
@@ -291,4 +288,29 @@ export class LocalLLMInterface {
       return null;
     }
   }
+
+  // // Python 크롤링 스크립트 시작 메소드
+  // private startPythonCrawler(): void {
+  //   try {
+  //     // 파일 경로 설정
+  //     const scriptDir = path.join(__dirname, "../crawling");
+  //     const scriptPath = path.join(scriptDir, "auto_crawler.py");
+
+  //     // Python 실행 (백그라운드 프로세스로)
+  //     const pythonProcess = spawn("python", [scriptPath], {
+  //       detached: true, // 백그라운드 실행
+  //       stdio: "ignore", // 표준 출력/에러 무시
+  //     });
+
+  //     // 부모 프로세스와 분리 (백그라운드 실행)
+  //     pythonProcess.unref();
+
+  //     elizaLogger.success(
+  //       elizaLogger.successesTitle,
+  //       `Python 크롤링 스크립트가 백그라운드로 시작되었습니다.`
+  //     );
+  //   } catch (error) {
+  //     elizaLogger.error(`Python 크롤링 스크립트 시작 오류:`, error);
+  //   }
+  // }
 }
