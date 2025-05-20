@@ -2,10 +2,12 @@ package com.lumina.backend.post.controller;
 
 import com.lumina.backend.common.model.response.BaseResponse;
 import com.lumina.backend.common.utill.TokenUtil;
+import com.lumina.backend.lumina.service.LuminaService;
 import com.lumina.backend.post.model.request.UploadCommentRequest;
 import com.lumina.backend.post.model.response.GetChildCommentResponse;
 import com.lumina.backend.post.model.response.UploadCommentResponse;
 import com.lumina.backend.post.service.CommentService;
+import com.lumina.backend.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +21,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CommentController {
 
+    private final UserRepository userRepository;
+
     private final CommentService commentService;
+    private final LuminaService luminaService;
 
     private final TokenUtil tokenUtil;
 
@@ -80,6 +85,9 @@ public class CommentController {
 
         Long userId = tokenUtil.findIdByToken(request);
         Boolean like = commentService.toggleCommentLike(userId, postId, commentId);
+        if (userRepository.findLikeCntByUserId(userId) >= 20) {
+            luminaService.getAiDonation(userId);
+        }
 
         BaseResponse<Void> baseResponse = like ?
                 BaseResponse.withMessage("댓글 좋아요 완료") :

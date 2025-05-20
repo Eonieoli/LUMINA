@@ -71,9 +71,6 @@ public class DonationController {
             HttpServletRequest request) {
 
         Long userId = tokenUtil.findIdByToken(request);
-        if (userRepository.findLikeCntByUserId(userId) >= 20) {
-            luminaService.getAiDonation(userId);
-        }
         Map<String, Object> response = donationService.getSubscribeDonation(userId);
 
         return ResponseEntity.ok(BaseResponse.success("관심 기부처 조회 성공", response));
