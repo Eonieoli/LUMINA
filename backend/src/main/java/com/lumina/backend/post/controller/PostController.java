@@ -6,6 +6,7 @@ import com.lumina.backend.lumina.service.LuminaService;
 import com.lumina.backend.post.model.request.UploadPostRequest;
 import com.lumina.backend.post.model.response.UploadPostResponse;
 import com.lumina.backend.post.service.PostService;
+import com.lumina.backend.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,8 @@ import java.util.Map;
 @RequestMapping("/api/v1/post")
 @RequiredArgsConstructor
 public class PostController {
+
+    private final UserRepository userRepository;
 
     private final PostService postService;
     private final LuminaService luminaService;
@@ -69,6 +72,9 @@ public class PostController {
 
         Long userId = tokenUtil.findIdByToken(request);
         Boolean like = postService.toggleLike(userId, postId);
+        if (userRepository.findLikeCntByUserId(userId) >= 20) {
+            luminaService.getAiDonation(userId);
+        }
 
         BaseResponse<Void> baseResponse = like ?
                 BaseResponse.withMessage("게시물 좋아요 완료") :

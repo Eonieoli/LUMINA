@@ -154,7 +154,7 @@ for i, news in enumerate(news_links[:10], 1):
         print("  다음 URL로 이동합니다... (1초 대기)")
         time.sleep(1)
 
-# 생성할 4개의 게시물 내용을 담을 DB 파일 관리 함수 
+# 게시물 내용을 담을 DB 파일 관리 함수 
 def read_news_database():
     """뉴스 DB 파일 읽기"""
     db_path = os.path.join("news_data", "news_database.json")
@@ -242,7 +242,7 @@ for article in news_data:
 # 메타데이터 업데이트
 now = datetime.datetime.now()
 
-# 특정 시간 설정 (예: 오전 6시)
+# 특정 시간 설정
 current_date = now.date()  # 현재 날짜만 가져옴
 scheduled_time = datetime.datetime.combine(current_date, datetime.time(7, 0, 0))  # 오전 7:00:00
 

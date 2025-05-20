@@ -57,10 +57,11 @@ export const Board = ({
 
     const heartClick = async (postId: number) => {
         try {
-            await postLike(postId);
-
             setIsLiked((prev) => !prev);
             setLikes((prev) => prev + (isLiked ? -1 : 1));
+            
+            postLike(postId);
+            
             return;
         } catch (error) {
             console.error(error);
@@ -71,11 +72,12 @@ export const Board = ({
         setIsModalOpened(true);
     };
 
-    const deleteConfirm = async (postId: number) => {
+    const deleteConfirm = (postId: number) => {
         try {
-            await deletePost(postId);
             onDelete(postId);
             setIsModalOpened(false);
+
+            deletePost(postId);
         } catch (error) {
             console.error(error);
         }
