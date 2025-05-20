@@ -60,7 +60,6 @@ export const Replies = ({
 
     const heartClick = async (postId: number, commentId: number) => {
         try {
-            await commentLike(postId, commentId);
             setReplies((prevComments) =>
                 prevComments.map((comment) =>
                     comment.commentId === commentId
@@ -74,6 +73,7 @@ export const Replies = ({
                         : comment
                 )
             );
+            commentLike(postId, commentId);
         } catch (error) {
             console.error(error);
         }
@@ -81,12 +81,12 @@ export const Replies = ({
 
     const deleteClick = async (commentId: number) => {
         try {
-            await deleteComment(postId, commentId);
             setReplies((prevComments) =>
                 prevComments.filter(
                     (comment) => comment.commentId !== commentId
                 )
             );
+            deleteComment(postId, commentId);
         } catch (error) {
             console.error(error);
         }
