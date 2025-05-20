@@ -112,7 +112,6 @@ export const Comments = ({ postId, children }: CommentsProps) => {
 
     const heartClick = async (postId: number, commentId: number) => {
         try {
-            await commentLike(postId, commentId);
             setComments((prevComments) =>
                 prevComments.map((comment) =>
                     comment.commentId === commentId
@@ -126,6 +125,7 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                         : comment
                 )
             );
+            commentLike(postId, commentId);
         } catch (error) {
             console.error(error);
         }
@@ -217,14 +217,14 @@ export const Comments = ({ postId, children }: CommentsProps) => {
         }
     };
 
-    const deleteClick = async (commentId: number) => {
+    const deleteClick = (commentId: number) => {
         try {
-            await deleteComment(postId, commentId);
             setComments((prevComments) =>
                 prevComments.filter(
                     (comment) => comment.commentId !== commentId
                 )
             );
+            deleteComment(postId, commentId);
         } catch (error) {
             console.error(error);
         }
