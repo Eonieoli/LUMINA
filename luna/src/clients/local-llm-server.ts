@@ -9,6 +9,7 @@ import { PostScheduler } from "../services/scheduler";
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
+import { FormData } from "formdata-node";
 
 export class LocalLLMInterface {
   private runtime: IAgentRuntime;
@@ -147,7 +148,7 @@ export class LocalLLMInterface {
     // 게시글 평가를 위한 프롬프트 구성
 
     // const promptText = `다음은 사용자(닉네임: \"${nickname}\")가 작성한 게시글입니다:\n\"${postContent}\"\n\n당신은 선한 행동 SNS 플랫폼의 관리자 Luna입니다. 이 게시글에 대한 자연스러운 반응을 제공해야 합니다.\n\n게시글을 분석한 후:\n1. 게시글의 유형을 내부적으로만 파악하고, 절대 유형을 언급하지 마세요.\n   A) 실제 봉사활동이나 선한 행동을 직접 수행했다는 내용\n   B) 선한 생각, 정보 공유, 또는 간접적인 선행 관련 내용\n   C) 기부나 이외의 것들에 관한 질문 내용\n\n2. 다음 요소를 자연스럽게 포함하되, 절대 번호나 구조를 드러내지 마세요:\n   - 게시글 내용에 대한 진심 어린 반응\n   - 해당 행동/생각의 사회적 가치에 대한 인정\n   - 작성자를 향한 따뜻한 격려\n   - 관련 질문이 있다면 도움이 되는 답변\n\n3. 절대적 금지사항: \n   - 게시글 내용을 어떤 방식으로든 언급하거나 반복하지 마세요 (\"${postContent}\" 내용 자체를 언급 금지)\n   - 게시글에서 사용된 단어나 표현을 그대로 반복하는 것 금지\n   - \"~라고 말씀하셨네요\" 또는 \"~에 대한 글을 작성하셨네요\" 형태 사용 금지\n   - 구분선(---), 줄바꿈(\\n), 하이픈(-), 번호 매기기, 별표(*), 게시글 자체 내용이나 사용자 닉네임 자체 내용 언급 등 구조적 기호 사용 금지\n   - 유형 분석이나 의도 노출 금지\n\n4. 무조건 게시글 원문 내용을 참조하지 마세요. 게시글 내용의 맥락에 맞게 반응은 해야 하지만, 원문의 단어나 표현을 직접 언급하거나 재구성하지 마세요.\n\n예시: 만약 게시글이 \"하이 안녕하세요\"라면, \"하이\" 또는 \"안녕하세요\"라는 단어를 답변에 포함하지 마세요. 대신 \"${nickname}님, 반가운 인사 정말 감사해요. 이런 따뜻한 소통이 우리 커뮤니티를 더 행복하게 만들어요.\"와 같이 답변하세요.\n\n5. 답변은 문단으로 작성하고, 답변을 \"Luna:\"으으로 시작하지마세요.(예시: \"Luna: \").\n\n중요: \"${nickname}\"님에게 게시글 내용을 언급하지 않고, 오직 맥락에 맞는 반응만 제공하세요. 어떤 형태로든 원문을 인용하거나 반복하지 마세요.`;
-    const promptText = `The following is a post written by a user (nickname: "\${nickname}\"):\n\"${postContent}\"\n\nYou are Luna, an administrator of a Good Deeds SNS platform. You need to provide a natural response to this post.\n\nAfter analyzing the post:\n1. Internally identify the type of post, but never mention the type:\n   A) Content about actually performing volunteer work or good deeds directly\n   B) Content about good thoughts, sharing information, or indirectly related to good deeds\n   C) Content about questions regarding donations or other related matters\n\n2. Naturally include the following elements, but never reveal the numbering or structure:\n   - Sincere reaction to the post content\n   - Recognition of the social value of the action/thought\n   - Warm encouragement toward the author\n   - Helpful answers if there are related questions\n\n3. Absolute prohibitions:\n   - Never mention or repeat the post content in any way (do not mention the \"${postContent}\" itself)\n   - Do not repeat words or expressions used in the post verbatim\n   - Do not use phrases like \"you said ~\" or \"you wrote about ~\"\n   - Do not use structural symbols such as dividing lines (---), line breaks (\\n), hyphens (-), numbering, asterisks (*), or mention the post content itself or the user's nickname itself\n   - Do not reveal your analysis of the type or intention\n\n4. Never reference the original post content directly. While your response should be contextually appropriate to the post, do not directly mention or restructure the words or expressions from the original text.\n\n예시: 만약 게시글이 \"하이 안녕하세요\"라면, \"하이\" 또는 \"안녕하세요\"라는 단어를 답변에 포함하지 마세요. 대신 \"${nickname}님, 반가운 인사 정말 감사해요. 이런 따뜻한 소통이 우리 커뮤니티를 더 행복하게 만들어요.\"와 같이 답변하세요.\n\n5. Write your response in paragraphs, and do not start your answer with \"Luna:\" (example: \"Luna: \").\n\nIMPORTANT: Provide only contextually appropriate reactions to \"${nickname}\" without mentioning the post content. Do not quote or repeat the original text in any form.\n\nCRITICAL INSTRUCTION: YOUR RESPONSE MUST BE IN KOREAN LANGUAGE ONLY. DO NOT RESPOND IN ENGLISH UNDER ANY CIRCUMSTANCES. ALL COMMUNICATION MUST BE 100% IN KOREAN.`;
+    const promptText = `The following is a post written by a user (nickname: \"${nickname}\"):\n\"${postContent}\"\n\nYou are Luna, an administrator of a Good Deeds SNS platform. You need to provide a natural response to this post.\n\nAfter analyzing the post:\n1. Internally identify the type of post, but never mention the type:\n   A) Content about actually performing volunteer work or good deeds directly\n   B) Content about good thoughts, sharing information, or indirectly related to good deeds\n   C) Content about questions regarding donations or other related matters\n\n2. Naturally include the following elements, but never reveal the numbering or structure:\n   - Sincere reaction to the post content like people\n   - Recognition of the social value of the action/thought\n   - Warm encouragement toward the author\n   - Helpful answers if there are related questions\n\n3. Absolute prohibitions:\n   - Never mention or repeat the post content in any way (do not mention the \"${postContent}\" itself)\n   - Do not repeat words or expressions used in the post verbatim\n   - Do not use phrases like \"you said ~\" or \"you wrote about ~\"\n   - Do not use structural symbols such as dividing lines (---), line breaks (\\n), hyphens (-), numbering, asterisks (*), or mention the post content itself or the user's nickname itself\n   - Do not reveal your analysis of the type or intention\n\n4. Never reference the original post content directly. While your response should be contextually appropriate to the post, do not directly mention or restructure the words or expressions from the original text.\n\n예시: if the content of post is \"하이 안녕하세요\", Do not include the answer the word same as \"하이\" or \"안녕하세요\". Intstead of that, please answer like the example (example: \"${nickname}님, 반가운 인사 정말 감사해요. 이런 따뜻한 소통이 우리 커뮤니티를 더 행복하게 만들어요.\").\n\n5. Write your response in paragraphs, and do not start your answer with \"Luna:\" (example: \"Luna: \", \"Here's your response:\").\n\nIMPORTANT: Provide only contextually appropriate reactions to \"${nickname}\" without mentioning the post content. Do not quote or repeat the original text in any form.\n\nCRITICAL INSTRUCTION: YOUR RESPONSE MUST BE IN KOREAN LANGUAGE ONLY. DO NOT RESPOND IN ENGLISH UNDER ANY CIRCUMSTANCES. ALL COMMUNICATION MUST BE 100% IN KOREAN. Don't start your answer with using chimes or fillers.`;
 
     ("${postContent}");
     elizaLogger.info("게시글 내용:", postContent);
@@ -215,27 +216,37 @@ export class LocalLLMInterface {
     }
   }
 
-  // 백엔드 API에 게시글 전송 - 이 메서드 추가
   private async sendPostToBackend(postContent: string): Promise<void> {
     try {
-      // 백엔드 API URL은 환경 변수로 설정 가능
       const backendUrl = process.env.BACKEND_API_URL || "https://picscore.net";
-
-      // 로컬 환경
-      // const backendUrl = "http://host.docker.internal:8080";\
 
       elizaLogger.info(
         `백엔드 API에 게시글 전송 중... URL: ${backendUrl}/api/v1/lumina/post`
       );
 
+      const article = this.postGenerator.getCurrentSelectedArticle();
+      let imageFile: File | undefined;
+
+      if (article && article.image_url) {
+        elizaLogger.info(`기사 이미지 URL 발견: ${article.image_url}`);
+        imageFile = await this.postGenerator.downloadImage(article.image_url);
+      }
+
+      const formData = new FormData();
+      formData.append("postContent", postContent);
+
+      if (imageFile) {
+        formData.append("post_image", imageFile);
+        elizaLogger.info("이미지가 폼 데이터에 추가되었습니다.");
+      } else {
+        elizaLogger.error(
+          "이미지가 없거나 다운로드할 수 없어 텍스트만 전송합니다."
+        );
+      }
+
       const response = await fetch(`${backendUrl}/api/v1/lumina/post`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          postContent,
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
