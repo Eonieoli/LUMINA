@@ -51,13 +51,12 @@ public class OAuthServiceImpl implements OAuthService {
             HttpServletRequest request, HttpServletResponse response) {
 
         String refresh = CookieUtil.getCookieValue(request, "refresh");
-
         tokenValidationUtil.validateRefreshToken(refresh);
 
         String nickname = jwtUtil.getNickname(refresh);
         Long userId = userRepository.findIdByNickname(nickname);
         String userKey = redisUtil.getRefreshKey(request, userId);
-        String role = tokenUtil.findRoleByToken(request);
+        String role = userRepository.findRoleByNickname(nickname);
 
         tokenValidationUtil.validateStoredRefreshToken(userKey, refresh);
 
