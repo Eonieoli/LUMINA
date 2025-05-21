@@ -76,7 +76,7 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
 
             String accessToken = CookieUtil.getCookieValue(request, "access");
-
+            System.out.println("accessToken = " + accessToken);
             // 개발용
             if (accessToken == null) {
                 String authorizationHeader = request.getHeader("Authorization");
@@ -86,14 +86,15 @@ public class JWTFilter extends OncePerRequestFilter {
             }
             // 여기까지
             tokenValidationUtil.validateAccessToken(accessToken);
-
+            System.out.println("access토큰 검증 완료");
             try {
                 jwtUtil.isExpired(accessToken);
             } catch (ExpiredJwtException e) {
                 try {
+                    System.out.println("토큰 만료 로직 돌리기 전");
                     // 만료된 경우 재발급 시도
                     String newAccessToken = oAuthService.reissue(request, response);
-
+                    System.out.println("newAccessToken = " + newAccessToken);
                     // 새 토큰으로 request 업데이트
                     CustomHttpServletRequestWrapper updatedRequest = new CustomHttpServletRequestWrapper(request);
                     updatedRequest.addHeader("Authorization", "Bearer " + newAccessToken);
