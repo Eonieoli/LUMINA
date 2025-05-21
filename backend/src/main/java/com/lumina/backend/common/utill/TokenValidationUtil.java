@@ -68,9 +68,5 @@ public class TokenValidationUtil {
         if (access == null) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "인증 토큰 없음");
         }
-
-        if (!"access".equals(jwtUtil.getCategory(access))) {
-            throw new CustomException(HttpStatus.UNAUTHORIZED, "AccessToken이 아님");
-        }
     }
 }
