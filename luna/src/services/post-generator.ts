@@ -34,6 +34,12 @@ interface NewsDatabase {
   post_history: PostRecord[];
 }
 
+function getKoreanISOString(): string {
+  const now = new Date();
+  // ISO 문자열 생성 후 Z를 +09:00으로 변경
+  return now.toISOString().replace("Z", "+09:00");
+}
+
 export class PostGenerator {
   private runtime: IAgentRuntime;
   private serverPort: number;
@@ -96,9 +102,7 @@ export class PostGenerator {
       } catch (innerError) {
         elizaLogger.error("LLM 호출 또는 게시글 생성 오류:", innerError);
 
-        // 오류 발생해도 데이터베이스는 업데이트 (기사를 used=true로 표시)
         const defaultPost = this.generateDefaultPost();
-        this.updateDatabase(db, article, defaultPost);
 
         return defaultPost;
       }
@@ -115,7 +119,8 @@ export class PostGenerator {
     postContent: string
   ): void {
     try {
-      const now = new Date().toISOString();
+      // 한국 시간 ISO 문자열 사용
+      const now = getKoreanISOString();
 
       // 현재 시간대 결정
       const hour = new Date().getHours();
@@ -229,74 +234,17 @@ export class PostGenerator {
     }
   }
 
-  // // 뉴스 데이터베이스 쓰기
-  // private writeNewsDatabase(db: NewsDatabase): void {
-  //   try {
-  //     fs.writeFileSync(this.dbFilePath, JSON.stringify(db, null, 2), "utf8");
-  //     elizaLogger.info(`뉴스 데이터베이스 저장 완료: ${this.dbFilePath}`);
-  //   } catch (error) {
-  //     elizaLogger.error(`뉴스 데이터베이스 쓰기 오류: ${error}`);
-  //   }
-  // }
-
   // writeNewsDatabase 함수 수정
   private writeNewsDatabase(db: NewsDatabase): void {
     try {
-      console.log("==== 파일 쓰기 시작 ====");
-      console.log(`현재 작업 디렉토리: ${process.cwd()}`);
-      console.log(`DB 파일 절대 경로: ${path.resolve(this.dbFilePath)}`);
-
       // 파일 존재 여부 및 권한 확인
       const fileExists = fs.existsSync(this.dbFilePath);
       console.log(`파일 존재 여부: ${fileExists}`);
-
-      if (fileExists) {
-        try {
-          fs.accessSync(this.dbFilePath, fs.constants.W_OK);
-          console.log("파일 쓰기 권한 있음");
-        } catch (err) {
-          console.error("파일 쓰기 권한 없음:", err);
-        }
-      }
-
-      // 파일 쓰기 전 내용 확인
-      if (fileExists) {
-        try {
-          const oldContent = fs.readFileSync(this.dbFilePath, "utf8");
-          const oldDb = JSON.parse(oldContent);
-          console.log(
-            `쓰기 전 파일 내용: used=true 기사 수: ${
-              oldDb.articles.filter((a) => a.used === true).length
-            }`
-          );
-        } catch (err) {
-          console.error("기존 파일 읽기 실패:", err);
-        }
-      }
 
       // 데이터베이스 저장
       const jsonString = JSON.stringify(db, null, 2);
       fs.writeFileSync(this.dbFilePath, jsonString, "utf8");
       console.log(`뉴스 데이터베이스 저장 완료: ${this.dbFilePath}`);
-
-      // 파일 쓰기 후 내용 확인
-      try {
-        // 파일 캐시 비우기 위해 직접 다시 읽기
-        const newContent = fs.readFileSync(this.dbFilePath, "utf8");
-        const newDb = JSON.parse(newContent);
-        console.log(
-          `쓰기 후 파일 내용: used=true 기사 수: ${
-            newDb.articles.filter((a) => a.used === true).length
-          }`
-        );
-        console.log(
-          `쓰기 후 5번 기사 used 상태: ${
-            newDb.articles.find((a) => a.id === "5")?.used
-          }`
-        );
-      } catch (err) {
-        console.error("새 파일 읽기 실패:", err);
-      }
     } catch (error) {
       console.error(`뉴스 데이터베이스 쓰기 오류: ${error}`);
     }
@@ -320,29 +268,51 @@ export class PostGenerator {
 
     elizaLogger.info(`현재 시간대: ${timeSlot} (${hour}시)`);
 
-    // 미사용 기사 필터링 전에 추가할 디버깅 코드
-    console.log("==== 전체 기사 목록 및 상태 ====");
-    for (const article of articles) {
-      console.log(
-        `ID: ${article.id}, 제목: ${article.title.substring(0, 20)}..., used: ${
-          article.used
-        }, 타입: ${typeof article.used}`
+    // 매번 최신 데이터 직접 읽기
+    const freshDb = this.readNewsDatabase();
+    const freshArticles = freshDb ? freshDb.articles : articles;
+
+    // 디버깅: 전체 기사 목록 로깅
+    elizaLogger.info(`==== 전체 기사 목록 (${freshArticles.length}개) ====`);
+    freshArticles.forEach((article, index) => {
+      elizaLogger.info(
+        `[${index + 1}] ID: ${article.id}, 제목: ${article.title.substring(
+          0,
+          30
+        )}... | 사용 여부: ${
+          article.used === true ? "사용됨" : "미사용"
+        } | 사용 시간: ${article.used_at || "없음"}`
       );
-    }
+    });
 
     // 미사용 기사 필터링
-    const unusedArticles = articles.filter((a) => !a.used);
+    const unusedArticles = freshArticles.filter((a) => a.used !== true);
 
-    console.log("==== 미사용 기사 필터링 결과 ====");
-    console.log(
-      `전체 기사 수: ${articles.length}, 미사용 기사 수: ${unusedArticles.length}`
-    );
-    console.log("미사용 기사 리스트: ");
-    for (const article of unusedArticles) {
-      console.log(
-        `ID: ${article.id}, 제목: ${article.title.substring(0, 20)}..., used: ${
-          article.used
-        }`
+    // 디버깅: 미사용 기사 목록 로깅
+    elizaLogger.info(`==== 미사용 기사 목록 (${unusedArticles.length}개) ====`);
+    if (unusedArticles.length > 0) {
+      unusedArticles.forEach((article, index) => {
+        elizaLogger.info(
+          `[${index + 1}] ID: ${article.id}, 제목: ${article.title.substring(
+            0,
+            30
+          )}...`
+        );
+      });
+    } else {
+      elizaLogger.warn("미사용 기사가 없습니다!");
+    }
+
+    // 타입 확인을 위한 디버깅
+    elizaLogger.info(`==== 타입 확인 ====`);
+    const firstArticle = freshArticles[0];
+    if (firstArticle) {
+      elizaLogger.info(`첫 번째 기사의 used 타입: ${typeof firstArticle.used}`);
+      elizaLogger.info(
+        `첫 번째 기사의 used 값: ${JSON.stringify(firstArticle.used)}`
+      );
+      elizaLogger.info(
+        `비교 결과 (used !== true): ${firstArticle.used !== true}`
       );
     }
 
@@ -387,24 +357,6 @@ export class PostGenerator {
       article.text_content
     )}\"\n\n위의 내용을 정리하여 Luna의 캐릭터와 일관성 있는 게시글을 작성해주세요. \n기부나 봉사활동의 가치를 강조하고, 사용자들이 선한 행동에 참여하도록 격려하는 내용이 포함되는 것도 좋아요. \n\n게시글 작성 가이드라인:\n1. 500자 이내로 작성해주세요.\n2. 기사 내용을 분석하여 주요 정보를 추출해주세요.\n3. 뉴스를 인용하되, 직접적인 뉴스 전달이 아닌 Luna만의 스타일로 재해석해주세요.\n4. 뉴스의 내용을 요약해주세요. \n5. 사용자들이 관련된 기부나 봉사에 참여할 수 있는 방법이 있다면, 이를 간단히 제안해주세요. 직접 추가적인 방안을 검색해 찾아서 제안해도 좋아요. \n\n최종 게시글만 반환해주세요.\n\n주의: 응답은 HTML 태그 없이 일반 텍스트로만 작성해주세요. HTML 형식으로 응답하지 마세요.`;
   }
-
-  // 원래 프롬프트
-  // `당신은 선한 행동 SNS 플랫폼의 관리자 Luna입니다. 플랫폼에 게시할 새로운 게시글을 작성해주세요.
-
-  // 다음은 최근 기부/봉사 관련 뉴스의 HTML 내용입니다:
-  // ${article.text_content}
-
-  // 위의 HTML 내용을 분석하여 Luna의 캐릭터와 일관성 있는 게시글을 작성해주세요.
-  // 기부나 봉사활동의 가치를 강조하고, 사용자들이 선한 행동에 참여하도록 격려하는 내용이 포함되는 것도 좋아요.
-
-  // 게시글 작성 가이드라인:
-  // 1. 300자 이내로 작성해주세요.
-  // 2. HTML 내용을 분석하여 주요 정보를 추출해주세요.
-  // 3. 뉴스를 인용하되, 직접적인 뉴스 전달이 아닌 Luna만의 스타일로 재해석해주세요.
-  // 4. 뉴스의 내용을 요약해주세요.
-  // 5. 사용자들이 관련된 기부나 봉사에 참여할 수 있는 방법이 있다면, 이를 간단히 제안해주세요. 직접 추가적인 방안을 찾아서 제안해도 좋아요.
-
-  // 최종 게시글만 반환해주세요.`
 
   // LLM에 게시글 생성 요청
   private async requestPostFromLLM(prompt: string): Promise<string> {
