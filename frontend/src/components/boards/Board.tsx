@@ -257,10 +257,20 @@ export const Board = ({
                 isDesktop ? (
                 <div onClick={() => setShowComments(false)} className="fixed flex justify-center items-center right-0 top-0 h-full w-full bg-[#00000050] shadow-lg z-50">
                     <div onClick={(e) => e.stopPropagation()} className='grid grid-cols-5 ml-20 w-2/3 h-3/4 min-w-[688px]'>
-                        <div className='flex justify-center items-center col-span-3 rounded-l-md bg-black'>
-                            <img src={postImage} className='w-full h-full aspect-square object-contain' alt="" />
-                        </div>
-                        <Comments postId={postId} children='col-span-2 bg-white rounded-r-md justify-between' />
+                        {postImage ?
+                            <>
+                                <div className='flex justify-center items-center col-span-3 rounded-l-md bg-black'>
+                                    <img src={postImage} className='w-full h-full aspect-square object-contain' alt="" />
+                                </div>
+                                <Comments postId={postId} children='col-span-2 bg-white rounded-r-md justify-between' />
+                            </>
+                            :
+                            <>
+                                <div></div>
+                                <Comments postId={postId} children='col-span-3 bg-white rounded-md justify-between' />
+                                <div></div>
+                            </>
+                        }
                     </div>
                 </div>
                 ) : (
