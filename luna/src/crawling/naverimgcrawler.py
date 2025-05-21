@@ -7,6 +7,25 @@ from urllib.parse import urlparse
 import datetime
 import trafilatura
 
+# main_news_links를 news_links 형태로 변환하는 코드
+def convert_to_dict_list(tuples_list):
+    dict_list = []
+    for item in tuples_list:
+        # 튜플의 길이에 따라 처리 (이전 코드와의 호환성 유지)
+        if len(item) >= 3:
+            url, title, img_url = item
+        else:
+            url, title = item
+            img_url = None
+            
+        dict_list.append({
+            "title": title,
+            "url": url,
+            "image_url": img_url  # 이미지 URL 추가
+        })
+    return dict_list
+
+
 url = 'https://search.naver.com/search.naver?sm=tab_hty.top&where=news&ssc=tab.news.all&query=%EA%B8%B0%EB%B6%80+%EC%BA%A0%ED%8E%98%EC%9D%B8'
 headers = {'User-Agent': 'Mozilla/5.0'}
 res = requests.get(url, headers=headers)
@@ -35,80 +54,85 @@ visited_urls = set()  # 중복 URL 방지
 # 포함할 컨테이너에서 a 태그 추출
 for container in include_containers:
     a_tags = container.find_all('a')
+    href = ''
+    text = ''
     for a in a_tags:
-        href = a.get('href')
-        text = a.get_text(strip=True)
+        if href == '' and text == '':
+            href = a.get('href')
+            text = a.get_text(strip=True)
         
-        # 이미지 URL 추출 코드 추가 시작
-        img_tag = a.find('img')
-        img_url = None
-        if img_tag:
-            # 'src' 속성에서 이미지 URL 가져오기
-            img_url = img_tag.get('src')
-            # 만약 data-src가 있다면 그것을 사용 (지연 로딩 이미지의 경우)
-            if not img_url or img_url.startswith('data:'):
-                img_url = img_tag.get('data-src')
-            
-            # 상대 경로인 경우 절대 경로로 변환
-            if img_url and img_url.startswith('/'):
-                img_url = 'https://search.naver.com' + img_url
 
-        # 유효한 URL이고, 텍스트가 있고, 중복이 아닌 경우만 추가
-        if href and text and href.startswith('http') and href not in visited_urls and len(text) > 5:
-            main_news_links.append((href, text, img_url))
-            visited_urls.add(href)
+        img_url = ''
+
+        # a 태그 내의 div를 찾고, 그 div 내의 img를 찾음
+        div_in_a = a.find('div')
+        if div_in_a:
+            img_tag = div_in_a.find('img')
+            if img_tag:
+                # 'src' 속성에서 이미지 URL 가져오기
+                img_url = img_tag.get('src')
+                print('이미지 타입은 ', type(img_url))
+
+                # # 만약 data-src가 있다면 그것을 사용 (지연 로딩 이미지의 경우)
+                # if not img_url or img_url.startswith('data:'):
+                #     img_url = img_tag.get('data-src')
+                
+                # # 상대 경로인 경우 절대 경로로 변환
+                # if img_url and img_url.startswith('/'):
+                #     img_url = 'https://search.naver.com' + img_url
+                
+                print(f"이미지 URL 찾음: {href, text, img_url}")       
+
             # print(f"메인 기사 추가: {text[:30]}... | {href}")
 
-# 결과가 부족하면 추가로 찾기
-if len(main_news_links) < 10:
-    print(f"메인 기사를 {len(main_news_links)}개만 찾았습니다. 추가로 검색합니다.")
-    
-    # 제외할 요소들의 URL 수집
-    exclude_urls = set()
-    for container in exclude_containers:
-        a_tags = container.find_all('a')
-        for a in a_tags:
-            href = a.get('href')
-            if href and href.startswith('http'):
-                exclude_urls.add(href)
-    
-    # 모든 a 태그에서 유효한 뉴스 링크 찾기 (제외할 컨테이너의 링크는 건너뜀)
-    all_a_tags = soup.find_all('a')
-    for a in all_a_tags:
-        href = a.get('href')
-        text = a.get_text(strip=True)
-        
-        # 유효한 링크인지 확인
-        if (href and text and href.startswith('http') and 
-            href not in visited_urls and 
-            href not in exclude_urls and 
-            len(text) > 10):
-            
-            main_news_links.append((href, text))
-            visited_urls.add(href)
-            print(f"추가 기사 찾음: {text[:30]}... | {href}")
-            
-            # 10개가 채워지면 중단
-            if len(main_news_links) >= 10:
-                break
+        # 유효한 URL이고, 텍스트가 있고, 중복이 아닌 경우만 추가
+        if href and text and href.startswith('http') and href not in visited_urls and len(text) > 5 and img_url:
+                main_news_links.append((href, text, img_url))
+                visited_urls.add(href)
+                continue
 
-# main_news_links를 news_links 형태로 변환하는 코드
-def convert_to_dict_list(tuples_list):
-    dict_list = []
-    for item in tuples_list:
-        # 튜플의 길이에 따라 처리 (이전 코드와의 호환성 유지)
-        if len(item) >= 3:
-            url, title, img_url = item
-        else:
-            url, title = item
-            img_url = None
+                # # 유효한 URL이고, 텍스트가 있고, 중복이 아닌 경우만 추가
+                # if href and href.startswith('http') and href not in visited_urls:
+                #         main_news_links.append((href, text, img_url))
+                #         visited_urls.add(href)
+                
+# # 추가 링크
+# # 결과가 부족하면 추가로 찾기
+# if len(main_news_links) < 10:
+#     print(f"메인 기사를 {len(main_news_links)}개만 찾았습니다. 추가로 검색합니다.")
+    
+#     # 제외할 요소들의 URL 수집
+#     exclude_urls = set()
+#     for container in exclude_containers:
+#         a_tags = container.find_all('a')
+#         for a in a_tags:
+#             href = a.get('href')
+#             if href and href.startswith('http'):
+#                 exclude_urls.add(href)
+    
+#     # 모든 a 태그에서 유효한 뉴스 링크 찾기 (제외할 컨테이너의 링크는 건너뜀)
+#     all_a_tags = soup.find_all('a')
+#     for a in all_a_tags:
+#         href = a.get('href')
+#         text = a.get_text(strip=True)
+        
+#         # 유효한 링크인지 확인
+#         if (href and text and href.startswith('http') and 
+#             href not in visited_urls and 
+#             href not in exclude_urls and 
+#             len(text) > 10):
             
-        dict_list.append({
-            "title": title,
-            "url": url,
-            "image_url": img_url  # 이미지 URL 추가
-        })
-    return dict_list
+#             main_news_links.append((href, text))
+#             visited_urls.add(href)
+#             print(f"추가 기사 찾음: {text[:30]}... | {href}")
+            
+#             # 10개가 채워지면 중단
+#             if len(main_news_links) >= 10:
+#                 break
+
+
+# for a in main_news_links:
+#     print(a)
 
 # 변환 실행
 news_links = convert_to_dict_list(main_news_links)
@@ -117,6 +141,7 @@ print(f"변환된 리스트에는 {len(news_links)}개의 항목이 있습니다
 
 # 결과 확인
 for i, news in enumerate(news_links[:10], 1):
+    print(news)
     print(f"{i}. 제목: {news['title']}")
     print(f"   URL: {news['url']}")
     print(f"   이미지: {news['image_url'] or '이미지 없음'}")
@@ -180,7 +205,7 @@ for i, news in enumerate(news_links[:10], 1):
 def read_news_database():
     """뉴스 DB 파일 읽기"""
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, "news_data", "news_database.json")
+    db_path = os.path.join(script_dir, "news_data", "news.json")
     
     # 파일이 없으면 초기 구조 생성
     if not os.path.exists(db_path):
@@ -211,7 +236,7 @@ def read_news_database():
 def write_news_database(db_data):
     """뉴스 DB 파일 쓰기"""
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, "news_data", "news_database.json")
+    db_path = os.path.join(script_dir, "news_data", "news.json")
     
     try:
         with open(db_path, "w", encoding="utf-8") as f:
