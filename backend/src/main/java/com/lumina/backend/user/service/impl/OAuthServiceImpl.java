@@ -55,10 +55,14 @@ public class OAuthServiceImpl implements OAuthService {
         tokenValidationUtil.validateRefreshToken(refresh);
         System.out.println("refresh토큰 검증 완료");
         String nickname = jwtUtil.getNickname(refresh);
-        Long userId = userRepository.findIdByNickname(nickname);
-        String userKey = redisUtil.getRefreshKey(request, userId);
-        String role = tokenUtil.findRoleByToken(request);
         System.out.println("nickname = " + nickname);
+        Long userId = userRepository.findIdByNickname(nickname);
+        System.out.println("userId = " + userId);
+        String userKey = redisUtil.getRefreshKey(request, userId);
+        System.out.println("userKey = " + userKey);
+//        String role = tokenUtil.findRoleByToken(request);
+        String role = userRepository.findRoleByNickname(nickname);
+        System.out.println("role = " + role);
         tokenValidationUtil.validateStoredRefreshToken(userKey, refresh);
         System.out.println("refresh토큰 2차검증 완료");
         return tokenService.reissueTokens(userKey, nickname, role, response).get("access");
