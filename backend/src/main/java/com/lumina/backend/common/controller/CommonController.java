@@ -39,6 +39,8 @@ public class CommonController {
     @Value("${JWT_REDIS_EXP}")
     private String jwtRedisExp;
 
+
+    // 개발용 controller
     @GetMapping("/token")
     public ResponseEntity<BaseResponse<GetToken>> getToken(
             HttpServletRequest request,
