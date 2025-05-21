@@ -31,7 +31,7 @@ public class Post extends BaseEntity {
     @Column(name = "post_image", length = 300)
     private String postImage;
 
-    @Column(name = "post_content", nullable = false, length = 300)
+    @Column(name = "post_content", nullable = false, length = 1000)
     private String postContent;
 
     @Column(name = "post_views", nullable = false)

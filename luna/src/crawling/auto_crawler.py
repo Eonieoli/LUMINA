@@ -19,7 +19,7 @@ def run_crawler():
 
     # 파이썬 실행 경로와 navercrawler.py 경로 설정
     python_executable = '/usr/bin/python3'  # 명시적으로 경로 지정
-    crawler_script = os.path.join(script_dir, "navercrawler.py")
+    crawler_script = os.path.join(script_dir, "naverimgcrawler.py")
     
     # 크롤러 스크립트 실행
     try:
