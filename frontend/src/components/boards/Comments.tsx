@@ -373,7 +373,7 @@ export const Comments = ({ postId, children }: CommentsProps) => {
                             }}
                             type="text"
                             placeholder="댓글을 입력하세요"
-                            className="h-12 w-full rounded-full border border-gray-400 px-3 py-2 text-sm"
+                            className="h-12 w-full rounded-full border border-gray-400 px-3 py-2 text-md"
                         />
                         <div className='absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer'>
                             <img onClick={toggleLuna} className={`h-10 w-10 transition duration-300 ${luna ? "opacity-100" : "opacity-50"}`} src={PokerLuna} alt="" />
