@@ -91,6 +91,7 @@ pipeline {
                                     sh "scp -o StrictHostKeyChecking=no -r luna/package.json ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/luna/package.json"
                                     sh "scp -o StrictHostKeyChecking=no -r luna/pnpm-lock.yaml ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/luna/pnpm-lock.yaml"
                                     sh "scp -o StrictHostKeyChecking=no -r luna/tsconfig.json ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/luna/tsconfig.json"
+                                    sh "scp -o StrictHostKeyChecking=no -r luna/requirements.txt ${GCP_DEPLOY_HOST}:${GCP_DEPLOY_PATH}/luna/requirements.txt"
 
                                     // 소스 코드 디렉토리 전송
                                     sh "ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} 'mkdir -p ${GCP_DEPLOY_PATH}/luna/src'"
@@ -136,6 +137,7 @@ pipeline {
                                     sh "scp -o StrictHostKeyChecking=no -r luna/package.json ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/luna/package.json"
                                     sh "scp -o StrictHostKeyChecking=no -r luna/pnpm-lock.yaml ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/luna/pnpm-lock.yaml"
                                     sh "scp -o StrictHostKeyChecking=no -r luna/tsconfig.json ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/luna/tsconfig.json"
+                                    sh "scp -o StrictHostKeyChecking=no -r luna/requirements.txt ${AWS_DEPLOY_HOST}:${AWS_DEPLOY_PATH}/luna/requirements.txt"
 
                                     // 소스 코드 디렉토리 전송
                                     sh "ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} 'mkdir -p ${AWS_DEPLOY_PATH}/luna/src'"
