@@ -49,22 +49,17 @@ public class OAuthServiceImpl implements OAuthService {
     @Override
     public String reissue(
             HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("토큰 재발급 로직 안으로 들어감");
+
         String refresh = CookieUtil.getCookieValue(request, "refresh");
-        System.out.println("refresh = " + refresh);
         tokenValidationUtil.validateRefreshToken(refresh);
-        System.out.println("refresh토큰 검증 완료");
+
         String nickname = jwtUtil.getNickname(refresh);
-        System.out.println("nickname = " + nickname);
         Long userId = userRepository.findIdByNickname(nickname);
-        System.out.println("userId = " + userId);
         String userKey = redisUtil.getRefreshKey(request, userId);
-        System.out.println("userKey = " + userKey);
-//        String role = tokenUtil.findRoleByToken(request);
         String role = userRepository.findRoleByNickname(nickname);
-        System.out.println("role = " + role);
+
         tokenValidationUtil.validateStoredRefreshToken(userKey, refresh);
-        System.out.println("refresh토큰 2차검증 완료");
+
         return tokenService.reissueTokens(userKey, nickname, role, response).get("access");
     }
 
