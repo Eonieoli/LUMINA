@@ -4,7 +4,7 @@ import { logApiEvent } from '@/utils/analytics';
 // 게시물 등록
 interface CreatePostParams {
     postImageFile?: File | null;
-    hashtag: string[];
+    hashtag: string;
     postContent: string;
 }
 
