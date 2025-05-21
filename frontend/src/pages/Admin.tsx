@@ -156,13 +156,9 @@ export default function Admin() {
   }
 
   const handleDelete = async () => {
-    try {
-        await deleteUser(curUserId);
-        setIsModalOpened(false);
-        fetchAllUser();
-    } catch (error) {
-        console.error(error);
-    }
+      await deleteUser(curUserId);
+      setIsModalOpened(false);
+      fetchAllUser();
   }
 
   return (

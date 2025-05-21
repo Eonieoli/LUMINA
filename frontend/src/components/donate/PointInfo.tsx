@@ -7,12 +7,8 @@ export default function PointInfo() {
 
     useEffect(() => {
         const fetchPointInfo = async () => {
-            try {
-                const response = await getPointInfo();
-                setPoint(response.point);
-            } catch (error) {
-                console.error(error);
-            }
+            const response = await getPointInfo();
+            setPoint(response.point);
         };
         fetchPointInfo();
     }, []);

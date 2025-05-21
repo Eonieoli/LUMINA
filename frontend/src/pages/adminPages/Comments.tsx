@@ -38,12 +38,8 @@ export const Comments = ({ isVisible, onClose, userId }: AdminPostsProps) => {
   );
 
   const handleDelete = async (postId: number, commentId: number) => {
-    try {
-      await deleteComment(postId, commentId)
-      setComments((prevComments) => prevComments.filter((comment) => comment.commentId !== commentId));
-    } catch (error) {
-      console.error(error);
-    }
+    await deleteComment(postId, commentId)
+    setComments((prevComments) => prevComments.filter((comment) => comment.commentId !== commentId));
   };
 
   useEffect(() => {
@@ -64,8 +60,6 @@ export const Comments = ({ isVisible, onClose, userId }: AdminPostsProps) => {
             return [...prev, ...filteredNewPosts];
           });
         }
-      } catch (error) {
-        console.error("댓글 로드 실패:", error);
       } finally {
         setLoading(false);
       }

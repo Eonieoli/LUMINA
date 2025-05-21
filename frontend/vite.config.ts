@@ -17,6 +17,11 @@ export default defineConfig({
     tailwindcss()
   ],
   build: {
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+    },
     rollupOptions: {
       output: {
         manualChunks: {
