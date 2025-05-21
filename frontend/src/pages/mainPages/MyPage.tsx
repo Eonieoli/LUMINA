@@ -65,7 +65,6 @@ export default function MyPage() {
         const fetchProfile= async () =>  {
             const response = await getUserProfile(profileUserId)
             setUserInfo(response.data)
-            console.log("나의 아이디", myUserId)
             return response.data
         }
         fetchProfile()
@@ -85,7 +84,6 @@ export default function MyPage() {
                 const response = await getUserPosts(userInfo.userId, pageNum)
                 if(response.posts.length < 10) {
                     setHasMore(false)
-                    console.log("유저 게시물 가져오는중")
                 }
                 setUserposts((prev) => [...prev, ...response.posts])
             }
@@ -134,7 +132,6 @@ export default function MyPage() {
 
     // 팔로워 팔로잉 페이지 버튼을 눌렀다면 
     const goToFollowInfo = (info:string) => {
-        console.log(`${profileUserId}`,"의 팔로워를 조회해볼게")
         navigate(`/mypage/${profileUserId}/follow`, {
             state: {nickname: userInfo?.nickname, followers: userInfo?.followerCnt, followings: userInfo?.followingCnt, info}
         })

@@ -82,16 +82,12 @@ export default function ProfileEditPage () {
         formData.append("defaultImage", "false")        
       }
 
-      console.log("파일", profileImageFile);
-      console.log("파일", typeof profileImageFile);
       await profileEdit(formData)
-      console.log("프로필 수정 성공")
       const updated = await getUserProfile(authData.data.userId);
       authData.setData(updated.data);
       navigate(`/mypage/${authData.data.userId}`)
     } 
     catch (error:any) {
-      console.error(error)
       const errMsg = error.message
 
       if(errMsg.includes("업로드")) {

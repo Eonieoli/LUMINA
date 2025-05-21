@@ -40,12 +40,8 @@ export default function FollowPage () {
     if (!userId) return
 
     const fetchGetFollowers = async () => {
-      try {
-        const response = await getFollowers(userId)
-        setFollowers(response)
-      }  catch(error){
-        console.log("팔로워 목록 조회 실패", error)
-      }
+      const response = await getFollowers(userId)
+      setFollowers(response)
     }
     fetchGetFollowers()
   },[userId])
@@ -58,7 +54,6 @@ export default function FollowPage () {
         const response = await getFollowings(userId)
         setFollowings(response)
       }  catch(error){
-        console.log("팔로잉 목록 조회 실패", error)
       }
     }
     fetchGetFollowings()
@@ -87,7 +82,6 @@ export default function FollowPage () {
       await followToggle(followId)
     }
     catch (error){
-      console.log("팔로우 팔로잉 조회에서 토글 실패")
     }
   }
   
@@ -157,7 +151,6 @@ export default function FollowPage () {
                         className="flex items-center z-30"
                         onClick={() => {
                           navigate(`/mypage/${follower.userId}`)
-                          console.log("팔로워 페이지로 이동!")
                         }}
                       >
                         <img 
@@ -206,7 +199,6 @@ export default function FollowPage () {
                         className="flex items-center"
                         onClick={() => {
                           navigate(`/mypage/${following.userId}`)
-                          console.log("팔로잉 페이지로 이동!")
                         }}
                       >
                         <img 

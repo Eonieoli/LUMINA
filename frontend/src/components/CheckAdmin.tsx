@@ -13,14 +13,12 @@ export default function CheckAdmin() {
         const fetchIsAdmin = async () => {
             try {
                 const response = await amIAdmin();
-                console.log(response);
                 if (response.data.role === "ROLE_ADMIN" ) {
                     setIsAuthenticated(true);
                 } else {
                     setIsAuthenticated(false);
                 }
-            } catch (error) {
-                console.error('프로필 불러오기 실패:', error);
+            } catch {
                 setIsAuthenticated(false);
             }
         };

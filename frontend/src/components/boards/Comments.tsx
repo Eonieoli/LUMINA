@@ -74,8 +74,6 @@ export const Comments = ({ postId, children }: CommentsProps) => {
             });
 
             pageNumRef.current += 1;
-        } catch (err) {
-            console.error('댓글 불러오기 실패', err);
         } finally {
             loadingRef.current = false;
         }
@@ -111,123 +109,111 @@ export const Comments = ({ postId, children }: CommentsProps) => {
     }, [fetchComments, hasMore]);
 
     const heartClick = async (postId: number, commentId: number) => {
-        try {
-            setComments((prevComments) =>
-                prevComments.map((comment) =>
-                    comment.commentId === commentId
-                        ? {
-                              ...comment,
-                              isLike: !comment.isLike,
-                              likeCnt: comment.isLike
-                                  ? comment.likeCnt - 1
-                                  : comment.likeCnt + 1,
-                          }
-                        : comment
-                )
-            );
-            commentLike(postId, commentId);
-        } catch (error) {
-            console.error(error);
-        }
+        setComments((prevComments) =>
+            prevComments.map((comment) =>
+                comment.commentId === commentId
+                    ? {
+                            ...comment,
+                            isLike: !comment.isLike,
+                            likeCnt: comment.isLike
+                                ? comment.likeCnt - 1
+                                : comment.likeCnt + 1,
+                        }
+                    : comment
+            )
+        );
+        commentLike(postId, commentId);
     };
 
     const onPostComment = async () => {
-        try {
-            let newComment: Comment;
+        let newComment: Comment;
 
-            if (target.commentId !== -1) {
-                // 답글인 경우
-                const response = await postComment(postId, content, target.commentId);
+        if (target.commentId !== -1) {
+            // 답글인 경우
+            const response = await postComment(postId, content, target.commentId);
 
-                newComment = {
-                    commentId: response.data.commentId, // 일시적으로 고유 ID, 서버에서 받아오면 교체 필요
-                    userId: authStore.data.userId,
-                    nickname: authStore.data.nickname,
-                    profileImage: authStore.data.profileImage,
-                    commentContent: content,
-                    likeCnt: 0,
-                    childCommentCnt: 0,
-                    isLike: false,
-                };
+            newComment = {
+                commentId: response.data.commentId, // 일시적으로 고유 ID, 서버에서 받아오면 교체 필요
+                userId: authStore.data.userId,
+                nickname: authStore.data.nickname,
+                profileImage: authStore.data.profileImage,
+                commentContent: content,
+                likeCnt: 0,
+                childCommentCnt: 0,
+                isLike: false,
+            };
 
-                setComments((prevComments) =>
-                    prevComments.map((comment) =>
-                        comment.commentId === target.commentId
-                            ? {
-                                  ...comment,
-                                  childCommentCnt: comment.childCommentCnt + 1,
-                              }
-                            : comment
-                    )
-                );
-                if (luna) {
-                    // await elizaComment(postId, response.data.commentId);
-                    toast.promise(elizaComment(postId, response.data.commentId), {
-                        loading: '루나가 댓글 작성 중 입니다...',
-                        success: () => {
-                            setHasMore(true);
-                            pageNumRef.current = 1;
-                            setComments([]);
-                            fetchComments();
-                            return '댓글이 생성되었습니다.'
-                        },
-                        error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
-                    })
-                    // fetchComments();
-                }
-
-                setReplyRefreshKey((prev) => prev + 1);
-            } else {
-                // 일반 댓글인 경우
-                const response = await postComment(postId, content);
-
-                newComment = {
-                    commentId: response.data.commentId, // 임시 ID
-                    userId: authStore.data.userId,
-                    nickname: authStore.data.nickname,
-                    profileImage: authStore.data.profileImage,
-                    commentContent: content,
-                    likeCnt: 0,
-                    childCommentCnt: 0,
-                    isLike: false,
-                };
-
-                if (luna) {
-                    // await elizaComment(postId, response.data.commentId);
-                    toast.promise(elizaComment(postId, response.data.commentId), {
-                        loading: '루나가 댓글 작성 중 입니다...',
-                        success: () => {
-                            setHasMore(true);
-                            pageNumRef.current = 1;
-                            setComments([]);
-                            fetchComments();
-                            return '댓글이 생성되었습니다.'
-                        },
-                        error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
-                    })
-                    // fetchComments();
-                }
-                setComments((prev) => [newComment, ...prev]);
+            setComments((prevComments) =>
+                prevComments.map((comment) =>
+                    comment.commentId === target.commentId
+                        ? {
+                                ...comment,
+                                childCommentCnt: comment.childCommentCnt + 1,
+                            }
+                        : comment
+                )
+            );
+            if (luna) {
+                // await elizaComment(postId, response.data.commentId);
+                toast.promise(elizaComment(postId, response.data.commentId), {
+                    loading: '루나가 댓글 작성 중 입니다...',
+                    success: () => {
+                        setHasMore(true);
+                        pageNumRef.current = 1;
+                        setComments([]);
+                        fetchComments();
+                        return '댓글이 생성되었습니다.'
+                    },
+                    error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
+                })
+                // fetchComments();
             }
 
-            setContent('');
-            setTarget({ commentId: -1, nickname: '' });
-        } catch (error) {
-            console.error(error);
+            setReplyRefreshKey((prev) => prev + 1);
+        } else {
+            // 일반 댓글인 경우
+            const response = await postComment(postId, content);
+
+            newComment = {
+                commentId: response.data.commentId, // 임시 ID
+                userId: authStore.data.userId,
+                nickname: authStore.data.nickname,
+                profileImage: authStore.data.profileImage,
+                commentContent: content,
+                likeCnt: 0,
+                childCommentCnt: 0,
+                isLike: false,
+            };
+
+            if (luna) {
+                // await elizaComment(postId, response.data.commentId);
+                toast.promise(elizaComment(postId, response.data.commentId), {
+                    loading: '루나가 댓글 작성 중 입니다...',
+                    success: () => {
+                        setHasMore(true);
+                        pageNumRef.current = 1;
+                        setComments([]);
+                        fetchComments();
+                        return '댓글이 생성되었습니다.'
+                    },
+                    error: '루나 댓글 생성 과정에서 오류가 발생했습니다.'
+                })
+                // fetchComments();
+            }
+            setComments((prev) => [newComment, ...prev]);
         }
+
+        setContent('');
+        setTarget({ commentId: -1, nickname: '' });
     };
 
     const deleteClick = (commentId: number) => {
-        try {
-            setComments((prevComments) =>
-                prevComments.filter(
-                    (comment) => comment.commentId !== commentId
-                )
-            );
-            deleteComment(postId, commentId);
-        } catch (error) {
-            console.error(error);
-        }
+        setComments((prevComments) =>
+            prevComments.filter(
+                (comment) => comment.commentId !== commentId
+            )
+        );
+        deleteComment(postId, commentId);
     };
 
     const toggleLuna = () => {

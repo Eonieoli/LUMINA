@@ -20,7 +20,6 @@ export default function ProtectedRoute() {
                     authData.setData(response.data);
                     setIsAuthenticated(true);
                 } catch (error) {
-                    console.error('프로필 불러오기 실패:', error);
                     setIsAuthenticated(false);
                 }
             } else {

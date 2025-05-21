@@ -8,7 +8,6 @@ export const elizaBoard = async (postId: number) => {
         logApiEvent("elizaBoard", "success");
         return response.data
     } catch (error) {
-        console.error("게시물에 대한 루미나 댓글 생성 API 오류", error);
         logApiEvent("elizaBoard", "error");
         throw error
     }
@@ -21,7 +20,6 @@ export const elizaComment = async (postId: number, commentId: number) => {
         logApiEvent("elizaComment", "success");
         return response.data
     } catch (error) {
-        console.error("댓글에에 대한 루미나 댓글 생성 API 오류", error);
         logApiEvent("elizaComment", "error");
         throw error
     }

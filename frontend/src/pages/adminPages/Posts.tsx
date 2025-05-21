@@ -39,13 +39,8 @@ export const Posts = ({ isVisible, onClose, userId }: AdminPostsProps) => {
   );
 
   const handleDelete = async (postId: number) => {
-    try {
-      await deletePost(postId);
-      // posts 업데이트 필요
-      setPosts((prevPosts) => prevPosts.filter((post) => post.postId !== postId));
-    } catch (error) {
-      console.error(error);
-    }
+    await deletePost(postId);
+    setPosts((prevPosts) => prevPosts.filter((post) => post.postId !== postId));
   };
 
   useEffect(() => {
@@ -66,8 +61,6 @@ export const Posts = ({ isVisible, onClose, userId }: AdminPostsProps) => {
             return [...prev, ...filteredNewPosts];
           });
         }
-      } catch (error) {
-        console.error("게시물 로드 실패:", error);
       } finally {
         setLoading(false);
       }

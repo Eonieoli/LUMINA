@@ -22,7 +22,6 @@ export default function FavoriteDonationList() {
     useEffect(() => {
         const fetchFavoriteDonations = async () => {
             const response = await getFavoriteDonations();
-            console.log("관심 기부처 가져오기 성공!", response.user)
             setDonations(response.user);
         };
         fetchFavoriteDonations();

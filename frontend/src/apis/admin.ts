@@ -8,7 +8,6 @@ export const amIAdmin = async () => {
 
         return response.data;
     } catch (error) {
-        console.error('관리자 확인 api 요청 에러!');
         throw error;
     }
 }
@@ -22,7 +21,6 @@ export const getAllUsers = async (pageNum: number) => {
 
         return response.data;
     } catch (error) {
-        console.error('전체 회원 정보 조회 api 요청 에러!');
         throw error;
     }
 };
@@ -34,7 +32,6 @@ export const deleteUser = async (userId: number) => {
 
         return response.data;
     } catch (error) {
-        console.error('유저 삭제 api 요청 에러!');
         throw error;
     }
 }
@@ -51,7 +48,6 @@ export const getUserPosts = async (userId: number, pageNum: number) => {
 
         return response.data;
     } catch (error) {
-        console.error('유저 게시물 조회 api 요청 에러!');
         throw error;
     }
 }
@@ -68,7 +64,6 @@ export const getUserComments = async (userId: number, pageNum: number) => {
 
         return response.data;
     } catch (error) {
-        console.error('유저 댓글 조회 api 요청 에러!');
         throw error;
     }
 }
@@ -80,7 +75,6 @@ export const deletePost = async (postId: number) => {
 
         return response.data;
     } catch (error) {
-        console.error('게시물 삭제 api 요청 에러!');
         throw error;
     }
 }
@@ -92,7 +86,6 @@ export const deleteComment = async (postId: number, commentId: number) => {
 
         return response.data;
     } catch (error) {
-        console.error('댓글 삭제 api 요청 에러!');
         throw error;
     }
 }
@@ -106,7 +99,6 @@ export const currentUser = async (pageNum: number) => {
 
         return response.data;
     } catch (error) {
-        console.error('현재 접속자 조회 api 요청 에러!');
         throw error;
     }
 }

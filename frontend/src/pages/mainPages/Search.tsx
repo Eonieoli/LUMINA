@@ -82,22 +82,19 @@ export default function Search() {
     
             fetchedOnce.current = true;
             setIsLoading(true);
-            try {
-                let data;
-                if (hashtag !== "") {
-                    data = await getHashtagPosts(hashtag, pageNum);
-                } else {
-                    data = await getCategoryExplore(pageNum);
-                }
-    
-                const newPosts = data.data.posts;
-                setPosts((prev) => [...prev, ...newPosts]);
-    
-                if (newPosts.length < 10) {
-                    setHasMore(false);
-                }
-            } catch (error) {
-                console.error('게시물 불러오기 실패:', error);
+            
+            let data;
+            if (hashtag !== "") {
+                data = await getHashtagPosts(hashtag, pageNum);
+            } else {
+                data = await getCategoryExplore(pageNum);
+            }
+
+            const newPosts = data.data.posts;
+            setPosts((prev) => [...prev, ...newPosts]);
+
+            if (newPosts.length < 10) {
+                setHasMore(false);
             }
             setIsLoading(false);
             fetchedOnce.current = false;
@@ -126,16 +123,12 @@ export default function Search() {
     useEffect(() => {
       if (debouncedInput.trim() === "") return;
       const fetchUser = async (keyword: string) => {
-        try {
-            const response = await getUser(keyword);
-            
-            setSearchedUsers(response.data.users);
+        const response = await getUser(keyword);
         
-            setIsModalOpen(true); // 검색 결과 있을 때 모달 열기
+        setSearchedUsers(response.data.users);
+    
+        setIsModalOpen(true); // 검색 결과 있을 때 모달 열기
 
-        } catch (error) {
-            console.error(error);
-        }
       }
 
       fetchUser(searchInput);

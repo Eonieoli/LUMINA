@@ -38,7 +38,6 @@ export default function PostCreate() {
             }), {
                 loading: '카테고리 추출 중...',
                 success: (res) => {
-                    console.log(res);
                     toast.promise(elizaBoard(res.data.postId), {
                         loading: '루나가 게시글 분석 후 댓글 생성 중...',
                         success: () => {
@@ -54,7 +53,6 @@ export default function PostCreate() {
 
         } catch (error) {
             setIsCreating(false);
-            console.error('게시물 업로드 실패:', error);
             toast.error('게시물 업로드 실패');
         }
     };

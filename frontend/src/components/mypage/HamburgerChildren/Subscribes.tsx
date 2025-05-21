@@ -22,9 +22,7 @@ export default function Subscribes({isVisible, onClose}: HamburgerProps) {
             )
         );
 
-        const response = await subscribeCategory(categoryId);
-        console.log(response);
-        console.log(categories);
+        subscribeCategory(categoryId);
     }
     
     useEffect(() => {
