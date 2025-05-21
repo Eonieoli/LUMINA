@@ -56,16 +56,12 @@ export const Board = ({
     const toggleContent = () => setIsExpanded(!isExpanded);
 
     const heartClick = async (postId: number) => {
-        try {
-            setIsLiked((prev) => !prev);
-            setLikes((prev) => prev + (isLiked ? -1 : 1));
-            
-            postLike(postId);
-            
-            return;
-        } catch (error) {
-            console.error(error);
-        }
+        setIsLiked((prev) => !prev);
+        setLikes((prev) => prev + (isLiked ? -1 : 1));
+        
+        postLike(postId);
+        
+        return;
     };
 
     const deleteClick = () => {
@@ -73,14 +69,10 @@ export const Board = ({
     };
 
     const deleteConfirm = (postId: number) => {
-        try {
-            onDelete(postId);
-            setIsModalOpened(false);
+        onDelete(postId);
+        setIsModalOpened(false);
 
-            deletePost(postId);
-        } catch (error) {
-            console.error(error);
-        }
+        deletePost(postId);
     }
 
     const profileClick = (userId: number) => {

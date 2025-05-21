@@ -34,7 +34,6 @@ export default function DonationDetailPage() {
 
       // 만약 해당 donationId가 없다!
       if(!donationId) {
-        console.log("useParams 값:", donationId)
         return
       } 
       const response = await getDonationDetail(donationId)
@@ -52,7 +51,6 @@ export default function DonationDetailPage() {
 
   // 기부하기 버튼을 클릭했을 때
   const goToDonate = () => {
-    console.log(`${donation?.donationName}`,"으로 기부하러 이동")
     navigate(`/donate/${donation?.donationId}/point`)
   }
 

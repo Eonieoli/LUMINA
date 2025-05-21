@@ -34,8 +34,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
                 );
                 setImediateSearchResult(donations);
                 return;
-            } catch (error) {
-                console.log('실시간 검색 중 에러 발생', error);
+            } catch {
                 setImediateSearchResult([]);
             }
         };

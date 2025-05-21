@@ -35,12 +35,8 @@ export const Replies = ({
     const navigate = useNavigate();
 
     const fetchReplies = useCallback(async () => {
-        try {
-            const response = await getReplies(postId, commentId);
-            setReplies(response.data);
-        } catch (error) {
-            console.error(error);
-        }
+        const response = await getReplies(postId, commentId);
+        setReplies(response.data);
     }, [postId, commentId]);
 
     const toggleReplies = async () => {
@@ -59,37 +55,29 @@ export const Replies = ({
     }, [refreshKey, fetchReplies, isRepliesOpened]);
 
     const heartClick = async (postId: number, commentId: number) => {
-        try {
-            setReplies((prevComments) =>
-                prevComments.map((comment) =>
-                    comment.commentId === commentId
-                        ? {
-                              ...comment,
-                              isLike: !comment.isLike,
-                              likeCnt: comment.isLike
-                                  ? comment.likeCnt - 1
-                                  : comment.likeCnt + 1,
-                          }
-                        : comment
-                )
-            );
-            commentLike(postId, commentId);
-        } catch (error) {
-            console.error(error);
-        }
+        setReplies((prevComments) =>
+            prevComments.map((comment) =>
+                comment.commentId === commentId
+                    ? {
+                            ...comment,
+                            isLike: !comment.isLike,
+                            likeCnt: comment.isLike
+                                ? comment.likeCnt - 1
+                                : comment.likeCnt + 1,
+                        }
+                    : comment
+            )
+        );
+        commentLike(postId, commentId);
     };
 
     const deleteClick = (commentId: number) => {
-        try {
-            setReplies((prevComments) =>
-                prevComments.filter(
-                    (comment) => comment.commentId !== commentId
-                )
-            );
-            deleteComment(postId, commentId);
-        } catch (error) {
-            console.error(error);
-        }
+        setReplies((prevComments) =>
+            prevComments.filter(
+                (comment) => comment.commentId !== commentId
+            )
+        );
+        deleteComment(postId, commentId);
     };
 
     const goProfile = (userId: number) => {
