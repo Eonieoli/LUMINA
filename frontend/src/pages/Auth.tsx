@@ -9,12 +9,8 @@ export default function Auth() {
   
     useEffect(() => {
         const fetchProfile = async () => {
-            try {
-                await getMyProfile();
-                navigate('/');
-            } catch (error) {
-                console.error('프로필 불러오기 실패:', error);
-            }
+            await getMyProfile();
+            navigate('/');
         };
     
         const handleResize = () => {

@@ -21,7 +21,6 @@ export default function Rewards({isVisible, onClose}: HamburgerProps) {
         const fetchRewards = async () => {
             const response = await getUserReward();
             setRewards(response.data);
-            console.log(response.data)
         }
         
         fetchRewards();

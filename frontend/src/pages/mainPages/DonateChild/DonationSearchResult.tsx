@@ -25,7 +25,6 @@ export default function DonationSearchResultPage() {
 
     // 검색어가 변경이 되면 페이지 번호를 1로 초기화
     useEffect(() => {
-        console.log("기부 검색 변경됨!!")
         setPageNum(1);
         setDonations([]);
     }, [decodedKeyword]);
@@ -35,34 +34,27 @@ export default function DonationSearchResultPage() {
     },[decodedKeyword, pageNum])
 
     const fetchDonations = async () => {
-        try {
-            if (state?.type === 'all' || decodedKeyword === 'all') {
-                const {donations, totalPages} = await getAllDonations(pageNum)
-                console.log("❤️전체 기부처 검색!!!",pageNum,"/", totalPages) 
-                setTotalPages(totalPages);
-                setPageNum(pageNum)
-                setDonations(prev => (pageNum === 1? donations : [...prev, ...donations]) )
-            } else {
-                console.log("검색 api 호출 시작!!!")
-                const {donations: newDonations, totalPages} = await getSearchDonations(decodedKeyword, pageNum)
-                setTotalPages(totalPages);
-                setPageNum(pageNum)
-                setDonations((prev) => {
-                    const existingIds = prev.map(
-                        (donation) => donation.donationId
-                    );
-                    // 페이지네이션으로 추가되는 기부처들
-                    const uniqueNewDonations = newDonations.filter(
-                        (donation: DonationProps) =>
-                            !existingIds.includes(donation.donationId)
-                    );
-                    // 기존 기부처 + 추가된 기부처
-                    return [...prev, ...uniqueNewDonations];
-                });
-            }
-            console.log("❣️검색 완료", pageNum, totalPages)
-        } catch (error) {
-            console.log('기부처 검색 실패', error);
+        if (state?.type === 'all' || decodedKeyword === 'all') {
+            const {donations, totalPages} = await getAllDonations(pageNum)
+            setTotalPages(totalPages);
+            setPageNum(pageNum)
+            setDonations(prev => (pageNum === 1? donations : [...prev, ...donations]) )
+        } else {
+            const {donations: newDonations, totalPages} = await getSearchDonations(decodedKeyword, pageNum)
+            setTotalPages(totalPages);
+            setPageNum(pageNum)
+            setDonations((prev) => {
+                const existingIds = prev.map(
+                    (donation) => donation.donationId
+                );
+                // 페이지네이션으로 추가되는 기부처들
+                const uniqueNewDonations = newDonations.filter(
+                    (donation: DonationProps) =>
+                        !existingIds.includes(donation.donationId)
+                );
+                // 기존 기부처 + 추가된 기부처
+                return [...prev, ...uniqueNewDonations];
+            });
         }
     };
 
@@ -70,7 +62,6 @@ export default function DonationSearchResultPage() {
     const handleLoadMore = () => {
         if (pageNum < totalPages) {
             setPageNum((prev) => prev + 1);
-            console.log("더보기 클릭! 다음 페이지로 이동!", pageNum, totalPages)
         }
     };
 

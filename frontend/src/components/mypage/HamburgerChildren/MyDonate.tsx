@@ -20,7 +20,6 @@ export default function MyDonate({isVisible, onClose}: HamburgerProps) {
         const fetchDonations = async () => {
             const response = await getUserDonations();
             setDonations(response.data);
-            console.log(response.data)
         }
         
         fetchDonations();
