@@ -1,10 +1,4 @@
-// src/clients/my-platform-client.ts
-// IAgentRuntime: ElizaOS의 에이전트 런타임 인터페이스, 에이전트 작동에 필요한 핵심 기능 담기
-// MessageContent: 메시지 내용을 정의하는 인터페이스, 텍스트, 이미지 등 다양한 컨텐츠 타입 포함 가능
-// ChatMessageRole: 메시지 역할(사용자, 시스템 등)을 정의하는 ENUM type
-// elizaLogger: ELizaOS의 로깅 유틸리티(로그 출력)
-// express: Nodejs의 웹 서버 프레임워크, API 엔드포인트 쉽게 생성
-// bodyparser: HTTP 요청 본문을 파싱. JSON 요청을 객체로 변환
+// luna client, modelProvider: openrouter
 import { IAgentRuntime, elizaLogger } from "@elizaos/core";
 import express from "express";
 import cors from "cors";
