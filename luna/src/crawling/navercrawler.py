@@ -128,7 +128,7 @@ for i, news in enumerate(news_links[:10], 1):
             "url": url,
             "domain": domain,
             "text_content": text_content,
-            "crawled_at": now.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+            "crawled_at": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S+09:00")
         }
 
         news_data.append(news_item)
