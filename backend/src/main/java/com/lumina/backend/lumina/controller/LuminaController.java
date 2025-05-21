@@ -61,8 +61,7 @@ public class LuminaController {
     @PostMapping("")
     public ResponseEntity<BaseResponse<Void>> GetPost(
             @ModelAttribute GetPostRequest request) throws IOException {
-        System.out.println("request.getPost_image() = " + request.getPost_image());
-        System.out.println("request.getPostContent() = " + request.getPostContent());
+
         Long luminaId = userRepository.findIdByNickname("Luna");
         UploadPostRequest uploadPostRequest = new UploadPostRequest(
                 request.getPost_image(), null, request.getPostContent());
