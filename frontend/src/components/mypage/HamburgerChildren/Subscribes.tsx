@@ -36,25 +36,6 @@ export default function Subscribes({isVisible, onClose}: HamburgerProps) {
         fetchCategories();
     }, [])
     
-    
-    useEffect(() => {
-        setTimeout(() => {
-            const scrollContainer = document.getElementById('scrollable-container');
-    
-            if (!scrollContainer) return;
-    
-            if (isVisible) {
-                scrollContainer.style.overflow = 'hidden';
-            } else {
-                scrollContainer.style.overflow = 'auto';
-            }
-
-            return () => {
-                scrollContainer.style.overflow = 'auto';
-            };
-        }, 500);
-    }, [isVisible]);
-    
     return (
         <AnimatePresence>
             {isVisible && (
