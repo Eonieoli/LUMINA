@@ -33,7 +33,7 @@ export default function PostCreate() {
             setIsCreating(true);
             toast.promise(createPost({
                 postImageFile: image,
-                hashtag: tags,
+                hashtag: tags.join(","),
                 postContent: content,
             }), {
                 loading: '카테고리 추출 중...',
