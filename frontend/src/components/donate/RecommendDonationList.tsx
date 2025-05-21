@@ -22,7 +22,6 @@ export default function RecommendDonationList() {
     useEffect(() => {
         const fetchRecommendDonations = async () => {
             const response = await getFavoriteDonations()
-            console.log("추천 기부처 가져오기 성공!", response.ai)
             setDonations(response.ai)
         }
         fetchRecommendDonations()

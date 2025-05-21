@@ -25,7 +25,6 @@ export default function RankingPage() {
   useEffect (() => {
     const fetchRankings = async () => {
       const response = await RankingInfo()
-      console.log(response);
       setTotalPeople(response.totalUser)
       setRankings(response.ranks)
     }

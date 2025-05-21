@@ -41,37 +41,33 @@ export default function HomePage() {
 
             fetchedOnce.current = true;
             setIsLoading(true);
-            try {
-                const data = await getPosts(pageNum, category);
-                const fetchedPosts = data.data.posts;
+            const data = await getPosts(pageNum, category);
+            const fetchedPosts = data.data.posts;
 
-                // 처음 요청인데 게시물이 아예 없음 → 바로 all로 전환
-                if (pageNum === 1 && fetchedPosts.length === 0 && category === 'following') {
-                    setCategory('all');
-                    setPageNum(1);
-                    setHasMore(true);
-                    setIsLoading(false);
-                    fetchedOnce.current = false;
-                }
-
-                // 두 번째 이후 요청인데 10개 미만이면 now switch to all
-                if (pageNum > 1 && fetchedPosts.length < 10 && category === 'following') {
-                    setCategory('all');
-                    setPageNum(1);
-                    setHasMore(true);
-                    setIsLoading(false);
-                    fetchedOnce.current = false;
-                }
-
-                // all인데도 10개 미만이면 종료
-                if (category === 'all' && fetchedPosts.length < 10) {
-                    setHasMore(false);
-                }
-
-                setPosts((prev) => [...prev, ...fetchedPosts]);
-            } catch (error) {
-                console.error('게시물 불러오기 실패:', error);
+            // 처음 요청인데 게시물이 아예 없음 → 바로 all로 전환
+            if (pageNum === 1 && fetchedPosts.length === 0 && category === 'following') {
+                setCategory('all');
+                setPageNum(1);
+                setHasMore(true);
+                setIsLoading(false);
+                fetchedOnce.current = false;
             }
+
+            // 두 번째 이후 요청인데 10개 미만이면 now switch to all
+            if (pageNum > 1 && fetchedPosts.length < 10 && category === 'following') {
+                setCategory('all');
+                setPageNum(1);
+                setHasMore(true);
+                setIsLoading(false);
+                fetchedOnce.current = false;
+            }
+
+            // all인데도 10개 미만이면 종료
+            if (category === 'all' && fetchedPosts.length < 10) {
+                setHasMore(false);
+            }
+
+            setPosts((prev) => [...prev, ...fetchedPosts]);
             setIsLoading(false);
             fetchedOnce.current = false;
         };
