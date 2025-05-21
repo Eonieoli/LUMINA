@@ -29,22 +29,6 @@ export default function MyDonate({isVisible, onClose}: HamburgerProps) {
         };
     }, [])
     
-    useEffect(() => {
-        const scrollContainer = document.getElementById('scrollable-container');
-
-        if (!scrollContainer) return;
-
-        if (isVisible) {
-            scrollContainer.style.overflow = 'hidden';
-        } else {
-            scrollContainer.style.overflow = 'auto';
-        }
-        
-
-        return () => {
-            scrollContainer.style.overflow = 'auto';
-        };
-    }, [isVisible]);
     return (
         <AnimatePresence>
             {isVisible && (
