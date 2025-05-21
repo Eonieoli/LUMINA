@@ -1,12 +1,13 @@
 annotated-types==0.7.0
 anyio==4.9.0
+beautifulsoup4==4.12.3
 certifi==2025.4.26
 charset-normalizer==3.4.2
 click==8.1.8
 colorama==0.4.6
 fastapi==0.115.12
 filelock==3.18.0
-fsspec==2025.3.2
+fsspec==2025.3.2pip
 h11==0.16.0
 huggingface-hub==0.31.1
 idna==3.10
@@ -15,6 +16,7 @@ joblib==1.5.0
 MarkupSafe==3.0.2
 mpmath==1.3.0
 networkx==3.4.2
+newspaper3k==0.2.8
 numpy==2.2.5
 packaging==25.0
 pandas==2.2.3
@@ -26,6 +28,7 @@ PyYAML==6.0.2
 regex==2024.11.6
 requests==2.32.3
 safetensors==0.5.3
+schedule==1.3.1
 scikit-learn==1.6.1
 scipy==1.15.2
 setuptools==80.3.1

@@ -101,7 +101,9 @@ public class User extends BaseEntity {
     }
 
     public void updateUserLikeCnt(Integer likeCnt) {
+
         this.likeCnt += likeCnt;
+        this.likeCnt = Math.max(0, this.likeCnt);
     }
 
     public void resetUserLickCnt() {
