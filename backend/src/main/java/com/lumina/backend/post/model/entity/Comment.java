@@ -31,7 +31,7 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "parent_comment_id")
     private Comment parentComment;
 
-    @Column(name = "comment_content", nullable = false, length = 300)
+    @Column(name = "comment_content", nullable = false, length = 500)
     private String commentContent;
 
     @Column(name = "comment_reward", nullable = false)
