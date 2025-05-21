@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { LocalLLMClient } from "../clients/local-llm";
+import fetch from "node-fetch";
 
 // 인터페이스 정의
 interface Article {
@@ -12,6 +13,7 @@ interface Article {
   url: string;
   domain: string;
   text_content: string;
+  image_url?: string;
   crawled_at: string;
   used: boolean;
   used_at: string | null;
@@ -53,10 +55,7 @@ export class PostGenerator {
     // DB 파일 경로 설정
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-    this.dbFilePath = path.join(
-      __dirname,
-      "../crawling/news_data/news_database.json"
-    );
+    this.dbFilePath = path.join(__dirname, "../crawling/news_data/news.json");
 
     // LocalLLMClient 초기화
     this.localLLMClient = new LocalLLMClient({
@@ -201,7 +200,7 @@ export class PostGenerator {
   }
 
   // 뉴스 데이터베이스 읽기
-  private readNewsDatabase(): NewsDatabase | null {
+  public readNewsDatabase(): NewsDatabase | null {
     try {
       if (!fs.existsSync(this.dbFilePath)) {
         elizaLogger.warn(
@@ -348,14 +347,22 @@ export class PostGenerator {
       `선택된 기사: ${selectedArticle.title} (점수: ${selectedArticle.score})`
     );
 
+    // 선택된 기사 저장
+    this.currentSelectedArticle = selectedArticle;
+
     return selectedArticle;
+  }
+
+  // 현재 선택된 기사 정보 반환 메서드 추가 (public으로 설정)
+  public getCurrentSelectedArticle(): Article | null {
+    return this.currentSelectedArticle;
   }
 
   // 선택된 기사로 프롬프트 생성
   private createPostPromptFromArticle(article: Article): string {
     return `당신은 선한 행동 SNS 플랫폼의 관리자 Luna입니다. 플랫폼에 게시할 새로운 게시글을 작성해주세요.\n\n다음은 최근 기부/봉사 관련 뉴스의 내용입니다:\n\"${JSON.stringify(
       article.text_content
-    )}\"\n\n위의 내용을 정리하여 Luna의 캐릭터와 일관성 있는 게시글을 작성해주세요. \n기부나 봉사활동의 가치를 강조하고, 사용자들이 선한 행동에 참여하도록 격려하는 내용이 포함되는 것도 좋아요. \n\n게시글 작성 가이드라인:\n1. 500자 이내로 작성해주세요.\n2. 기사 내용을 분석하여 주요 정보를 추출해주세요.\n3. 뉴스를 인용하되, 직접적인 뉴스 전달이 아닌 Luna만의 스타일로 재해석해주세요.\n4. 뉴스의 내용을 요약해주세요. \n5. 사용자들이 관련된 기부나 봉사에 참여할 수 있는 방법이 있다면, 이를 간단히 제안해주세요. 직접 추가적인 방안을 검색해 찾아서 제안해도 좋아요. \n\n최종 게시글만 반환해주세요.\n\n주의: 응답은 HTML 태그 없이 일반 텍스트로만 작성해주세요. HTML 형식으로 응답하지 마세요.`;
+    )}\"\n\n위의 내용을 정리하여 Luna의 캐릭터와 일관성 있는 게시글을 작성해주세요. \n기부나 봉사활동의 가치를 강조하고, 사용자들이 선한 행동에 참여하도록 격려하는 내용이 포함되는 것도 좋아요. \n\n게시글 작성 가이드라인:\n1. 500자 이내로 작성해주세요.\n2. 기사 내용을 분석하여 주요 정보를 추출해주세요.\n3. 뉴스를 인용하되, 직접적인 뉴스 전달이 아닌 Luna만의 스타일로 재해석해주세요.\n4. 뉴스의 내용을 요약해주세요. \n5. 사용자들이 관련된 기부나 봉사에 참여할 수 있는 방법이 있다면, 이를 간단히 제안해주세요. 직접 추가적인 방안을 검색해 찾아서 제안해도 좋아요. \n\n최종 게시글만 반환해주세요.\n\n주의: 응답은 HTML 태그 없이 일반 텍스트로만 작성해주세요. HTML 형식으로 응답하지 마세요. 형식적인 기호를 응답으로 나타내지 마세요.`;
   }
 
   // LLM에 게시글 생성 요청
@@ -391,5 +398,27 @@ export class PostGenerator {
 
     const randomIndex = Math.floor(Math.random() * defaultTemplates.length);
     return defaultTemplates[randomIndex];
+  }
+
+  private currentSelectedArticle: Article | null = null;
+
+  // 이미지 다운로드 메서드 추가
+  public async downloadImage(imageUrl: string): Promise<File | undefined> {
+    try {
+      // 1. 이미지 URL에서 blob 데이터 가져오기
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+
+      // 2. blob 데이터를 ArrayBuffer로 변환
+      const arrayBuffer = await blob.arrayBuffer();
+
+      // 2. blob을 File 객체로 변환
+      const filename = imageUrl.split("/").pop() || "image.jpg"; // 기본 이름 지정
+      const file = new File([arrayBuffer], filename, { type: blob.type });
+
+      return file;
+    } catch (error) {
+      elizaLogger.error("이미지 다운로드 실패!", error);
+    }
   }
 }
