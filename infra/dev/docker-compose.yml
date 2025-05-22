@@ -5,6 +5,7 @@ services:
       context: ../../ai
       dockerfile: Dockerfile
     image: rublin322/lumina-ai:develop
+    pull_policy: always
     restart: always
     ports:
       - "8001:8000"
@@ -27,6 +28,7 @@ services:
       context: ../../ai
       dockerfile: Dockerfile
     image: rublin322/lumina-ai:develop
+    pull_policy: always
     restart: always
     ports:
       - "8002:8000"
@@ -51,6 +53,7 @@ services:
       args:
         - ENV_FILE=.env.front
     image: rublin322/lumina-frontend:develop
+    pull_policy: always
     restart: always
     ports:
       - "3001:80"
@@ -69,6 +72,7 @@ services:
       args:
         - ENV_FILE=.env.front
     image: rublin322/lumina-frontend:develop
+    pull_policy: always
     restart: always
     ports:
       - "3002:80"
@@ -85,6 +89,7 @@ services:
       context: ../../backend
       dockerfile: Dockerfile
     image: rublin322/lumina-backend:develop
+    pull_policy: always
     restart: always
     env_file:
       - .env
@@ -113,6 +118,7 @@ services:
       context: ../../backend
       dockerfile: Dockerfile
     image: rublin322/lumina-backend:develop
+    pull_policy: always
     restart: always
     env_file:
       - .env

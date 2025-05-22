@@ -162,21 +162,21 @@ pipeline {
                                     if (env.BRANCH_NAME == 'frontend' || env.BRANCH_NAME == 'develop') {
                                         dir('frontend') {
                                             sh "cp ../infra/dev/.env.front .env.front"
-                                            sh "docker build -t rublin322/lumina-frontend:develop ."
+                                            sh "docker build --no-cache --pull -t rublin322/lumina-frontend:develop ."
                                         }
                                     }
                                     
                                     // 백엔드 이미지 빌드 (backend 브랜치 또는 develop 브랜치인 경우)
                                     if (env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'develop') {
                                         dir('backend') {
-                                            sh "docker build -t rublin322/lumina-backend:develop ."
+                                            sh "docker build --no-cache --pull -t rublin322/lumina-backend:develop ."
                                         }
                                     }
 
                                     // AI 서버 이미지 빌드 (backend 브랜치 또는 develop 브랜치인 경우)
                                     if (env.BRANCH_NAME == 'backend' || env.BRANCH_NAME == 'develop') {
                                         dir('ai') {
-                                            sh "docker build -t rublin322/lumina-ai:develop ."
+                                            sh "docker build --no-cache --pull -t rublin322/lumina-ai:develop ."
                                         }
                                     }
                                 }
@@ -263,28 +263,27 @@ pipeline {
                                             sh """
                                             ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
                                                 cd ${GCP_DEPLOY_PATH} && 
-                                                ./infra/scripts/blue-green-deploy.sh dev frontend &&
-                                                docker restart proxy
-                                            '
+                                                docker pull rublin322/lumina-frontend:develop &&
+                                                ./infra/scripts/blue-green-deploy.sh dev frontend                                            '
                                             """
                                         } else if (env.BRANCH_NAME == 'backend') {
                                             // 백엔드만 배포
                                             sh """
                                             ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
                                                 cd ${GCP_DEPLOY_PATH} && 
-                                                ./infra/scripts/blue-green-deploy.sh dev backend &&
-                                                docker restart proxy
-                                            '
+                                                docker pull rublin322/lumina-backend:develop &&
+                                                docker pull rublin322/lumina-ai:develop &&
+                                                ./infra/scripts/blue-green-deploy.sh dev backend                                            '
                                             """
                                         } else {
                                             // 전체 배포 (develop 브랜치)
-                                            // docker system prune -af 추가할지
                                             sh """
                                             ssh -o StrictHostKeyChecking=no ${GCP_DEPLOY_HOST} '
                                                 cd ${GCP_DEPLOY_PATH} &&
-                                                ./infra/scripts/blue-green-deploy.sh dev all &&
-                                                docker restart proxy
-                                            '
+                                                docker pull rublin322/lumina-frontend:develop &&
+                                                docker pull rublin322/lumina-backend:develop &&
+                                                docker pull rublin322/lumina-ai:develop &&
+                                                ./infra/scripts/blue-green-deploy.sh dev all                                            '
                                             """
                                         }
                                     }
@@ -305,17 +304,17 @@ pipeline {
                                     // 프론트엔드 이미지 빌드
                                     dir('frontend') {
                                         sh "cp ../infra/prod/.env.front .env.front"
-                                        sh "docker build -t rublin322/lumina-frontend:latest ."
+                                        sh "docker build --no-cache --pull -t rublin322/lumina-frontend:latest ."
                                     }
                                     
                                     // 백엔드 이미지 빌드
                                     dir('backend') {
-                                        sh "docker build -t rublin322/lumina-backend:latest ."
+                                        sh "docker build --no-cache --pull -t rublin322/lumina-backend:latest ."
                                     }
 
                                     // AI 서버 이미지 빌드
                                     dir('ai') {
-                                        sh "docker build -t rublin322/lumina-ai:latest ."
+                                        sh "docker build --no-cache --pull -t rublin322/lumina-ai:latest ."
                                     }
                                 }
                             }
@@ -385,8 +384,10 @@ pipeline {
                                     sh """
                                     ssh -o StrictHostKeyChecking=no ${AWS_DEPLOY_HOST} '
                                         cd ${AWS_DEPLOY_PATH} &&
+                                        docker pull rublin322/lumina-frontend:latest &&
+                                        docker pull rublin322/lumina-backend:latest &&
+                                        docker pull rublin322/lumina-ai:latest &&
                                         ./infra/scripts/blue-green-deploy.sh prod all &&
-                                        docker restart proxy &&
                                         docker system prune -af
                                     '
                                     """
