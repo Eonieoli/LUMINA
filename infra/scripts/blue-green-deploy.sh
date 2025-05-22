@@ -133,8 +133,12 @@ start_service_container() {
     
     echo "Starting new $service-$color container..."
     
+    # 최신 이미지 pull 강제 실행
+    echo "Pulling latest image for $service..."
+    docker pull "rublin322/lumina-$service:$image_tag"
+    
     cd "$DEPLOY_PATH"
-    docker compose up "$service-$color" -d
+    docker compose up "$service-$color" -d --force-recreate
     
     # 컨테이너가 시작되었는지 확인
     if ! container_running "$service-$color"; then
